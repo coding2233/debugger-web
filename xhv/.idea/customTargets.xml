@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CLionExternalBuildManager">
+    <target id="c8646bbc-c380-41e7-b6f8-3843377b46b5" name="xmake" defaultType="TOOL">
+      <configuration id="abf6c10c-5678-4835-ad97-4825eecab47d" name="xmake" toolchainName="Visual Studio">
+        <build type="TOOL">
+          <tool actionId="Tool_External Tools_xmake compile" />
+        </build>
+        <clean type="TOOL">
+          <tool actionId="Tool_External Tools_xmake clean" />
+        </clean>
+      </configuration>
+    </target>
+  </component>
+</project>

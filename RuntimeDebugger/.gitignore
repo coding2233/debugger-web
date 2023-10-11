@@ -1,0 +1,6 @@
+.xmake/
+build/
+install/
+vsxmake2022/
+cmake-build-debug/
+compile_commands.json
