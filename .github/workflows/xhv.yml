@@ -92,7 +92,7 @@ jobs:
         xmake -v -yls -lah build
         ls -lah build
   
-   build_hv_ios_arm64:
+  build_hv_ios_arm64:
     runs-on: mac-latest
     steps:
     - name: check out
