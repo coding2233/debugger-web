@@ -9,13 +9,13 @@ on:
       - xhv/**
 
 jobs:
-  build_app:
+  build_hv_linux:
     runs-on: ubuntu-latest
     steps:
     - name: check out
       uses: actions/checkout@v3
     
-    - name: xmake-setup
+    - name: xmake setup
       uses: xmake-io/github-action-setup-xmake@v1
       with:
         xmake-version: latest
@@ -25,3 +25,60 @@ jobs:
         xmake --version
         cd xhv
         xmake -v -y
+        ls -lah
+  
+  # build_hv_android_v8:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: check out
+  #     uses: actions/checkout@v3
+    
+  #   - name: set android
+
+    - name: xmake setup
+      uses: xmake-io/github-action-setup-xmake@v1
+      with:
+        xmake-version: latest
+    
+    - name: build xhv
+      run: |
+        xmake --version
+        cd xhv
+        xmake -v -y
+        ls -lah
+
+  build_hv_window:
+    runs-on: windows-latest
+    steps:
+    - name: check out
+      uses: actions/checkout@v3
+    
+    - name: xmake setup
+      uses: xmake-io/github-action-setup-xmake@v1
+      with:
+        xmake-version: latest
+    
+    - name: build xhv
+      run: |
+        xmake --version
+        cd xhv
+        xmake -v -y
+        ls -lah
+
+  build_hv_mac:
+    runs-on: mac-latest
+    steps:
+    - name: check out
+      uses: actions/checkout@v3
+    
+    - name: xmake setup
+      uses: xmake-io/github-action-setup-xmake@v1
+      with:
+        xmake-version: latest
+    
+    - name: build xhv
+      run: |
+        xmake --version
+        cd xhv
+        xmake -v -y
+        ls -lah
