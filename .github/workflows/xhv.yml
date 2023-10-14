@@ -47,7 +47,7 @@ jobs:
 
     - name: build xhv
       env:
-      ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+        ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
       run: |
         echo $ANDROID_NDK_HOME
         xmake --version
