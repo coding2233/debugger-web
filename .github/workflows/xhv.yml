@@ -1,0 +1,27 @@
+name: build_xhv
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    paths:
+      - xhv/**
+
+jobs:
+  build_app:
+    runs-on: ubuntu-latest
+    steps:
+    - name: check out
+      uses: actions/checkout@v3
+    
+    - name: xmake-setup
+      uses: xmake-io/github-action-setup-xmake@v1
+      with:
+        xmake-version: latest
+    
+    - name: build xhv
+      run: |
+        xmake --version
+        cd xhv
+        xmake -v -y

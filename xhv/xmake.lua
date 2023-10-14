@@ -7,15 +7,25 @@ add_requires("libhv",{alias="libhv"})
 add_rules("mode.release","mode.debug")
 
 target("xhv")
-    set_kind("binary")
+    set_kind("shared")
     set_languages("cxx17")
     set_arch("x64")
-    add_files("src/**.cpp")
+    add_files("main.cpp","src/**.cpp")
     add_packages("libhv")
     if is_plat("windows") then
         add_defines("TEST")
     end
-    --
+
+target("xhv_test")
+    set_kind("binary")
+    set_languages("cxx17")
+    set_arch("x64")
+    add_files("main.cpp","src/**.cpp")
+    add_packages("libhv")
+    if is_plat("windows") then
+        add_defines("TEST")
+    end
+
 
 -- xmake f -p windows -a x64
 -- 生成clion可识别的 compile_commands
