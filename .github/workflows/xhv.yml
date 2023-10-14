@@ -25,27 +25,36 @@ jobs:
         xmake --version
         cd xhv
         xmake -v -y
-        ls -lah
+        ls -lah build
   
-  # build_hv_android_v8:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - name: check out
-  #     uses: actions/checkout@v3
+  build_hv_android_v8:
+    runs-on: ubuntu-latest
+    steps:
+    - name: check out
+      uses: actions/checkout@v3
     
-  #   - name: set android
-
     - name: xmake setup
       uses: xmake-io/github-action-setup-xmake@v1
       with:
         xmake-version: latest
     
+    - name: android ndk setup
+      uses: nttld/setup-ndk@v1
+      id: setup-ndk
+      with:
+        ndk-version: r21e
+        add-to-path: false
+
     - name: build xhv
+      env:
+      ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
       run: |
+        echo $ANDROID_NDK_HOME
         xmake --version
         cd xhv
+        xmake f -p android --ndk=$ANDROID_NDK_HOME -a arm64-v8a
         xmake -v -y
-        ls -lah
+        ls -lah build
 
   build_hv_window:
     runs-on: windows-latest
@@ -63,7 +72,7 @@ jobs:
         xmake --version
         cd xhv
         xmake -v -y
-        ls -lah
+        ls -lah build
 
   build_hv_mac:
     runs-on: mac-latest
@@ -80,5 +89,24 @@ jobs:
       run: |
         xmake --version
         cd xhv
+        xmake -v -yls -lah build
+        ls -lah build
+  
+   build_hv_ios_arm64:
+    runs-on: mac-latest
+    steps:
+    - name: check out
+      uses: actions/checkout@v3
+    
+    - name: xmake setup
+      uses: xmake-io/github-action-setup-xmake@v1
+      with:
+        xmake-version: latest
+    
+    - name: build xhv
+      run: |
+        xmake --version
+        cd xhv
+        xmake f -p iphoneos -a arm64
         xmake -v -y
-        ls -lah
+        ls -lah build
