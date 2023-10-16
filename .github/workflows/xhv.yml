@@ -90,7 +90,7 @@ jobs:
       run: |
         xmake --version
         cd xhv
-        xmake -v -yls -lah build
+        xmake -v -y
         ls -lah build
   
   build_hv_ios_arm64:

@@ -7,7 +7,11 @@ add_requires("libhv",{alias="libhv"})
 add_rules("mode.release","mode.debug")
 
 target("xhv")
-    set_kind("shared")
+    if is_plat("iphoneos") then
+        set_kind("static")
+    else
+        set_kind("shared")
+    end
     set_languages("cxx17")
     -- set_arch("x64")
     add_files("main.cpp","src/**.cpp")
