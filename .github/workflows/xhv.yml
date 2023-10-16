@@ -52,7 +52,7 @@ jobs:
         echo $ANDROID_NDK_HOME
         xmake --version
         cd xhv
-        xmake f -p android --ndk=$ANDROID_NDK_HOME -a arm64-v8a
+        xmake f -p android --ndk=$ANDROID_NDK_HOME -a arm64-v8a -y
         xrepo install -y libhv
         xmake -y -v -b xhv
         ls -lah build
