@@ -76,7 +76,7 @@ jobs:
         dir build
 
   build_hv_mac:
-    runs-on: mac-latest
+    runs-on: macos-latest
     steps:
     - name: check out
       uses: actions/checkout@v3
@@ -94,7 +94,7 @@ jobs:
         ls -lah build
   
   build_hv_ios_arm64:
-    runs-on: mac-latest
+    runs-on: macos-latest
     steps:
     - name: check out
       uses: actions/checkout@v3
@@ -108,6 +108,6 @@ jobs:
       run: |
         xmake --version
         cd xhv
-        xmake f -p iphoneos -a arm64
+        xmake f -p iphoneos -a arm64 -y
         xmake -v -y
         ls -lah build
