@@ -1,0 +1,46 @@
+name: build_runtime_debugger
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    paths:
+      - RuntimeDebugger/**
+
+jobs:
+  build_hv_linux:
+    runs-on: ubuntu-latest
+    steps:
+    - name: check out
+      uses: actions/checkout@v3
+    
+    - name: xmake setup
+      uses: xmake-io/github-action-setup-xmake@v1
+      with:
+        xmake-version: latest
+    
+    - name: build runtime_debugger
+      run: |
+        xmake --version
+        cd RuntimeDebugger
+        xmake -y -p wasm
+        xmake
+
+  build_hv_window:
+    runs-on: windows-latest
+    steps:
+    - name: check out
+      uses: actions/checkout@v3
+    
+    - name: xmake setup
+      uses: xmake-io/github-action-setup-xmake@v1
+      with:
+        xmake-version: latest
+    
+    - name: build runtime_debugger
+      run: |
+        xmake --version
+        cd RuntimeDebugger
+        xmake -v -y
+        dir build

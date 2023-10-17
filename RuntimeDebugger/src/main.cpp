@@ -4,7 +4,6 @@
 
 #include <iostream>
 
-#include "git2.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 //#include "imgui_impl_sdl_opengl3.h"
@@ -43,10 +42,10 @@ int main(int argc,char* args[])
 //    CreateRender(sdl_window,OnImGuiInit,OnImGuiDraw,nullptr,&main_exit);
     std::cout<< "Hello world"<<std::endl;
 
-    git_libgit2_init();
-    git_repository *repo_;
-    int error = git_repository_open(&repo_, "C:/Users/EDY/Desktop/subconverter-action/.git");
-    check_error(error, "opening repository");
+    // git_libgit2_init();
+    // git_repository *repo_;
+    // int error = git_repository_open(&repo_, "C:/Users/EDY/Desktop/subconverter-action/.git");
+    // check_error(error, "opening repository");
 
     App app;
     app.Run();
