@@ -130,6 +130,7 @@ int ImplApp::CreateRender(SDL_Window* window)
     SDL_GL_MakeCurrent(window, gl_context);
     // SDL_GL_SetSwapInterval(1); // Enable vsync
 
+#ifndef __EMSCRIPTEN__
     //Check if Glew OpenGL loader is correct
     int err = glewInit();
     if (err != GLEW_OK)
@@ -138,6 +139,7 @@ int ImplApp::CreateRender(SDL_Window* window)
         fprintf(stderr, "Failed to initialize OpenGL loader!\n");
         return -1;
     }
+#endif
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
