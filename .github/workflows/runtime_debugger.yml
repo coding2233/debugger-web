@@ -24,7 +24,7 @@ jobs:
       run: |
         xmake --version
         cd RuntimeDebugger
-        xmake -y -p wasm
+        xmake f -y -p wasm
         xmake
 
   build_hv_window:
