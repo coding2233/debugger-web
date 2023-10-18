@@ -29,7 +29,7 @@ jobs:
         emcc -v
         cd RuntimeDebugger
         xmake f -y -p wasm
-        xmake
+        xmake RuntimeDebugger
 
   build_hv_window:
     runs-on: windows-latest
@@ -42,9 +42,13 @@ jobs:
       with:
         xmake-version: latest
     
+    - name: emscripten setup
+      uses: mymindstorm/setup-emsdk@v11
+
     - name: build runtime_debugger
       run: |
         xmake --version
+        emcc -v
         # cd RuntimeDebugger
         # xmake -v -y
         # dir build
