@@ -20,17 +20,17 @@
 //    ShowImGuiDemoWindow();
 //}
 
-static void check_error(int error_code, const char *action)
-{
-    const git_error *error = git_error_last();
-    if (!error_code)
-        return;
+// static void check_error(int error_code, const char *action)
+// {
+//     const git_error *error = git_error_last();
+//     if (!error_code)
+//         return;
 
-    printf("Error %d %s - %s\n", error_code, action,
-           (error && error->message) ? error->message : "???");
+//     printf("Error %d %s - %s\n", error_code, action,
+//            (error && error->message) ? error->message : "???");
 
-    exit(1);
-}
+//     exit(1);
+// }
 
 int main(int argc,char* args[])
 {
