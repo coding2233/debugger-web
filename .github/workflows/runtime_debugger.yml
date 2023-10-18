@@ -29,26 +29,26 @@ jobs:
         emcc -v
         cd RuntimeDebugger
         xmake f -y -p wasm
-        xmake RuntimeDebugger
+        xmake
 
-  build_hv_window:
-    runs-on: windows-latest
-    steps:
-    - name: check out
-      uses: actions/checkout@v3
+  # build_hv_window:
+  #   runs-on: windows-latest
+  #   steps:
+  #   - name: check out
+  #     uses: actions/checkout@v3
     
-    - name: xmake setup
-      uses: xmake-io/github-action-setup-xmake@v1
-      with:
-        xmake-version: latest
+  #   - name: xmake setup
+  #     uses: xmake-io/github-action-setup-xmake@v1
+  #     with:
+  #       xmake-version: latest
     
-    - name: emscripten setup
-      uses: mymindstorm/setup-emsdk@v11
+  #   - name: emscripten setup
+  #     uses: mymindstorm/setup-emsdk@v11
 
-    - name: build runtime_debugger
-      run: |
-        xmake --version
-        emcc -v
-        # cd RuntimeDebugger
-        # xmake -v -y
-        # dir build
+  #   - name: build runtime_debugger
+  #     run: |
+  #       xmake --version
+  #       emcc -v
+  #       # cd RuntimeDebugger
+  #       # xmake -v -y
+  #       # dir build
