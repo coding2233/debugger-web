@@ -31,3 +31,10 @@ jobs:
         xmake f -y -p wasm
         xmake
         ls -lah build
+        cd ..
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: runtime-debugger-wasm-artifact
+        path: RuntimeDebugger/
+    
