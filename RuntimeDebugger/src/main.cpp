@@ -17,6 +17,7 @@ App app;
 
 void MainLoop()
 {
+    std::cout<< "emscripten_set_main_loop"<<std::endl;
     app.Run();
 }
 

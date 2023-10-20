@@ -15,6 +15,7 @@ App::~App()
 
 void App::OnImGuiDraw()
 {
+    ImplApp::OnImGuiDraw();
      static bool sss= true;
      if(ImGui::Begin("aaaa",&sss))
      {

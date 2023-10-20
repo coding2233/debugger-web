@@ -36,5 +36,5 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: runtime-debugger-wasm-artifact
-        path: RuntimeDebugger/
+        path: RuntimeDebugger/build/wasm/x64/release/
     
