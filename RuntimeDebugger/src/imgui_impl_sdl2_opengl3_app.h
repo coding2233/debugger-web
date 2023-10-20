@@ -8,6 +8,7 @@
 
 #include <iostream>
 #ifdef __EMSCRIPTEN__
+#include <SDL_opengles2.h>
 #include <emscripten.h>
 #include <GLES3/gl3.h>
 #else

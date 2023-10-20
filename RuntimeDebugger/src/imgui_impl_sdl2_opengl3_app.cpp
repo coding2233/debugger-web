@@ -94,23 +94,19 @@ SDL_Window* ImplApp::CreateWindow(const char* title, int window_width, int windo
     full_title.append(" - ImGui docking ");
     full_title.append(IMGUI_VERSION);
 
+#ifndef __EMSCRIPTEN__
+    window_flags |= SDL_WINDOW_BORDERLESS;
+#endif
+
     auto window = SDL_CreateWindow(
             full_title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, window_width, window_height,
-            SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL | window_flags ); //SDL_WINDOW_RESIZABLE
+            SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL | window_flags ); //SDL_WINDOW_RESIZABLE
     // init_window_icon();
     if (!window) {
         fprintf(stderr, "Error creating window: %s", SDL_GetError());
         // exit(1);
         return nullptr;
     }
-
-    //SDL_SetWindowOpacity(window, 0.5f);
-//    SDL_SetWindowMaximumSize(window,dm.w,dm.h);
-//    SDL_SetWindowFullscreen(window,0);
-//    SDL_SetWindowSize(window,dm.w,dm.h);
-//    SDL_SetWindowPosition(window,0,0);
-//    SDL_MaximizeWindow(window);
-
     return window;
 }
 
