@@ -12,7 +12,6 @@
 
 #include "imgui_impl_sdl2_opengl3_app.h"
 #include "TextEditor.h"
-#include "command/command_view.h"
 
 class App :public ImplApp
 {
@@ -21,7 +20,6 @@ public:
     //App(int width,int height,int flags):ImplApp(width,height,flags);
     ~App();
 private:
-    CommandView command_view_;
 
 public:
     void OnImGuiDraw() override;

@@ -156,94 +156,107 @@ int ImplApp::CreateRender(SDL_Window* window)
     return 0;
 }
 
-void ImplApp::Run()
+
+void ImplApp::RunBefore()
 {
-    auto window = sdl_window_;
-    clock_t clock_start = clock();
+    clock_start_ = clock();
     float default_fps = 60.0f;
-    long frame_rate_time = (1 / default_fps)*1000;
-    long frame = 0;
+    frame_rate_time_ = (1 / default_fps)*1000;
+    frame_ = 0;
+    is_done_ = false;
+    clear_color_ = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+}
 
-    ImVec4 clear_color_ = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-    bool is_done_ = false;
+void ImplApp::RunAfter()
+{
 
-//    bool show_demo=true;
+
+}
+
+void ImplApp::RunLoop()
+{
     while (!is_done_)
     {
-        long target_frame_time = frame * frame_rate_time;
-        clock_t clock_run_time = clock();
-        long run_time = clock_run_time - clock_start;
-        //std::cout << "frame: " << frame << " runTime: " << run_time << " targetTime: " << target_frame_time << std::endl;
+        Run();
+    }
+}
 
-        if (run_time < target_frame_time)
-        {
-            SDL_Delay(target_frame_time - run_time);
+
+void ImplApp::Run()
+{
+    long target_frame_time = frame_ * frame_rate_time_;
+    clock_t clock_run_time = clock();
+    long run_time = clock_run_time - clock_start_;
+    //std::cout << "frame: " << frame << " runTime: " << run_time << " targetTime: " << target_frame_time << std::endl;
+
+    if (run_time < target_frame_time)
+    {
+        SDL_Delay(target_frame_time - run_time);
 //            Sleep(target_frame_time - run_time);
-        }
-        frame++;
+    }
+    frame_++;
 
 
-        //The surface contained by the window
-        // Poll and handle events (inputs, window resize, etc.)
-        // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-        // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
-        // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
-        // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
+    //The surface contained by the sdl_window_
+    // Poll and handle events (inputs, sdl_window_ resize, etc.)
+    // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
+    // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
+    // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
+    // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
 
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
+    SDL_Event event;
+    while (SDL_PollEvent(&event))
+    {
+        if (event.type == SDL_QUIT)
+            is_done_ = true;
+
+        bool imgui_process_event = ImGui_ImplSDL2_ProcessEvent(&event);
+        if (event.type == SDL_WINDOWEVENT)
         {
-            if (event.type == SDL_QUIT)
+            if (event.window.event == SDL_WINDOWEVENT_CLOSE &&
+                event.window.windowID == SDL_GetWindowID(sdl_window_)) {
                 is_done_ = true;
-
-            bool imgui_process_event = ImGui_ImplSDL2_ProcessEvent(&event);
-            if (event.type == SDL_WINDOWEVENT)
+            }
+            else
             {
-                if (event.window.event == SDL_WINDOWEVENT_CLOSE &&
-                    event.window.windowID == SDL_GetWindowID(window)) {
-                    is_done_ = true;
-                }
-                else
+                switch (event.window.event)
                 {
-                    switch (event.window.event)
-                    {
-                        case SDL_WINDOWEVENT_FOCUS_GAINED:
-                            clock_start = clock();
-                            frame = 0;
-                            frame_rate_time = (1 / default_fps) * 1000;
-                            break;
-                        case SDL_WINDOWEVENT_FOCUS_LOST:
-                            clock_start = clock();
-                            frame = 0;
-                            //frame_rate_time = 1000;
-                            frame_rate_time = (1 / 10.0f) * 1000;
-                            break;
-                    }
+                    case SDL_WINDOWEVENT_FOCUS_GAINED:
+                        clock_start_ = clock();
+                        frame_ = 0;
+                        frame_rate_time_ = (1 / 60) * 1000;
+                        break;
+                    case SDL_WINDOWEVENT_FOCUS_LOST:
+                        clock_start_ = clock();
+                        frame_ = 0;
+                        //frame_rate_time = 1000;
+                        frame_rate_time_ = (1 / 10.0f) * 1000;
+                        break;
                 }
             }
-            PollEvent(event);
         }
-
-            // Start the Dear ImGui frame
-            ImGui_ImplOpenGL3_NewFrame();
-            ImGui_ImplSDL2_NewFrame(sdl_window_);
-
-            ImGui::NewFrame();
-        if (!window_resize_dragging_)
-        {
-            ImGuiAppMenuDraw();
-            OnImGuiDraw();
-        }
-            ImGui::Render();
-            ImGuiIO &io = ImGui::GetIO();
-            glViewport(0, 0, (int) io.DisplaySize.x, (int) io.DisplaySize.y);
-            glClearColor(clear_color_.x, clear_color_.y, clear_color_.z, clear_color_.w);
-            glClear(GL_COLOR_BUFFER_BIT);
-
-            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-            SDL_GL_SwapWindow(window);
+        PollEvent(event);
     }
 
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame(sdl_window_);
+
+    ImGui::NewFrame();
+    if (!window_resize_dragging_)
+    {
+        ImGuiAppMenuDraw();
+        OnImGuiDraw();
+    }
+
+    ImGui::Render();
+    ImGuiIO &io = ImGui::GetIO();
+    glViewport(0, 0, (int) io.DisplaySize.x, (int) io.DisplaySize.y);
+    glClearColor(clear_color_.x, clear_color_.y, clear_color_.z, clear_color_.w);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    SDL_GL_SwapWindow(sdl_window_);
 }
 
 void ImplApp::PollEvent(SDL_Event event)

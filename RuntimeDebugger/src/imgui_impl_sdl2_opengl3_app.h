@@ -37,16 +37,28 @@ private:
     bool mouse_pressing_ = false;
 
     SDL_Window* sdl_window_;
+    bool is_done_;
+    long frame_;
+    ImVec4 clear_color_;
+    clock_t clock_start_;
+    long frame_rate_time_;
 
     SDL_Window* CreateWindow(const char* title, int window_width, int window_height, Uint32 window_flags);
     int CreateRender(SDL_Window* window);
     void PollEvent(SDL_Event event);
     void ImGuiAppMenuDraw();
 public:
+    virtual void RunBefore();
+    virtual void RunAfter();
+
+    void RunLoop();
     void Run();
+
     virtual ImGuiContext* OnImGuiContextCreate();
     virtual void OnImGuiAppMenuDraw();
     virtual void OnImGuiDraw();
+
+
 };
 
 

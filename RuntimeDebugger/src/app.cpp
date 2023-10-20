@@ -15,14 +15,11 @@ App::~App()
 
 void App::OnImGuiDraw()
 {
-    command_view_.Render();
-
      static bool sss= true;
      if(ImGui::Begin("aaaa",&sss))
      {
          if(ImGui::Button("close"))
          {
-             command_view_.Run("git --version");
          }
          ImGui::End();
      }
