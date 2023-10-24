@@ -7,15 +7,30 @@
 
 
 #include <iostream>
-#ifdef __EMSCRIPTEN__
+#include <SDL.h>
+#include <stdio.h>
+
+#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#include <OpenGL/glext.h>
+#define glGenVertexArrays glGenVertexArraysAPPLE
+#define glBindVertexArrays glBindVertexArraysAPPLE
+#define glGenVertexArray glGenVertexArrayAPPLE
+#define glBindVertexArray glBindVertexArrayAPPLE
+#else
+#if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <SDL_opengles2.h>
+#else
+#include <SDL_opengl.h>
+#endif
+#endif
+
+#ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #include <GLES3/gl3.h>
 #else
 #include <GL/glew.h>
 #endif
-#include <SDL.h>
-#include <stdio.h>
 
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"

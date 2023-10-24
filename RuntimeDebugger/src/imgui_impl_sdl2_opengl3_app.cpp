@@ -22,12 +22,27 @@ ImplApp::~ImplApp()
 
 SDL_Window* ImplApp::CreateWindow(const char* title, int window_width, int window_height, Uint32 window_flags)
 {
-#ifdef __APPLE__
+
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
+    {
+        std::cout << "Error initializing sdl: " << SDL_GetError() << std::endl;
+        return nullptr;
+    }
+
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+    // GL ES 2.0 + GLSL 100
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#elif defined(__APPLE__)
+    // GL 3.2 Core + GLSL 150
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 #else
+    // GL 3.0 + GLSL 130
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -38,13 +53,9 @@ SDL_Window* ImplApp::CreateWindow(const char* title, int window_width, int windo
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) != 0)
-    {
-        std::cout << "Error initializing sdl: " << SDL_GetError() << std::endl;
-        return nullptr;
-    }
+
     SDL_EnableScreenSaver();
-    SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+    // SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
     // atexit(SDL_Quit);
 
 #ifdef SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR /* Available since 2.0.8 */
@@ -94,13 +105,13 @@ SDL_Window* ImplApp::CreateWindow(const char* title, int window_width, int windo
     full_title.append(" - ImGui docking ");
     full_title.append(IMGUI_VERSION);
 
-#ifndef __EMSCRIPTEN__
-    window_flags |= SDL_WINDOW_BORDERLESS;
-#endif
+// #ifndef __EMSCRIPTEN__
+//     window_flags |= SDL_WINDOW_BORDERLESS;
+// #endif
 
     auto window = SDL_CreateWindow(
             full_title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, window_width, window_height,
-            SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL | window_flags ); //SDL_WINDOW_RESIZABLE
+            SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_OPENGL| SDL_WINDOW_RESIZABLE | window_flags ); //
     // init_window_icon();
     if (!window) {
         fprintf(stderr, "Error creating window: %s", SDL_GetError());
@@ -113,13 +124,15 @@ SDL_Window* ImplApp::CreateWindow(const char* title, int window_width, int windo
 
 int ImplApp::CreateRender(SDL_Window* window)
 {
-    // Decide GL+GLSL versions
-#ifdef __APPLE__
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+    // GL ES 2.0 + GLSL 100
+    const char *glsl_version = "#version 100";
+#elif defined(__APPLE__)
     // GL 3.2 Core + GLSL 150
-    const char*  glsl_version_ = "#version 150";
+    const char *glsl_version = "#version 150";
 #else
     // GL 3.0 + GLSL 130
-    const char* glsl_version_ = "#version 130";
+    const char *glsl_version = "#version 130";
 #endif
 
     auto gl_context = SDL_GL_CreateContext(window);
@@ -147,7 +160,7 @@ int ImplApp::CreateRender(SDL_Window* window)
 
     //  // Setup Platform/Renderer backends
     ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
-    ImGui_ImplOpenGL3_Init(glsl_version_);
+    ImGui_ImplOpenGL3_Init(glsl_version);
 
     return 0;
 }
@@ -231,7 +244,7 @@ void ImplApp::Run()
                 }
             }
         }
-        PollEvent(event);
+        // PollEvent(event);
     }
 
     // Start the Dear ImGui frame
