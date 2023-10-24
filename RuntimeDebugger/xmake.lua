@@ -4,6 +4,7 @@ add_requires("libsdl",{alias="sdl"})
 
 -- xmake f -p wasm
 if is_plat("wasm") then
+    -- xmake f -v -y -p wasm --links=websocket.js
     target("RuntimeDebugger")
         set_license("MIT")
         set_kind("binary")
@@ -11,7 +12,7 @@ if is_plat("wasm") then
         set_arch("x64")
         add_files("imgui/**.cpp", "src/**.cpp")
         add_includedirs("imgui","imgui/backends","src")
-        add_packages("sdl")
+        add_packages("sdl","curl")
 else
     -- xmake f -p windows -a x64
     add_requires("glew")
@@ -27,7 +28,6 @@ else
         add_includedirs("imgui","imgui/backends","src")
         add_packages("sdl","glew","opengl")
 end
-
 
 -- 生成clion可识别的 compile_commands
 -- xmake project -k compile_commands
