@@ -1,4 +1,5 @@
 add_requires("libsdl",{alias="sdl"})
+
 -- add_requires("libcurl",{alias="curl"})
 -- add_requires("libgit2", {configs = {shared = true}})
 
@@ -12,7 +13,8 @@ if is_plat("wasm") then
         set_arch("x64")
         add_files("imgui/**.cpp", "src/**.cpp")
         add_includedirs("imgui","imgui/backends","src")
-        add_packages("sdl","curl")
+        add_files("protobuf-wasm/lib/libprotobuf-c.a","protobuf-wasm/lib/libprotobuf.a")
+        add_packages("sdl")
 else
     -- xmake f -p windows -a x64
     add_requires("glew")
@@ -24,7 +26,7 @@ else
         set_kind("binary")
         set_languages("cxx17")
         set_arch("x64")
-        add_files("imgui/**.cpp", "src/**.cpp")
+        add_files("imgui/**.cpp", "src/**.cpp","protocol/**.cc")
         add_includedirs("imgui","imgui/backends","src")
         add_packages("sdl","glew","opengl")
 end
