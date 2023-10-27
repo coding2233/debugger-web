@@ -16,7 +16,7 @@
 #include "imgui_impl_sdl2_opengl3_app.h"
 #include "app.h"
 
-
+#ifdef __EMSCRIPTEN__
 EM_BOOL onopen(int eventType, const EmscriptenWebSocketOpenEvent *websocketEvent, void *userData) {
     puts("onopen");
 
@@ -51,7 +51,7 @@ EM_BOOL onmessage(int eventType, const EmscriptenWebSocketMessageEvent *websocke
     }
     return EM_TRUE;
 }
-
+#endif
 
 App app;
 
@@ -63,7 +63,7 @@ void MainLoop()
 int main(int argc,char* args[])
 {
     std::cout<< "Hello world"<<std::endl;
-
+#ifdef __EMSCRIPTEN__
     if (!emscripten_websocket_is_supported()) {
         return 0;
     }
@@ -78,7 +78,7 @@ int main(int argc,char* args[])
     emscripten_websocket_set_onerror_callback(ws, NULL, onerror);
     emscripten_websocket_set_onclose_callback(ws, NULL, onclose);
     emscripten_websocket_set_onmessage_callback(ws, NULL, onmessage);
-
+#endif
 
     app.RunBefore();
 #ifdef __EMSCRIPTEN__

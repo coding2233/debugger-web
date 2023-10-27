@@ -14,6 +14,8 @@ if is_plat("wasm") then
         add_files("imgui/**.cpp", "src/**.cpp")
         add_includedirs("imgui","imgui/backends","src")
         add_files("protobuf-wasm/lib/libprotobuf-c.a","protobuf-wasm/lib/libprotobuf.a")
+        add_includedirs("protobuf-wasm/include")
+        add_files("protocol/**.c")
         add_packages("sdl")
 else
     -- xmake f -p windows -a x64
