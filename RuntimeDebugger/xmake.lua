@@ -30,6 +30,9 @@ else
         set_arch("x64")
         add_files("imgui/**.cpp", "src/**.cpp","protocol/**.cc")
         add_includedirs("imgui","imgui/backends","src")
+        add_files("protobuf-wasm/lib/libprotobuf-c.a","protobuf-wasm/lib/libprotobuf.a")
+        add_includedirs("protobuf-wasm/include")
+        add_files("protocol/**.c")
         add_packages("sdl","glew","opengl")
 end
 
