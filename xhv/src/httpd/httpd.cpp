@@ -4,6 +4,9 @@
 #include "hv/iniparser.h"
 
 #include "hv/HttpServer.h"
+#include "hv/WebSocketServer.h"
+#include "hv/htime.h"
+#include "hv/EventLoop.h"
 
 #include "router.h"
 
@@ -128,7 +131,33 @@ int parse_confile(const char* confile) {
     if (port == 0) {
         port = ini.Get<int>("http_port");
     }
+
+    static WebSocketService ws;
+    ws.onopen = [](const WebSocketChannelPtr& channel, const HttpRequestPtr& req) {
+        printf("onopen: GET %s\n", req->Path().c_str());
+        // send(time) every 1s
+        hv::setInterval(1000, [channel](hv::TimerID id) {
+            if (channel->isConnected()) {
+                char str[DATETIME_FMT_BUFLEN] = {0};
+                datetime_t dt = datetime_now();
+                datetime_fmt(&dt, str);
+                channel->send(str);
+            } else {
+                hv::killTimer(id);
+            }
+        });
+    };
+    ws.onmessage = [](const WebSocketChannelPtr& channel, const std::string& msg) {
+        printf("onmessage: %s\n", msg.c_str());
+    };
+    ws.onclose = [](const WebSocketChannelPtr& channel) {
+        printf("onclose\n");
+    };
+
+
     g_http_server.port = port;
+    g_http_server.ws = &ws;
+
     // https_port
     if (HV_WITH_SSL) {
         g_http_server.https_port = ini.Get<int>("https_port");
