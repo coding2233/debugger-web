@@ -10,6 +10,13 @@
 #include <SDL.h>
 #include <stdio.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#include <GLES3/gl3.h>
+#else
+#include <GL/glew.h>
+#endif
+
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
 #include <OpenGL/glext.h>
@@ -23,13 +30,6 @@
 #else
 #include <SDL_opengl.h>
 #endif
-#endif
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#include <GLES3/gl3.h>
-#else
-#include <GL/glew.h>
 #endif
 
 #include "imgui.h"
