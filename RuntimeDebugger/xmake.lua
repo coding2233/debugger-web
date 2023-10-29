@@ -22,6 +22,7 @@ else
     add_requires("glew")
     add_requires("opengl")
     add_requires("protobuf-c")
+    add_requires("libcurl")
     -- vs开发使用
     add_rules("mode.release","mode.debug")
     target("RuntimeDebugger")
@@ -31,10 +32,9 @@ else
         set_arch("x64")
         add_files("imgui/**.cpp", "src/**.cpp")
         add_includedirs("imgui","imgui/backends","src")
-        add_files("protobuf-wasm/lib/libprotobuf-c.a","protobuf-wasm/lib/libprotobuf.a")
-        add_includedirs("protobuf-wasm/include","protocol")
+        add_includedirs("protocol")
         add_files("protocol/**.c")
-        add_packages("sdl","glew","opengl")
+        add_packages("sdl","glew","opengl","protobuf-c","libcurl")
 end
 
 -- 生成clion可识别的 compile_commands
