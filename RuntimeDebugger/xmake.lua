@@ -15,6 +15,7 @@ if is_plat("wasm") then
         add_includedirs("imgui","imgui/backends","src")
         add_files("protobuf-wasm/lib/libprotobuf-c.a","protobuf-wasm/lib/libprotobuf.a")
         add_includedirs("protobuf-wasm/include")
+        add_includedirs("protocol")
         add_files("protocol/**.c")
         add_packages("sdl")
 else
