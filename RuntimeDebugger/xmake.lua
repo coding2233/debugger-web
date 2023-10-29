@@ -23,7 +23,7 @@ else
     add_requires("glew")
     add_requires("opengl")
     add_requires("protobuf-c")
-    add_requires("libcurl")
+    -- add_requires("libcurl")
     -- vs开发使用
     add_rules("mode.release","mode.debug")
     target("RuntimeDebugger")
@@ -35,7 +35,7 @@ else
         add_includedirs("imgui","imgui/backends","src")
         add_includedirs("protocol")
         add_files("protocol/**.c")
-        add_packages("sdl","glew","opengl","protobuf-c","libcurl")
+        add_packages("sdl","glew","opengl","protobuf-c")
 end
 
 -- 生成clion可识别的 compile_commands

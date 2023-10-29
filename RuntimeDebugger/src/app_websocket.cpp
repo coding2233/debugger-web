@@ -6,7 +6,7 @@
 
 #ifdef __EMSCRIPTEN__
 
-EM_BOOL AppWebsocket::onopen(int eventType, const EmscriptenWebSocketOpenEvent* websocketEvent, void* userData) {
+EM_BOOL onopen(int eventType, const EmscriptenWebSocketOpenEvent* websocketEvent, void* userData) {
     puts("onopen");
     websocket_event_ = websocketEvent;
 
@@ -17,19 +17,24 @@ EM_BOOL AppWebsocket::onopen(int eventType, const EmscriptenWebSocketOpenEvent* 
     }*/
     return EM_TRUE;
 }
-EM_BOOL AppWebsocket::onerror(int eventType, const EmscriptenWebSocketErrorEvent* websocketEvent, void* userData) {
+EM_BOOL onerror(int eventType, const EmscriptenWebSocketErrorEvent* websocketEvent, void* userData) {
     puts("onerror");
 
     return EM_TRUE;
 }
-EM_BOOL AppWebsocket::onclose(int eventType, const EmscriptenWebSocketCloseEvent* websocketEvent, void* userData) {
+EM_BOOL onclose(int eventType, const EmscriptenWebSocketCloseEvent* websocketEvent, void* userData) {
     puts("onclose");
 
     return EM_TRUE;
 }
-EM_BOOL AppWebsocket::onmessage(int eventType, const EmscriptenWebSocketMessageEvent* websocketEvent, void* userData) {
+EM_BOOL onmessage(int eventType, const EmscriptenWebSocketMessageEvent* websocketEvent, void* userData) {
     puts("onmessage");
-    data_queue_.push(websocketEvent->data);
+
+    if (userData != nullptr)
+    {
+        AppWebsocket* appWebsocket = (AppWebsocket*)userData;
+        appWebsocket->AddData(websocketEvent->data);
+    }
     //if (websocketEvent->isText) {
     //    // For only ascii chars.
     //    printf("message: %s\n", websocketEvent->data);
@@ -50,7 +55,7 @@ AppWebsocket::AppWebsocket()
 #ifdef __EMSCRIPTEN__
     websocket_event_ = nullptr;
 #else
-    websocket_curl_ = nullptr;
+    //websocket_curl_ = nullptr;
 #endif
 }
 
@@ -79,27 +84,33 @@ int AppWebsocket::Connect(const char* websocket_address)
     emscripten_websocket_set_onclose_callback(ws, this, onclose);
     emscripten_websocket_set_onmessage_callback(ws, this, onmessage);
 #else
-    websocket_curl_ = curl_easy_init();
-    //m_mediaURL填ws接口地址如 ws://xxxx.xxxx.net:8080/BlService
-    curl_easy_setopt(websocket_curl_, CURLOPT_URL, websocket_address);
+    //curl_global_init(CURL_GLOBAL_WIN32);
+   // websocket_curl_ = curl_easy_init();
+   // printf("curl_easy_init: %d\n", (int)websocket_curl_);
+   // //m_mediaURL填ws接口地址如 ws://xxxx.xxxx.net:8080/BlService
+   // curl_easy_setopt(websocket_curl_, CURLOPT_URL, websocket_address);
+   // //curl_easy_setopt(websocket_curl_, CURLOPT_USE_SSL, false);
+   ///* curl_easy_setopt(websocket_curl_, CURLOPT_SSL_VERIFYPEER, false);
+   // curl_easy_setopt(websocket_curl_, CURLOPT_SSL_VERIFYHOST, false);*/
+   // //curl_easy_setopt(websocket_curl_, CURLOPT_ERRORBUFFER, true);
+   // // Set other options as needed (e.g. TLS/HTTPS options)
+   // curl_easy_setopt(websocket_curl_, CURLOPT_TIMEOUT_MS, 3000);
 
-    // Set other options as needed (e.g. TLS/HTTPS options)
-    curl_easy_setopt(websocket_curl_, CURLOPT_TIMEOUT_MS, 3000);
-
-    // Perform a regular transfer with CONNECT_ONLY set to enable WebSocket mode
-    //注意要使用websocket模式时这里要填2
-    curl_easy_setopt(websocket_curl_, CURLOPT_CONNECT_ONLY, (long)2);
-    CURLcode code = (CURLcode)-1;
-    code = curl_easy_perform(websocket_curl_);
-    if (code == CURLE_OK) {
-        return 0;
-    }
-    else
-    {
-        curl_easy_cleanup(websocket_curl_);
-        websocket_curl_ = NULL;
-        return -1;
-    }
+   // // Perform a regular transfer with CONNECT_ONLY set to enable WebSocket mode
+   // //注意要使用websocket模式时这里要填2
+   // curl_easy_setopt(websocket_curl_, CURLOPT_CONNECT_ONLY, (long)2);
+   // CURLcode code = (CURLcode)-1;
+   // code = curl_easy_perform(websocket_curl_);
+   // printf("curl_easy_perform: %d\n", code);
+   // if (code == CURLE_OK) {
+   //     return 0;
+   // }
+   // else
+   // {
+   //     curl_easy_cleanup(websocket_curl_);
+   //     websocket_curl_ = NULL;
+   //     return -1;
+   // }
 #endif
     return 0;
 }
@@ -117,10 +128,10 @@ void AppWebsocket::Close()
         }
     }
 #else
-    if (websocket_curl_)
+  /*  if (websocket_curl_)
     {
         curl_easy_cleanup(websocket_curl_);
-    }
+    }*/
 #endif
 }
 
@@ -134,11 +145,11 @@ void AppWebsocket::Send(const void* data, size_t size)
         result = emscripten_websocket_send_binary(websocket_event_->socket, data, size);
     }
 #else
-    if (websocket_curl_)
+  /*  if (websocket_curl_)
     {
         size_t sended = 0;
         CURLcode  res = curl_ws_send(websocket_curl_, data, size, &sended, 0, CURLWS_BINARY);
-    }
+    }*/
 #endif
 }
 
@@ -151,7 +162,7 @@ int AppWebsocket::Recv(void* data,size_t size, size_t* recv_size)
         return 0;
     }
 #else
-    if (websocket_curl_)
+   /* if (websocket_curl_)
     {
         size_t rlen;
         struct curl_ws_frame* meta;
@@ -160,7 +171,14 @@ int AppWebsocket::Recv(void* data,size_t size, size_t* recv_size)
         {
             return 0;
         }
-    }
+    }*/
 #endif
     return -1;
 }
+
+#ifdef __EMSCRIPTEN__
+void AppWebsocket::AddData(void* data)
+{
+    data_queue_.push(data);
+}
+#endif
