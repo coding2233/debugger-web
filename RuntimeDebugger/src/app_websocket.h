@@ -36,12 +36,13 @@ public:
 
 #ifdef __EMSCRIPTEN__
 	void AddData(void* data);
+	void SetWebSocketEvent(const EmscriptenWebSocketOpenEvent* websocket_event);
 #endif
 
 private:
 #ifdef __EMSCRIPTEN__
 	std::queue<void*> data_queue_;
-	EmscriptenWebSocketOpenEvent* websocket_event_;
+	const EmscriptenWebSocketOpenEvent* websocket_event_;
 #else
 	//CURL* websocket_curl_;
 #endif

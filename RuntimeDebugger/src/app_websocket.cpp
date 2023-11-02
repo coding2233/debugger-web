@@ -8,8 +8,8 @@
 
 EM_BOOL onopen(int eventType, const EmscriptenWebSocketOpenEvent* websocketEvent, void* userData) {
     puts("onopen");
-    websocket_event_ = websocketEvent;
-
+    AppWebsocket* app_websocket = (AppWebsocket*)userData;
+    app_websocket->SetWebSocketEvent(websocketEvent);
    /* EMSCRIPTEN_RESULT result;
     result = emscripten_websocket_send_utf8_text(websocketEvent->socket, "hello world");
     if (result) {
@@ -170,7 +170,7 @@ void AppWebsocket::Send(const void* data, size_t size)
     if (websocket_event_)
     {
         EMSCRIPTEN_RESULT result;
-        result = emscripten_websocket_send_binary(websocket_event_->socket, data, size);
+        result = emscripten_websocket_send_binary(websocket_event_->socket, (void*)data, size);
     }
 #else
   /*  if (websocket_curl_)
@@ -186,7 +186,8 @@ int AppWebsocket::Recv(void* data,size_t size, size_t* recv_size)
 #ifdef __EMSCRIPTEN__
     if (data_queue_.size() > 0)
     {
-        data = data_queue_.pop();
+        data = data_queue_.front();
+        data_queue_.pop();
         return 0;
     }
 #else
@@ -208,5 +209,10 @@ int AppWebsocket::Recv(void* data,size_t size, size_t* recv_size)
 void AppWebsocket::AddData(void* data)
 {
     data_queue_.push(data);
+}
+
+void AppWebsocket::SetWebSocketEvent(const EmscriptenWebSocketOpenEvent* websocket_event)
+{
+    websocket_event_ = websocket_event;
 }
 #endif
