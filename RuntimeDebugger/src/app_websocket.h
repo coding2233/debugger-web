@@ -6,12 +6,21 @@
 #define RUNTIMEDEBUGGER_APP_WEBSOCKET_H
 
 #include <queue>
+#include <stdio.h>
+#include <string>
+#include <assert.h>
+#include <memory>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #include <emscripten/websocket.h>
 #else
-//#include "light_websocket_client.hpp"
+#include "easywsclient.hpp"
+#ifdef _WIN32
+#pragma comment( lib, "ws2_32" )
+#include <WinSock2.h>
+#endif
+using easywsclient::WebSocket;
 #endif
 
 class AppWebsocket 
