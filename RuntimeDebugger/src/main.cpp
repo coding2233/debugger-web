@@ -10,6 +10,7 @@
 #include <emscripten.h>
 #endif
 
+
 #define STB_IMAGE_IMPLEMENTATION
 
 #include "imgui_impl_sdl2_opengl3_app.h"
