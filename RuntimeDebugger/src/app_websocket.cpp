@@ -36,34 +36,6 @@ AppWebsocket::~AppWebsocket()
 #endif
 }
 
-// int AppWebsocket::Connect(const char* websocket_address)
-// {
-// #ifdef __EMSCRIPTEN__
-//     if (!emscripten_websocket_is_supported()) 
-//     {
-//         return -1;
-//     }
-//     EmscriptenWebSocketCreateAttributes ws_attrs = {
-//         websocket_address,
-//         NULL,
-//         EM_TRUE
-//     };
-
-//     EMSCRIPTEN_WEBSOCKET_T ws = emscripten_websocket_new(&ws_attrs);
-//     emscripten_websocket_set_onopen_callback(ws, this, onopen);
-//     emscripten_websocket_set_onerror_callback(ws, this, onerror);
-//     emscripten_websocket_set_onclose_callback(ws, this, onclose);
-//     emscripten_websocket_set_onmessage_callback(ws, this, onmessage);
-// #else
-
-//  std::unique_ptr<WebSocket> ws(WebSocket::from_url(websocket_address));
-
-
-  
-// #endif
-//     return 0;
-// }
-
 
 std::unique_ptr<WebSocket> AppWebsocket::Connect(const char* websocket_address)
 {
