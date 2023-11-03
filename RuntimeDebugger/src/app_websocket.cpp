@@ -7,7 +7,6 @@
 AppWebsocket::AppWebsocket()
 {
 #ifdef __EMSCRIPTEN__
-    websocket_event_ = nullptr;
 #else
 #ifdef _WIN32
     INT rc;
@@ -39,7 +38,8 @@ AppWebsocket::~AppWebsocket()
 
 std::unique_ptr<WebSocket> AppWebsocket::Connect(const char* websocket_address)
 {
-         std::unique_ptr<WebSocket> ws(WebSocket::from_url(websocket_address));
+    std::unique_ptr<WebSocket> ws(WebSocket::from_url(websocket_address));
+    return ws;
          //    std::unique_ptr<WebSocket> ws(WebSocket::from_url("ws://localhost:8126/foo"));
 //     assert(ws);
 //     ws->send("goodbye");
@@ -52,7 +52,7 @@ std::unique_ptr<WebSocket> AppWebsocket::Connect(const char* websocket_address)
 //             if (message == "world") { wsp->close(); }
 //         });
 //     }
-return ws;
+return NULL;
 }
 
 
