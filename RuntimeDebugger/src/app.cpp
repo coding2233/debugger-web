@@ -4,7 +4,7 @@
 
 #include "app.h"
 
-#include "runtime_debugger_log.pb-c.h"
+// #include "runtime_debugger_log.pb-c.h"
 #include "app_websocket.h"
 
 
@@ -53,6 +53,27 @@ void App::OnImGuiDraw()
                 ws->send("close");
             }
          }
+
+        if(ImGui::Button("test message"))
+        {
+            // RuntimeDebugger__LogNode log_node = RUNTIME_DEBUGGER__LOG_NODE__INIT;
+            // log_node.log_message = "test log_node.log_message";
+            // log_node.log_stack_track = "test log_node.log_stack_track";
+            // log_node.log_frame_count = 10000;
+            // log_node.log_time = "999999";
+            // size_t len = runtime_debugger__log_node__get_packed_size(&log_node);
+
+            // std::vector<uint8_t> message(1024*10);
+            // size_t size = runtime_debugger__log_node__pack(&log_node,message.data());
+            // message.resize(size);
+            // size_t len = runtime_debugger__log_node__get_packed_size(&log_node);
+            // const std::vector<uint8_t> &send_message = message;
+            if(ws)
+            {
+                // ws->sendBinary(message);
+            }
+        }
+
          ImGui::End();
      }
 
