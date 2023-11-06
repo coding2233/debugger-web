@@ -1,3 +1,5 @@
+#include <string>
+
 #include "hv/hv.h"
 #include "hv/hssl.h"
 #include "hv/hmain.h"
@@ -9,6 +11,7 @@
 #include "hv/EventLoop.h"
 
 #include "router.h"
+#include "httpd_export.h"
 
 hv::HttpServer  g_http_server;
 hv::HttpService g_http_service;
@@ -132,31 +135,7 @@ int parse_confile(const char* confile) {
         port = ini.Get<int>("http_port");
     }
 
-    static WebSocketService ws;
-    ws.onopen = [](const WebSocketChannelPtr& channel, const HttpRequestPtr& req) {
-        printf("onopen: GET %s\n", req->Path().c_str());
-        // send(time) every 1s
-        hv::setInterval(1000, [channel](hv::TimerID id) {
-            if (channel->isConnected()) {
-                char str[DATETIME_FMT_BUFLEN] = {0};
-                datetime_t dt = datetime_now();
-                datetime_fmt(&dt, str);
-                channel->send(str);
-            } else {
-                hv::killTimer(id);
-            }
-        });
-    };
-    ws.onmessage = [](const WebSocketChannelPtr& channel, const std::string& msg) {
-        printf("onmessage: %s\n", msg.c_str());
-    };
-    ws.onclose = [](const WebSocketChannelPtr& channel) {
-        printf("onclose\n");
-    };
-
-
     g_http_server.port = port;
-    g_http_server.ws = &ws;
 
     // https_port
     if (HV_WITH_SSL) {
@@ -289,4 +268,109 @@ int main(int argc, char** argv) {
     g_http_server.registerHttpService(&g_http_service);
     g_http_server.run();
     return ret;
+}
+
+
+int CreateHttpService(int port,const char* config_path)
+{
+    int argc = 4;
+    char* argv[4];
+    argv[0] = "-p";
+    argv[1] = (char*)std::to_string(port).c_str();
+    argv[2] = "-c";
+    argv[3] = (char*)config_path;
+    // g_main_ctx
+    main_ctx_init(argc, argv);
+    //int ret = parse_opt(argc, argv, options);
+    int ret = parse_opt_long(argc, argv, long_options, ARRAY_SIZE(long_options));
+    if (ret != 0) {
+        print_help();
+        exit(ret);
+    }
+
+    // help
+    if (get_arg("h")) {
+        print_help();
+        exit(0);
+    }
+
+    // version
+    if (get_arg("v")) {
+        print_version();
+        exit(0);
+    }
+
+    // parse_confile
+    const char* confile = get_arg("c");
+    if (confile) {
+        strncpy(g_main_ctx.confile, confile, sizeof(g_main_ctx.confile));
+    }
+    parse_confile(g_main_ctx.confile);
+
+    // test
+    if (get_arg("t")) {
+        printf("Test confile [%s] OK!\n", g_main_ctx.confile);
+        exit(0);
+    }
+
+    // signal
+    signal_init(on_reload);
+    const char* signal = get_arg("s");
+    if (signal) {
+        signal_handle(signal);
+    }
+
+    // pidfile
+    create_pidfile();
+
+    // http_server
+    Router::Register(g_http_service);
+    g_http_server.registerHttpService(&g_http_service);
+
+    return ret;
+}
+void RunHttpService()
+{
+    g_http_server.run();
+}
+
+void BindWebSocketService(OnWebSocketOpen on_open,OnWebSocketMessage on_message,OnWebSocketClose on_close)
+{
+    static WebSocketService ws;
+    ws.onopen = [&](const WebSocketChannelPtr& channel, const HttpRequestPtr& req) {
+        printf("onopen: GET %s\n", req->Path().c_str());
+        on_open(channel,req->Path().c_str());
+        // send(time) every 1s
+        // hv::setInterval(1000, [channel](hv::TimerID id) {
+        //     if (channel->isConnected()) {
+        //         char str[DATETIME_FMT_BUFLEN] = {0};
+        //         datetime_t dt = datetime_now();
+        //         datetime_fmt(&dt, str);
+        //         channel->send(str);
+        //     } else {
+        //         hv::killTimer(id);
+        //     }
+        // });
+    };
+    ws.onmessage = [&](const WebSocketChannelPtr& channel, const std::string& msg) {
+        printf("onmessage: %s\n", msg.c_str());
+        on_message(channel,msg);
+    };
+    ws.onclose = [&](const WebSocketChannelPtr& channel) {
+        printf("onclose\n");
+        on_close(channel);
+    };
+
+    g_http_server.ws = &ws;
+}
+
+void WebSocketSend(const WebSocketChannelPtr& channel,const char* message)
+{
+    if(channel)
+    {
+        if (channel->isConnected()) 
+        {
+            channel->send(message);
+        } 
+    }
 }

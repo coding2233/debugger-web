@@ -531,6 +531,27 @@ easywsclient::WebSocket::pointer from_url(const std::string& url, bool useMask, 
     return easywsclient::WebSocket::pointer(new _RealWebSocket(sockfd, useMask));
 }
 
+void WindowsWSAStartup()
+{
+#ifdef _WIN32
+    static bool wsa_startup;
+    if(!wsa_startup)
+    {
+        INT rc;
+        WSADATA wsaData;
+
+        rc = WSAStartup(MAKEWORD(2, 2), &wsaData);
+        if (rc) {
+            printf("WSAStartup Failed.\n");
+        }
+        else
+        {
+           wsa_startup=true;
+        }
+    }
+#endif
+}
+
 } // end of module-only namespace
 
 
@@ -544,10 +565,12 @@ WebSocket::pointer WebSocket::create_dummy() {
 
 
 WebSocket::pointer WebSocket::from_url(const std::string& url, const std::string& origin) {
+    WindowsWSAStartup();
     return ::from_url(url, true, origin);
 }
 
 WebSocket::pointer WebSocket::from_url_no_mask(const std::string& url, const std::string& origin) {
+    WindowsWSAStartup();
     return ::from_url(url, false, origin);
 }
 
