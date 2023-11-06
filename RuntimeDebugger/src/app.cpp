@@ -7,11 +7,23 @@
 // #include "runtime_debugger_log.pb-c.h"
 #include "app_websocket.h"
 
+#include "nlohmann/json.hpp"
+using json = nlohmann::json;
+
 
 static std::unique_ptr<WebSocket> ws;
 
 App::App():ImplApp("",1280,800,0)
 {
+    json ex1 = json::parse(R"(
+    {
+        "pi": 3.141,
+        "happy": true
+    }
+    )");
+
+    std::cout << ex1.dump() << std::endl;
+
     // app_web_socket_ = new AppWebsocket();
     // app_web_socket_->Connect("ws://127.0.0.1:12233");
     static AppWebsocket app_websocket_;
