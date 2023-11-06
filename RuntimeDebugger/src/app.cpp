@@ -4,14 +4,26 @@
 
 #include "app.h"
 
-#include "runtime_debugger_log.pb-c.h"
+// #include "runtime_debugger_log.pb-c.h"
 #include "app_websocket.h"
+
+#include "nlohmann/json.hpp"
+using json = nlohmann::json;
 
 
 static std::unique_ptr<WebSocket> ws;
 
 App::App():ImplApp("",1280,800,0)
 {
+    json ex1 = json::parse(R"(
+    {
+        "pi": 3.141,
+        "happy": true
+    }
+    )");
+
+    std::cout << ex1.dump() << std::endl;
+
     // app_web_socket_ = new AppWebsocket();
     // app_web_socket_->Connect("ws://127.0.0.1:12233");
     static AppWebsocket app_websocket_;
@@ -53,6 +65,27 @@ void App::OnImGuiDraw()
                 ws->send("close");
             }
          }
+
+        if(ImGui::Button("test message"))
+        {
+            // RuntimeDebugger__LogNode log_node = RUNTIME_DEBUGGER__LOG_NODE__INIT;
+            // log_node.log_message = "test log_node.log_message";
+            // log_node.log_stack_track = "test log_node.log_stack_track";
+            // log_node.log_frame_count = 10000;
+            // log_node.log_time = "999999";
+            // size_t len = runtime_debugger__log_node__get_packed_size(&log_node);
+
+            // std::vector<uint8_t> message(1024*10);
+            // size_t size = runtime_debugger__log_node__pack(&log_node,message.data());
+            // message.resize(size);
+            // size_t len = runtime_debugger__log_node__get_packed_size(&log_node);
+            // const std::vector<uint8_t> &send_message = message;
+            if(ws)
+            {
+                // ws->sendBinary(message);
+            }
+        }
+
          ImGui::End();
      }
 
