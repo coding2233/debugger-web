@@ -18,16 +18,20 @@
 
 #define EXPORT_API EXTERN API
 
+#include <string>
+#include <sstream>
+#include <vector>
+
 #include "hv/WebSocketServer.h"
 
 typedef void (*OnWebSocketOpen)(const WebSocketChannelPtr& channel, const char* req_path);
-typedef void (*OnWebSocketMessage)(const WebSocketChannelPtr& channel, const std::string& msg);
+typedef void (*OnWebSocketMessage)(const WebSocketChannelPtr& channel, const uint8_t* data,int size);
 typedef void (*OnWebSocketClose)(const WebSocketChannelPtr& channel);
 
-EXPORT_API int CreateHttpService(int port,const char* config_path);
+EXPORT_API int CreateHttpService(int port);
 EXPORT_API void RunHttpService();
 EXPORT_API void BindWebSocketService(OnWebSocketOpen on_open,OnWebSocketMessage on_message,OnWebSocketClose on_close);
+EXPORT_API void WebSocketSendBinary(const WebSocketChannelPtr& channel,const uint8_t* data,int size);
 EXPORT_API void WebSocketSend(const WebSocketChannelPtr& channel,const char* message);
-
 
 #endif

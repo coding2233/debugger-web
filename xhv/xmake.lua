@@ -14,7 +14,7 @@ target("xhv")
     end
     set_languages("cxx17")
     -- set_arch("x64")
-    add_files("main.cpp","src/**.cpp")
+    add_files("src/**.cpp")
     add_packages("libhv")
     if is_plat("windows") then
         add_defines("TEST")
@@ -24,7 +24,7 @@ target("xhv_test")
     set_kind("binary")
     set_languages("cxx17")
     -- set_arch("x64")
-    add_files("main.cpp","src/**.cpp")
+    add_files("src/**.cpp")
     add_packages("libhv")
     if is_plat("windows") then
         add_defines("TEST")

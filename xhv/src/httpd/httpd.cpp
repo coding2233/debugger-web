@@ -1,5 +1,3 @@
-#include <string>
-
 #include "hv/hv.h"
 #include "hv/hssl.h"
 #include "hv/hmain.h"
@@ -206,7 +204,7 @@ static void on_reload(void* userdata) {
     parse_confile(g_main_ctx.confile);
 }
 
-int main(int argc, char** argv) {
+int main002(int argc, char** argv) {
     // g_main_ctx
     main_ctx_init(argc, argv);
     //int ret = parse_opt(argc, argv, options);
@@ -229,24 +227,24 @@ int main(int argc, char** argv) {
     }
 
     // parse_confile
-    const char* confile = get_arg("c");
-    if (confile) {
-        strncpy(g_main_ctx.confile, confile, sizeof(g_main_ctx.confile));
-    }
-    parse_confile(g_main_ctx.confile);
-
-    // test
-    if (get_arg("t")) {
-        printf("Test confile [%s] OK!\n", g_main_ctx.confile);
-        exit(0);
-    }
+//    const char* confile = get_arg("c");
+//    if (confile) {
+//        strncpy(g_main_ctx.confile, confile, sizeof(g_main_ctx.confile));
+//    }
+//    parse_confile(g_main_ctx.confile);
+//
+//    // test
+//    if (get_arg("t")) {
+//        printf("Test confile [%s] OK!\n", g_main_ctx.confile);
+//        exit(0);
+//    }
 
     // signal
-    signal_init(on_reload);
-    const char* signal = get_arg("s");
-    if (signal) {
-        signal_handle(signal);
-    }
+//    signal_init(on_reload);
+//    const char* signal = get_arg("s");
+//    if (signal) {
+//        signal_handle(signal);
+//    }
 
 #ifdef OS_UNIX
     // daemon
@@ -261,7 +259,7 @@ int main(int argc, char** argv) {
 #endif
 
     // pidfile
-    create_pidfile();
+//    create_pidfile();
 
     // http_server
     Router::Register(g_http_service);
@@ -270,107 +268,103 @@ int main(int argc, char** argv) {
     return ret;
 }
 
-
-int CreateHttpService(int port,const char* config_path)
+int main(int argc, char** argv)
 {
-    int argc = 4;
-    char* argv[4];
-    argv[0] = "-p";
-    argv[1] = (char*)std::to_string(port).c_str();
-    argv[2] = "-c";
-    argv[3] = (char*)config_path;
-    // g_main_ctx
-    main_ctx_init(argc, argv);
-    //int ret = parse_opt(argc, argv, options);
-    int ret = parse_opt_long(argc, argv, long_options, ARRAY_SIZE(long_options));
-    if (ret != 0) {
-        print_help();
-        exit(ret);
-    }
+    int ret = CreateHttpService(2233);
+    BindWebSocketService(NULL,NULL,NULL);
+    RunHttpService();
+    return  ret;
+}
 
-    // help
-    if (get_arg("h")) {
-        print_help();
-        exit(0);
-    }
-
-    // version
-    if (get_arg("v")) {
-        print_version();
-        exit(0);
-    }
-
-    // parse_confile
-    const char* confile = get_arg("c");
-    if (confile) {
-        strncpy(g_main_ctx.confile, confile, sizeof(g_main_ctx.confile));
-    }
-    parse_confile(g_main_ctx.confile);
-
-    // test
-    if (get_arg("t")) {
-        printf("Test confile [%s] OK!\n", g_main_ctx.confile);
-        exit(0);
-    }
-
-    // signal
-    signal_init(on_reload);
-    const char* signal = get_arg("s");
-    if (signal) {
-        signal_handle(signal);
-    }
-
-    // pidfile
-    create_pidfile();
-
+int CreateHttpService(int port)
+{
+    int worker_processes=0;
+    int worker_threads=0;
+    g_http_server.worker_processes = LIMIT(0, worker_processes, MAXNUM_WORKER_PROCESSES);
+    g_http_server.worker_threads = LIMIT(0, worker_threads, 64);
+    g_http_server.port = port;
+//g_http_server.https_port;
     // http_server
     Router::Register(g_http_service);
     g_http_server.registerHttpService(&g_http_service);
 
-    return ret;
+    return 0;
 }
 void RunHttpService()
 {
     g_http_server.run();
 }
 
+static OnWebSocketOpen on_open_;
+static OnWebSocketMessage on_message_;
+static OnWebSocketClose on_close_;
+
 void BindWebSocketService(OnWebSocketOpen on_open,OnWebSocketMessage on_message,OnWebSocketClose on_close)
 {
+    on_open_ = on_open;
+    on_message_ =  on_message;
+    on_close_ = on_close;
+
     static WebSocketService ws;
-    ws.onopen = [&](const WebSocketChannelPtr& channel, const HttpRequestPtr& req) {
-        printf("onopen: GET %s\n", req->Path().c_str());
-        on_open(channel,req->Path().c_str());
+    ws.onopen = [&](const WebSocketChannelPtr& channel, const std::string& url) {
+        printf("onopen: GET %s\n", url.c_str());
+        if (on_open_)
+        {
+            on_open_(channel, url.c_str());
+        }
         // send(time) every 1s
-        // hv::setInterval(1000, [channel](hv::TimerID id) {
-        //     if (channel->isConnected()) {
-        //         char str[DATETIME_FMT_BUFLEN] = {0};
-        //         datetime_t dt = datetime_now();
-        //         datetime_fmt(&dt, str);
-        //         channel->send(str);
-        //     } else {
-        //         hv::killTimer(id);
-        //     }
-        // });
+//         hv::setInterval(1000, [channel](hv::TimerID id) {
+//             if (channel->isConnected()) {
+//                 char str[DATETIME_FMT_BUFLEN] = {0};
+//                 datetime_t dt = datetime_now();
+//                 datetime_fmt(&dt, str);
+//                 channel->send(str);
+//             } else {
+//                 hv::killTimer(id);
+//             }
+//         });
     };
     ws.onmessage = [&](const WebSocketChannelPtr& channel, const std::string& msg) {
-        printf("onmessage: %s\n", msg.c_str());
-        on_message(channel,msg);
+        printf("onmessage: %d\n", msg.size());
+        const uint8_t* data = (const uint8_t*)msg.c_str();
+        if(on_message_)
+        {
+            on_message_(channel, data, msg.size());
+        }
     };
     ws.onclose = [&](const WebSocketChannelPtr& channel) {
         printf("onclose\n");
-        on_close(channel);
+        if(on_close_)
+        {
+            on_close_(channel);
+        }
     };
 
     g_http_server.ws = &ws;
+}
+
+void WebSocketSendBinary(const WebSocketChannelPtr& channel,const uint8_t* data,int size)
+{
+    if(channel)
+    {
+        if (channel->isConnected()) 
+        {
+             const std::string message(data,data+size);
+//            const char* message = (const char*)data;
+            printf("WebSocketSend: %d\n",(int)size);
+            channel->send(message);
+        } 
+    }
 }
 
 void WebSocketSend(const WebSocketChannelPtr& channel,const char* message)
 {
     if(channel)
     {
-        if (channel->isConnected()) 
+        if (channel->isConnected())
         {
-            channel->send(message);
-        } 
+//            printf("WebSocketSend: %d\n",(int)strlen(message));
+            channel->send("dasdadfs士大夫放到电饭锅",12);
+        }
     }
 }
