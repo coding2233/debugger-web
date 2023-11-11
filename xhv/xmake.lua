@@ -1,4 +1,4 @@
-add_requires("libhv",{alias="libhv"})
+add_requires("libhv 1.2.6",{alias="libhv"})
 -- add_requires("glew")
 -- add_requires("opengl")
 -- add_requires("libcurl",{alias="curl"})
