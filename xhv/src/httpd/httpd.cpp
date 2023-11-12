@@ -272,7 +272,7 @@ int main(int argc, char** argv)
 {
     int ret = CreateHttpService(2233);
     BindWebSocketService(NULL,NULL,NULL);
-    RunHttpService();
+    RunHttpService(true);
     return  ret;
 }
 
@@ -290,9 +290,21 @@ int CreateHttpService(int port)
 
     return 0;
 }
-void RunHttpService()
+void RunHttpService(bool  wait)
 {
-    g_http_server.run();
+   if(wait)
+   {
+       g_http_server.run();
+   }
+   else
+   {
+       g_http_server.start();
+}
+}
+
+void StopHttpService()
+{
+    g_http_server.stop();
 }
 
 static OnWebSocketOpen on_open_;
@@ -363,8 +375,7 @@ void WebSocketSend(const WebSocketChannelPtr& channel,const char* message)
     {
         if (channel->isConnected())
         {
-//            printf("WebSocketSend: %d\n",(int)strlen(message));
-            channel->send("dasdadfs士大夫放到电饭锅",12);
+            channel->send(message);
         }
     }
 }
