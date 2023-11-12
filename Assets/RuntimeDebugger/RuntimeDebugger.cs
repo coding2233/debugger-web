@@ -6,6 +6,11 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using UnityEngine;
 
+public class DebuggerInformation
+{
+	
+}
+
 public unsafe class RuntimeDebugger : MonoBehaviour
 {
 	static void OnOpen(IntPtr channel, string req_path)

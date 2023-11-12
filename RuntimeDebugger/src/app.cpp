@@ -1,6 +1,7 @@
 //
 // Created by EDY on 2023/9/9.
 //
+#include <map>
 
 #include "app.h"
 
@@ -15,6 +16,7 @@ using json = nlohmann::json;
 
 
 std::unique_ptr<WebSocket> ws;
+std::map<std::string,std::string> map_information_;
 
 App::App():ImplApp("",1280,800,0)
 {
@@ -55,6 +57,7 @@ void App::OnImGuiDraw()
          WebSocket::pointer wsp = &*ws;
          ws->poll();
          ws->dispatch([wsp](const std::string & message) {
+             json infomation = json::parse(message);
              printf(">>> %s\n", message.c_str());
              // if (message == "world") { wsp->close();
          });
