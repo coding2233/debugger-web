@@ -14,6 +14,7 @@ using json = nlohmann::json;
 
 
 
+std::unique_ptr<WebSocket> ws;
 
 App::App():ImplApp("",1280,800,0)
 {
@@ -26,11 +27,9 @@ App::App():ImplApp("",1280,800,0)
 
     std::cout << ex1.dump() << std::endl;
 
-    std::unique_ptr<WebSocket> ws(WebSocket::from_url("ws://127.0.0.1:12233"));
-    if(ws)
-    {
-        ws->send("hello");
-    }
+    //std::unique_ptr<WebSocket> ws(WebSocket::from_url("ws://127.0.0.1:12233"));
+    ws = std::unique_ptr<WebSocket>(WebSocket::from_url("ws://127.0.0.1:12233"));
+
     // app_web_socket_ = new AppWebsocket();
     // app_web_socket_->Connect("ws://127.0.0.1:12233");
     // static AppWebsocket app_websocket_;
@@ -51,15 +50,15 @@ void App::OnImGuiDraw()
     // char buffer[1024];
     // size_t recv_size = 0;
     // int ss = app_web_socket_->Recv(&buffer,1024,&recv_size);
-    // if(ws && ws->getReadyState() != WebSocket::CLOSED)
-    // {
-    //     WebSocket::pointer wsp = &*ws; 
-    //     ws->poll();
-    //     ws->dispatch([wsp](const std::string & message) {
-    //         printf(">>> %s\n", message.c_str());
-    //         // if (message == "world") { wsp->close();
-    //     });
-    // }
+     if(ws && ws->getReadyState() != WebSocket::CLOSED)
+     {
+         WebSocket::pointer wsp = &*ws;
+         ws->poll();
+         ws->dispatch([wsp](const std::string & message) {
+             printf(">>> %s\n", message.c_str());
+             // if (message == "world") { wsp->close();
+         });
+     }
 
     ImplApp::OnImGuiDraw();
      static bool sss= true;
