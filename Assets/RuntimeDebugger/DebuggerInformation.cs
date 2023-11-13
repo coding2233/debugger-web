@@ -20,8 +20,10 @@ public class RuntimeDebuggerInformation : RuntimeDebuggerBase
 	private Dictionary<string, Dictionary<string, string>> BuildInformation()
 	{
 		var information = new Dictionary<string, Dictionary<string,string>>();
-		information.Add("System Information", BuildSystemInformation());
-		information.Add("Environment Information", BuildEnvironmentInformation());
+		information.Add("System", BuildSystemInformation());
+		information.Add("Environment", BuildEnvironmentInformation());
+		information.Add("Screen", BuildScreenInformation());
+		information.Add("Graphics", BuildGraphicsInformation());
 		return information;
 	}
 
@@ -80,16 +82,151 @@ public class RuntimeDebuggerInformation : RuntimeDebuggerBase
 		return dictionaryBuilder;
 	}
 
+	private Dictionary<string, string> BuildScreenInformation()
+	{
+		var dictionaryBuilder = new Dictionary<string, string>();
+		AppendDictionaryBuilder(dictionaryBuilder, "Current Resolution", GetResolutionString(Screen.currentResolution));
+		AppendDictionaryBuilder(dictionaryBuilder, "Screen Width", string.Format("{0} px / {1} in / {2} cm", Screen.width.ToString(), GetInchesFromPixels(Screen.width).ToString("F2"), GetCentimetersFromPixels(Screen.width).ToString("F2")));
+		AppendDictionaryBuilder(dictionaryBuilder, "Screen Height", string.Format("{0} px / {1} in / {2} cm", Screen.height.ToString(), GetInchesFromPixels(Screen.height).ToString("F2"), GetCentimetersFromPixels(Screen.height).ToString("F2")));
+		AppendDictionaryBuilder(dictionaryBuilder, "Screen DPI", Screen.dpi.ToString("F2"));
+		AppendDictionaryBuilder(dictionaryBuilder, "Screen Orientation", Screen.orientation.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Is Full Screen", Screen.fullScreen.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Full Screen Mode", Screen.fullScreenMode.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Sleep Timeout", GetSleepTimeoutDescription(Screen.sleepTimeout));
+		AppendDictionaryBuilder(dictionaryBuilder, "Brightness", Screen.brightness.ToString("F2"));
+		AppendDictionaryBuilder(dictionaryBuilder, "Cursor Visible", Cursor.visible.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Cursor Lock State", Cursor.lockState.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Auto Landscape Left", Screen.autorotateToLandscapeLeft.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Auto Landscape Right", Screen.autorotateToLandscapeRight.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Auto Portrait", Screen.autorotateToPortrait.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Auto Portrait Upside Down", Screen.autorotateToPortraitUpsideDown.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Safe Area", Screen.safeArea.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Cutouts", GetCutoutsString(Screen.cutouts));
+		AppendDictionaryBuilder(dictionaryBuilder, "Support Resolutions", GetResolutionsString(Screen.resolutions));
+		return dictionaryBuilder;
+	}
+	private Dictionary<string, string> BuildGraphicsInformation()
+	{
+		var dictionaryBuilder = new Dictionary<string, string>();
+		AppendDictionaryBuilder(dictionaryBuilder, "Device ID", SystemInfo.graphicsDeviceID.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Device Name", SystemInfo.graphicsDeviceName);
+		AppendDictionaryBuilder(dictionaryBuilder, "Device Vendor ID", SystemInfo.graphicsDeviceVendorID.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Device Vendor", SystemInfo.graphicsDeviceVendor);
+		AppendDictionaryBuilder(dictionaryBuilder, "Device Type", SystemInfo.graphicsDeviceType.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Device Version", SystemInfo.graphicsDeviceVersion);
+		AppendDictionaryBuilder(dictionaryBuilder, "Memory Size", string.Format("{0} MB", SystemInfo.graphicsMemorySize.ToString()));
+		AppendDictionaryBuilder(dictionaryBuilder, "Multi Threaded", SystemInfo.graphicsMultiThreaded.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Shader Level", SystemInfo.graphicsShaderLevel.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Global Maximum LOD", Shader.globalMaximumLOD.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Global Render Pipeline", Shader.globalRenderPipeline);
+		AppendDictionaryBuilder(dictionaryBuilder, "Active Tier", Graphics.activeTier.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Active Color Gamut", Graphics.activeColorGamut.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Preserve Frame Buffer Alpha", Graphics.preserveFramebufferAlpha.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "NPOT Support", SystemInfo.npotSupport.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Max Texture Size", SystemInfo.maxTextureSize.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supported Render Target Count", SystemInfo.supportedRenderTargetCount.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Copy Texture Support", SystemInfo.copyTextureSupport.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Uses Reversed ZBuffer", SystemInfo.usesReversedZBuffer.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Max Cubemap Size", SystemInfo.maxCubemapSize.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Graphics UV Starts At Top", SystemInfo.graphicsUVStartsAtTop.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Min Constant Buffer Offset Alignment", SystemInfo.constantBufferOffsetAlignment.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Has Hidden Surface Removal On GPU", SystemInfo.hasHiddenSurfaceRemovalOnGPU.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Has Dynamic Uniform Array Indexing In Fragment Shaders", SystemInfo.hasDynamicUniformArrayIndexingInFragmentShaders.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Has Mip Max Level", SystemInfo.hasMipMaxLevel.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports Stencil", SystemInfo.supportsStencil.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports Render Textures", SystemInfo.supportsRenderTextures.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports Sparse Textures", SystemInfo.supportsSparseTextures.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports 3D Textures", SystemInfo.supports3DTextures.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports Shadows", SystemInfo.supportsShadows.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports Raw Shadow Depth Sampling", SystemInfo.supportsRawShadowDepthSampling.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports Compute Shader", SystemInfo.supportsComputeShaders.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports Instancing", SystemInfo.supportsInstancing.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports 2D Array Textures", SystemInfo.supports2DArrayTextures.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports Motion Vectors", SystemInfo.supportsMotionVectors.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports Cubemap Array Textures", SystemInfo.supportsCubemapArrayTextures.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports 3D Render Textures", SystemInfo.supports3DRenderTextures.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports Texture Wrap Mirror Once", SystemInfo.supportsTextureWrapMirrorOnce.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports Graphics Fence", SystemInfo.supportsGraphicsFence.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports Async Compute", SystemInfo.supportsAsyncCompute.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports Multisampled Textures", SystemInfo.supportsMultisampledTextures.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports Async GPU Readback", SystemInfo.supportsAsyncGPUReadback.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports 32bits Index Buffer", SystemInfo.supports32bitsIndexBuffer.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports Hardware Quad Topology", SystemInfo.supportsHardwareQuadTopology.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports Mip Streaming", SystemInfo.supportsMipStreaming.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports Multisample Auto Resolve", SystemInfo.supportsMultisampleAutoResolve.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports Separated Render Targets Blend", SystemInfo.supportsSeparatedRenderTargetsBlend.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Supports Set Constant Buffer", SystemInfo.supportsSetConstantBuffer.ToString());
+		return dictionaryBuilder;
+	}
+
 	private void AppendDictionaryBuilder(Dictionary<string,string> dictionaryBuilder, string key, object value)
 	{
 		dictionaryBuilder.Add(key,value.ToString());
 	}
 
-	//private void AppenddictionaryBuilder(dictionaryBuilder dictionaryBuilder,string key,object value)
-	//{
-	//	dictionaryBuilder.Append(key);
-	//	dictionaryBuilder.Append(":");
-	//	dictionaryBuilder.Append(value.ToString());
-	//	dictionaryBuilder.Append("\n");
-	//}
+	#region screen
+	private string GetSleepTimeoutDescription(int sleepTimeout)
+	{
+		if (sleepTimeout == SleepTimeout.NeverSleep)
+		{
+			return "Never Sleep";
+		}
+
+		if (sleepTimeout == SleepTimeout.SystemSetting)
+		{
+			return "System Setting";
+		}
+
+		return sleepTimeout.ToString();
+	}
+
+	private string GetResolutionString(Resolution resolution)
+	{
+		return string.Format("{0} x {1} @ {2}Hz", resolution.width.ToString(), resolution.height.ToString(), resolution.refreshRate.ToString());
+	}
+
+	private string GetCutoutsString(Rect[] cutouts)
+	{
+		string[] cutoutStrings = new string[cutouts.Length];
+		for (int i = 0; i < cutouts.Length; i++)
+		{
+			cutoutStrings[i] = cutouts[i].ToString();
+		}
+
+		return string.Join("; ", cutoutStrings);
+	}
+
+	private string GetResolutionsString(Resolution[] resolutions)
+	{
+		string[] resolutionStrings = new string[resolutions.Length];
+		for (int i = 0; i < resolutions.Length; i++)
+		{
+			resolutionStrings[i] = GetResolutionString(resolutions[i]);
+		}
+
+		return string.Join("; ", resolutionStrings);
+	}
+
+	/// <summary>
+	/// 将像素转换为英寸。
+	/// </summary>
+	/// <param name="pixels">像素。</param>
+	/// <returns>英寸。</returns>
+	public float GetInchesFromPixels(float pixels)
+	{
+		return pixels / Screen.dpi;
+	}
+
+	/// <summary>
+	/// 将像素转换为厘米。
+	/// </summary>
+	/// <param name="pixels">像素。</param>
+	/// <returns>厘米。</returns>
+	public static float GetCentimetersFromPixels(float pixels)
+	{
+		float inchesToCentimeters = 2.54f;  // 1 inch = 2.54 cm
+		return inchesToCentimeters * pixels / Screen.dpi;
+	}
+	#endregion
+
 }

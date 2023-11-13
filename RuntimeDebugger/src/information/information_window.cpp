@@ -13,9 +13,7 @@ InformationWindow::~InformationWindow()
 void InformationWindow::OnMessage(const std::string &message)
 {
         json infor = json::parse(message);
-        auto si = infor["System Information"];
         information_ = infor;
-        //information_ = infor.get<std::map<std::string,std::string>>();
 }
 
 bool InformationWindow::OnDraw()
@@ -36,8 +34,12 @@ bool InformationWindow::OnDraw()
             {
                 if (ImGui::BeginTabItem(iter->first.c_str()))
                 {
-                    ImGuiTableFlags table_flags = ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders;
+                    ImGui::BeginChild("Information_Child");
+                    ImGuiTableFlags table_flags = ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable ;
                     ImGui::BeginTable("Information_Table",2,table_flags);
+                    ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed);
+                    ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+                    ImGui::TableHeadersRow();
                     const std::map<std::string,std::string> infos = iter->second;
                     for (auto iterInfo = infos.begin(); iterInfo!=infos.end();iterInfo++)
                     {
@@ -45,10 +47,11 @@ bool InformationWindow::OnDraw()
                         ImGui::TableSetColumnIndex(0);
                         ImGui::Text(iterInfo->first.c_str());
                         ImGui::TableSetColumnIndex(1);
-                        ImGui::Text(iterInfo->second.c_str());
+                        ImGui::TextWrapped(iterInfo->second.c_str());
                     }
 
                     ImGui::EndTable();
+                    ImGui::EndChild();
                     ImGui::EndTabItem();
                 }
                 ImGui::EndTabBar();
