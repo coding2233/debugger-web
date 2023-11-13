@@ -6,51 +6,55 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using UnityEngine;
 
-public class DebuggerInformation
-{
-	
-}
 
 public unsafe class RuntimeDebugger : MonoBehaviour
 {
-	static void OnOpen(IntPtr channel, string req_path)
-	{
-		Console.WriteLine("on open " + req_path + "  " + channel);
+	private Dictionary<string, RuntimeDebuggerBase> m_registerRuntimeDebugger;
+	private Dictionary<IntPtr, RuntimeDebuggerBase> m_runtimeDebugger;
 
-		var bytes = System.Text.Encoding.UTF8.GetBytes("{\"aaa\":\"a1\",\"bbb\":\"b1\"}");
-		fixed (byte* aaa = bytes)
-		{
-			WebSocketSendBinary(channel, aaa, bytes.Length);
-		}
+	void OnOpen(IntPtr channel, string req_path)
+	{
+		Console.WriteLine(string.Format("RuntimeDebugger.OnOpen {0} {1}", channel, channel));
+		//if (m_registerRuntimeDebugger.TryGetValue(req_path, out RuntimeDebuggerBase runtimeDebugger))
+		//{
+		//	runtimeDebugger.OnOpen(this, channel);
+		//	m_runtimeDebugger.Add(channel, runtimeDebugger);
+		//}
 	}
-	static void OnMessage(IntPtr channel, byte* data, int size)
+	void OnMessage(IntPtr channel, byte* data, int size)
 	{
 		var message = System.Text.Encoding.UTF8.GetString(data, size);
-		Console.WriteLine("on message " + message);
-
-		string replay_message = "啊书法大赛发是是豆腐干山豆根地方" + message;
-		//WebSocketSend(channel, replay_message);
-		var bytes = System.Text.Encoding.UTF8.GetBytes(replay_message);
-		fixed (byte* aaa = bytes)
+		//Console.WriteLine("on message " + message);
+		if (m_runtimeDebugger.TryGetValue(channel, out RuntimeDebuggerBase runtimeDebugger))
 		{
-			WebSocketSendBinary(channel, aaa, bytes.Length);
+			runtimeDebugger.OnMessage(message);
 		}
 	}
 
-	static void OnClose(IntPtr channel)
+	void OnClose(IntPtr channel)
 	{
-		Console.WriteLine("on close ");
+		//Console.WriteLine("on close");
+		if (m_runtimeDebugger.TryGetValue(channel, out RuntimeDebuggerBase runtimeDebugger))
+		{
+			runtimeDebugger.OnClose();
+			m_runtimeDebugger.Remove(channel);
+		}
 	}
+
 	// Start is called before the first frame update
 	void Start()
     {
-        try
+		m_runtimeDebugger = new Dictionary<IntPtr, RuntimeDebuggerBase>();
+		m_registerRuntimeDebugger = new Dictionary<string, RuntimeDebuggerBase>();
+		m_registerRuntimeDebugger.Add("/",new RuntimeDebuggerInformation());
+
+		try
         {
            
 			Task.Run(() => {
 					CreateHttpService(12233);
-				BindWebSocketService(OnOpen, OnMessage, OnClose);
-				RunHttpService(true);
+					BindWebSocketService(OnOpen, OnMessage, OnClose);
+					RunHttpService(true);
 				});
 			Debug.Log("RunHttpService.");
 		}
@@ -66,11 +70,25 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 		Debug.Log("OnDestroy.");
 	}
 
-	// Update is called once per frame
-	void Update()
-    {
-        
-    }
+
+	public void Send(IntPtr channel,string message)
+	{
+		if (channel == IntPtr.Zero)
+		{
+			return;
+		}
+
+		if (string.IsNullOrEmpty(message))
+		{
+			return;
+		}
+
+		var bytes = System.Text.Encoding.UTF8.GetBytes(message);
+		fixed (byte* aaa = bytes)
+		{
+			WebSocketSendBinary(channel, aaa, bytes.Length);
+		}
+	}
 
 	delegate void OnWebSocketOpenCallback(IntPtr channel, string req_path);
 	delegate void OnWebSocketMessageCallback(IntPtr channel, byte* data, int size);
@@ -92,3 +110,6 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 	[DllImport("xhv.dll")]
 	extern static void WebSocketSend(IntPtr channel,string message);
 }
+
+
+
