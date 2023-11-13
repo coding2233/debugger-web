@@ -23,32 +23,6 @@ App::App():ImplApp("",1280,800,0)
 {
     server_url_ = "ws://127.0.0.1:2233";
     windows_.insert({"/",new InformationWindow()});
-//    map_information_.insert("/",new InformationWindow());
-//
-//    std::string url=server_url_;
-//    url.append("/");
-//    map_information_.find("/")->second->Connect(url);
-//    json ex1 = json::parse(R"(
-//    {
-//        "pi": 3.141,
-//        "happy": true
-//    }
-//    )");
-
-//    std::cout << ex1.dump() << std::endl;
-
-    //std::unique_ptr<WebSocket> ws(WebSocket::from_url("ws://127.0.0.1:12233"));
-//      ws = std::unique_ptr<WebSocket>(WebSocket::from_url("ws://127.0.0.1:2233"));
-//    if(ws == NULL)
-//    {
-//        printf("connect server error.\n");
-//    }
-    // app_web_socket_ = new AppWebsocket();
-    // app_web_socket_->Connect("ws://127.0.0.1:12233");
-    // static AppWebsocket app_websocket_;
-    // ws = app_websocket_.Connect("ws://127.0.0.1:12233");
-    // ws->send("goodbye");
-    // ws->send("hello");
 }
 
 App::~App()
@@ -121,33 +95,17 @@ void App::OnImGuiDraw()
         ImGui::SetNextWindowSize(ImVec2(400,200),ImGuiCond_FirstUseEver);
         if (ImGui::BeginPopupModal("Connect Modal window", &connect_modal_window_open))
         {
-            ImGui::InputText("server url",(char*)server_url_.c_str(),1024);
+            ImGui::InputText("server url",(char*)server_url_.c_str(),128);
             if (ImGui::Button("Connect"))
             {
+//                int server_url_len = strlen(server_url_.c_str());
+//                server_url_.resize(server_url_len);
                 ConnectToServer();
                 ImGui::CloseCurrentPopup();
             }
             ImGui::EndPopup();
         }
     }
-
-    // char buffer[1024];
-    // size_t recv_size = 0;
-    // int ss = app_web_socket_->Recv(&buffer,1024,&recv_size);
-//     if(ws && ws->getReadyState() != WebSocket::CLOSED)
-//     {
-//         WebSocket::pointer wsp = &*ws;
-//         ws->poll();
-//         ws->dispatch([wsp](const std::string & message) {
-//             json infomation = json::parse(message);
-//             printf(">>> %s\n", message.c_str());
-//             json_information_ = message;
-//             // if (message == "world") { wsp->close();
-//         });
-//     }
-//
-//    ImplApp::OnImGuiDraw();
-
 }
 
 void App::ConnectToServer()
@@ -158,7 +116,8 @@ void App::ConnectToServer()
         if(!connected)
         {
             std::string url;
-            url.append(server_url_);
+            int charLen = strlen(server_url_.c_str());
+            url.append(server_url_.c_str(),charLen);
             url.append(iter->first);
             iter->second->Connect(url);
         }
