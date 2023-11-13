@@ -136,6 +136,8 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 	extern static void WebSocketSendBinary(IntPtr channel, byte* data, int size);
 	[DllImport("xhv.dll")]
 	extern static void WebSocketSend(IntPtr channel,string message);
+	[DllImport("xhv.dll")]
+	extern static void WebSocketClose(IntPtr channel);
 }
 
 

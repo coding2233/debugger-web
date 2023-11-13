@@ -2,6 +2,7 @@
 // Created by EDY on 2023/9/9.
 //
 #include <map>
+#include <exception>
 
 #include "app.h"
 
@@ -17,6 +18,7 @@ using json = nlohmann::json;
 
 std::unique_ptr<WebSocket> ws;
 std::map<std::string,std::string> map_information_;
+std::string json_information_;
 
 App::App():ImplApp("",1280,800,0)
 {
@@ -30,7 +32,7 @@ App::App():ImplApp("",1280,800,0)
     std::cout << ex1.dump() << std::endl;
 
     //std::unique_ptr<WebSocket> ws(WebSocket::from_url("ws://127.0.0.1:12233"));
-    ws = std::unique_ptr<WebSocket>(WebSocket::from_url("ws://127.0.0.1:12233"));
+    ws = std::unique_ptr<WebSocket>(WebSocket::from_url("ws://127.0.0.1:2233"));
 
     // app_web_socket_ = new AppWebsocket();
     // app_web_socket_->Connect("ws://127.0.0.1:12233");
@@ -59,6 +61,7 @@ void App::OnImGuiDraw()
          ws->dispatch([wsp](const std::string & message) {
              json infomation = json::parse(message);
              printf(">>> %s\n", message.c_str());
+             json_information_ = message;
              // if (message == "world") { wsp->close();
          });
      }
@@ -67,6 +70,10 @@ void App::OnImGuiDraw()
      static bool sss= true;
      if(ImGui::Begin("aaaa",&sss))
      {
+         if(json_information_.size() > 0)
+         {
+             ImGui::Text(json_information_.c_str());
+         }
          if(ImGui::Button("close"))
          {
             // if(ws)

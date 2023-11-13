@@ -34,5 +34,5 @@ EXPORT_API void StopHttpService();
 EXPORT_API void BindWebSocketService(OnWebSocketOpen on_open,OnWebSocketMessage on_message,OnWebSocketClose on_close);
 EXPORT_API void WebSocketSendBinary(const WebSocketChannelPtr& channel,const uint8_t* data,int size);
 EXPORT_API void WebSocketSend(const WebSocketChannelPtr& channel,const char* message);
-
+EXPORT_API void WebSocketClose(const WebSocketChannelPtr& channel);
 #endif

@@ -379,3 +379,11 @@ void WebSocketSend(const WebSocketChannelPtr& channel,const char* message)
         }
     }
 }
+
+void WebSocketClose(const WebSocketChannelPtr& channel)
+{
+    if (channel)
+    {
+        channel->close();
+    }
+}
