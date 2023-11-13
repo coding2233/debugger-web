@@ -9,9 +9,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <map>
 
 #include "imgui_impl_sdl2_opengl3_app.h"
 #include "TextEditor.h"
+#include "information/information_window.h"
 
 class App :public ImplApp
 {
@@ -21,6 +23,9 @@ public:
     ~App();
 private:
 
+    std::string server_url_;
+    std::map<std::string,AppWindow*> windows_;
+    void ConnectToServer();
 public:
     void OnImGuiDraw() override;
 };

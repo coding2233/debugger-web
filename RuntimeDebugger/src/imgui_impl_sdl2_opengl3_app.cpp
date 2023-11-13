@@ -157,6 +157,7 @@ int ImplApp::CreateRender(SDL_Window* window)
     ImGui::SetCurrentContext(imgui_context);
 
 //    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable ;
+    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     //  // Setup Platform/Renderer backends
     ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
@@ -355,15 +356,15 @@ ImGuiContext* ImplApp::OnImGuiContextCreate()
 
 void ImplApp::ImGuiAppMenuDraw()
 {
-    ImGui::BeginMainMenuBar();
-    OnImGuiAppMenuDraw();
-    ImGui::EndMainMenuBar();
-
-    if(!window_move_dragging_)
-    {
-        //更新拖拽的高度
-        drag_menu_height_ = ImGui::GetItemRectSize().y;
-    }
+//    ImGui::BeginMainMenuBar();
+//    OnImGuiAppMenuDraw();
+//    ImGui::EndMainMenuBar();
+//
+//    if(!window_move_dragging_)
+//    {
+//        //更新拖拽的高度
+//        drag_menu_height_ = ImGui::GetItemRectSize().y;
+//    }
 }
 
 void ImplApp::OnImGuiAppMenuDraw()
