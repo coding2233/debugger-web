@@ -24,6 +24,8 @@ public class RuntimeDebuggerInformation : RuntimeDebuggerBase
 		information.Add("Environment", BuildEnvironmentInformation());
 		information.Add("Screen", BuildScreenInformation());
 		information.Add("Graphics", BuildGraphicsInformation());
+		information.Add("Path", BuildPathInformation());
+		information.Add("Quality", BuildQualityInformation());
 		return information;
 	}
 
@@ -133,8 +135,6 @@ public class RuntimeDebuggerInformation : RuntimeDebuggerBase
 		AppendDictionaryBuilder(dictionaryBuilder, "Has Hidden Surface Removal On GPU", SystemInfo.hasHiddenSurfaceRemovalOnGPU.ToString());
 		AppendDictionaryBuilder(dictionaryBuilder, "Has Dynamic Uniform Array Indexing In Fragment Shaders", SystemInfo.hasDynamicUniformArrayIndexingInFragmentShaders.ToString());
 		AppendDictionaryBuilder(dictionaryBuilder, "Has Mip Max Level", SystemInfo.hasMipMaxLevel.ToString());
-		AppendDictionaryBuilder(dictionaryBuilder, "Supports Stencil", SystemInfo.supportsStencil.ToString());
-		AppendDictionaryBuilder(dictionaryBuilder, "Supports Render Textures", SystemInfo.supportsRenderTextures.ToString());
 		AppendDictionaryBuilder(dictionaryBuilder, "Supports Sparse Textures", SystemInfo.supportsSparseTextures.ToString());
 		AppendDictionaryBuilder(dictionaryBuilder, "Supports 3D Textures", SystemInfo.supports3DTextures.ToString());
 		AppendDictionaryBuilder(dictionaryBuilder, "Supports Shadows", SystemInfo.supportsShadows.ToString());
@@ -156,6 +156,63 @@ public class RuntimeDebuggerInformation : RuntimeDebuggerBase
 		AppendDictionaryBuilder(dictionaryBuilder, "Supports Multisample Auto Resolve", SystemInfo.supportsMultisampleAutoResolve.ToString());
 		AppendDictionaryBuilder(dictionaryBuilder, "Supports Separated Render Targets Blend", SystemInfo.supportsSeparatedRenderTargetsBlend.ToString());
 		AppendDictionaryBuilder(dictionaryBuilder, "Supports Set Constant Buffer", SystemInfo.supportsSetConstantBuffer.ToString());
+		return dictionaryBuilder;
+	}
+
+	private Dictionary<string, string> BuildPathInformation()
+	{
+		var dictionaryBuilder = new Dictionary<string, string>();
+		AppendDictionaryBuilder(dictionaryBuilder, "Data Path", Application.dataPath);
+		AppendDictionaryBuilder(dictionaryBuilder, "Persistent Data Path", Application.persistentDataPath);
+		AppendDictionaryBuilder(dictionaryBuilder, "Streaming Assets Path", Application.streamingAssetsPath);
+		AppendDictionaryBuilder(dictionaryBuilder, "Temporary Cache Path", Application.temporaryCachePath);
+		AppendDictionaryBuilder(dictionaryBuilder, "Console Log Path", Application.consoleLogPath);
+		return dictionaryBuilder;
+	}
+
+	private Dictionary<string, string> BuildQualityInformation()
+	{
+		var dictionaryBuilder = new Dictionary<string, string>();
+		//AppendDictionaryBuilder(dictionaryBuilder, "Quality Level", "------");
+		AppendDictionaryBuilder(dictionaryBuilder, "Current Quality Level", QualitySettings.names[QualitySettings.GetQualityLevel()]);
+		//AppendDictionaryBuilder(dictionaryBuilder, "Rendering Information", "------");
+		AppendDictionaryBuilder(dictionaryBuilder, "Active Color Space", QualitySettings.activeColorSpace.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Desired Color Space", QualitySettings.desiredColorSpace.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Max Queued Frames", QualitySettings.maxQueuedFrames.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Pixel Light Count", QualitySettings.pixelLightCount.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Master Texture Limit", QualitySettings.masterTextureLimit.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Anisotropic Filtering", QualitySettings.anisotropicFiltering.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Anti Aliasing", QualitySettings.antiAliasing.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Soft Particles", QualitySettings.softParticles.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Soft Vegetation", QualitySettings.softVegetation.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Realtime Reflection Probes", QualitySettings.realtimeReflectionProbes.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Billboards Face Camera Position", QualitySettings.billboardsFaceCameraPosition.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Resolution Scaling Fixed DPI Factor", QualitySettings.resolutionScalingFixedDPIFactor.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Texture Streaming Enabled", QualitySettings.streamingMipmapsActive.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Texture Streaming Add All Cameras", QualitySettings.streamingMipmapsAddAllCameras.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Texture Streaming Memory Budget", QualitySettings.streamingMipmapsMemoryBudget.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Texture Streaming Renderers Per Frame", QualitySettings.streamingMipmapsRenderersPerFrame.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Texture Streaming Max Level Reduction", QualitySettings.streamingMipmapsMaxLevelReduction.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Texture Streaming Max File IO Requests", QualitySettings.streamingMipmapsMaxFileIORequests.ToString());
+		//AppendDictionaryBuilder(dictionaryBuilder, "Shadows Information", "------");
+		AppendDictionaryBuilder(dictionaryBuilder, "Shadowmask Mode", QualitySettings.shadowmaskMode.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Shadow Quality", QualitySettings.shadows.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Shadow Resolution", QualitySettings.shadowResolution.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Shadow Projection", QualitySettings.shadowProjection.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Shadow Distance", QualitySettings.shadowDistance.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Shadow Near Plane Offset", QualitySettings.shadowNearPlaneOffset.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Shadow Cascades", QualitySettings.shadowCascades.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Shadow Cascade 2 Split", QualitySettings.shadowCascade2Split.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Shadow Cascade 4 Split", QualitySettings.shadowCascade4Split.ToString());
+		//AppendDictionaryBuilder(dictionaryBuilder, "Other Information", "------");
+		AppendDictionaryBuilder(dictionaryBuilder, "Skin Weights", QualitySettings.skinWeights.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "VSync Count", QualitySettings.vSyncCount.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "LOD Bias", QualitySettings.lodBias.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Maximum LOD Level", QualitySettings.maximumLODLevel.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Particle Raycast Budget", QualitySettings.particleRaycastBudget.ToString());
+		AppendDictionaryBuilder(dictionaryBuilder, "Async Upload Time Slice", string.Format("{0} ms", QualitySettings.asyncUploadTimeSlice.ToString()));
+		AppendDictionaryBuilder(dictionaryBuilder, "Async Upload Buffer Size", string.Format("{0} MB", QualitySettings.asyncUploadBufferSize.ToString()));
+		AppendDictionaryBuilder(dictionaryBuilder, "Async Upload Persistent Buffer", QualitySettings.asyncUploadPersistentBuffer.ToString());
 		return dictionaryBuilder;
 	}
 

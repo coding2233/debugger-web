@@ -39,7 +39,7 @@ bool InformationWindow::OnDraw()
                     ImGui::BeginTable("Information_Table",2,table_flags);
                     ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed);
                     ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
-                    ImGui::TableHeadersRow();
+//                    ImGui::TableHeadersRow();
                     const std::map<std::string,std::string> infos = iter->second;
                     for (auto iterInfo = infos.begin(); iterInfo!=infos.end();iterInfo++)
                     {
