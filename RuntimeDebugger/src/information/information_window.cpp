@@ -4,7 +4,7 @@
 
 #include "information_window.h"
 
-InformationWindow::InformationWindow():AppWindow()
+InformationWindow::InformationWindow()
 {}
 
 InformationWindow::~InformationWindow()
@@ -25,8 +25,10 @@ bool InformationWindow::OnDraw()
     {
 
     }
+
     if (information_.size() > 0)
     {
+        ImGui::Begin("Information",&show_);
         for (auto iter = information_.begin();iter!=information_.end();iter++)
         {
             ImGui::Text(iter->first.c_str());
@@ -36,6 +38,8 @@ bool InformationWindow::OnDraw()
             ImGui::Separator();
             ImGui::Separator();
         }
+        ImGui::End();
     }
+
     return connected;
 }

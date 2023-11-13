@@ -20,7 +20,9 @@ protected:
     std::unique_ptr<WebSocket> ws_;
 public:
     AppWindow()
-    {}
+    {
+        show_ = true;
+    }
     ~AppWindow()
     {}
 

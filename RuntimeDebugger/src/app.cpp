@@ -101,37 +101,7 @@ void App::OnImGuiDraw()
 
                 ImGui::EndMenu();
             }
-
             ImGui::EndMenuBar();
-
-            if (ImGui::Button("Connect"))
-            {
-
-            }
-
-//            static bool sss= true;
-//            if(ImGui::Begin("aaaa",&sss))
-//            {
-//                if(json_information_.size() > 0)
-//                {
-//                    ImGui::Text(json_information_.c_str());
-//                }
-//                if(ImGui::Button("close"))
-//                {
-//                    // if(ws)
-//                    // {
-//                    //     ws->send("close");
-//                    // }
-//                }
-//
-//                if(ImGui::Button("test message"))
-//                {
-//
-//                }
-//
-//
-//            }
-//            ImGui::End();
         }
     }
     ImGui::End();
