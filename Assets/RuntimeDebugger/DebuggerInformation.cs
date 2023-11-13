@@ -13,8 +13,9 @@ public class RuntimeDebuggerInformation : RuntimeDebuggerBase
 
 		var information = BuildInformation();
 		string informationDump = JsonConvert.SerializeObject(information);
-		//Debug.Log(informationDump);
+		Debug.Log(informationDump);
 		Send(informationDump);
+
 	}
 
 	private Dictionary<string, string> BuildInformation()

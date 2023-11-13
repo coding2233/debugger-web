@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 public unsafe class XHVRuntime
 {
 
-	static void OnOpen(IntPtr channel, string req_path)
+	void OnOpen(IntPtr channel, string req_path)
 	{
 		Console.WriteLine("on open " + req_path + "  "+ channel);
 	}
-	static void OnMessage(IntPtr channel, byte* data, int size)
+	void OnMessage(IntPtr channel, byte* data, int size)
 	{
 		var message = System.Text.Encoding.UTF8.GetString(data, size);
 		Console.WriteLine("on message " + message);
@@ -26,7 +26,7 @@ public unsafe class XHVRuntime
 		}
 	}
 
-	static void OnClose(IntPtr channel)
+	void OnClose(IntPtr channel)
 	{
 		Console.WriteLine("on close ");
 	}
@@ -37,7 +37,7 @@ public unsafe class XHVRuntime
 		{
 			CreateHttpService(22333);
 			BindWebSocketService(OnOpen,OnMessage,OnClose);
-			RunHttpService();
+			RunHttpService(true);
 			Console.WriteLine("down");
 		}
 		catch (Exception e)
@@ -47,22 +47,23 @@ public unsafe class XHVRuntime
 	}
 
 
-    delegate void OnWebSocketOpenCallback(IntPtr channel,string req_path);
-    delegate void OnWebSocketMessageCallback(IntPtr channel,byte* data,int size);
-    delegate void OnWebSocketCloseCallback(IntPtr channel);
+	delegate void OnWebSocketOpenCallback(IntPtr channel, string req_path);
+	delegate void OnWebSocketMessageCallback(IntPtr channel, byte* data, int size);
+	delegate void OnWebSocketCloseCallback(IntPtr channel);
 
 	[DllImport("xhv.dll")]
-    extern static int CreateHttpService(int port);
+	extern static int CreateHttpService(int port);
 
 	[DllImport("xhv.dll")]
-	extern static void RunHttpService();
+	extern static void RunHttpService(bool wait);
+	[DllImport("xhv.dll")]
+	extern static void StopHttpService();
 
 	[DllImport("xhv.dll")]
 	extern static void BindWebSocketService(OnWebSocketOpenCallback onOpen, OnWebSocketMessageCallback onMessage, OnWebSocketCloseCallback onClose);
 
 	[DllImport("xhv.dll")]
 	extern static void WebSocketSendBinary(IntPtr channel, byte* data, int size);
-
 	[DllImport("xhv.dll")]
 	extern static void WebSocketSend(IntPtr channel, string message);
 }
