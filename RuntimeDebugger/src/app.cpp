@@ -6,23 +6,22 @@
 
 #include "app.h"
 
-// #include "runtime_debugger_log.pb-c.h"
-// #include "app_websocket.h"
-#include "easywsclient.hpp"
-using easywsclient::WebSocket;
 
-#include "nlohmann/json.hpp"
-using json = nlohmann::json;
+#include "information/information_window.h"
+#include "log/log_window.h"
+#include "file/file_window.h"
+#include "inspector/inspector_window.h"
 
-
-
-//std::unique_ptr<WebSocket> ws;
-//std::string json_information_;
 
 App::App():ImplApp("",1280,800,0)
 {
     server_url_ = "ws://127.0.0.1:2233";
     windows_.insert({"/",new InformationWindow()});
+    windows_.insert({"/log",new LogWindow()});
+
+//    menu_windows_.insert({"/log",new LogWindow()});
+    menu_windows_.insert({"/file",new FileWindow()});
+    menu_windows_.insert({"/inspector",new InspectorWindow()});
 }
 
 App::~App()
@@ -61,17 +60,16 @@ void App::OnImGuiDraw()
 
         if (ImGui::BeginMenuBar())
         {
-            if (ImGui::BeginMenu("Options"))
+            if (ImGui::BeginMenu("Window"))
             {
-                ImGui::MenuItem("Fullscreen");
-                ImGui::MenuItem("Padding");
-                ImGui::Separator();
+                for (auto iter = menu_windows_.begin(); iter != menu_windows_.end(); iter++)
+                {
+                    if(ImGui::MenuItem(iter->first.c_str()))
+                    {
 
-                if (ImGui::MenuItem("Flag: NoSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0)) { dockspace_flags ^= ImGuiDockNodeFlags_NoSplit; }
-                if (ImGui::MenuItem("Flag: NoResize", "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0)) { dockspace_flags ^= ImGuiDockNodeFlags_NoResize; }
-                if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0)) { dockspace_flags ^= ImGuiDockNodeFlags_NoDockingInCentralNode; }
-                if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0)) { dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar; }
-                ImGui::Separator();
+                    }
+                    ImGui::Separator();
+                }
 
                 ImGui::EndMenu();
             }

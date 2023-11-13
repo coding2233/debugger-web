@@ -67,7 +67,9 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 		m_runtimeDebugger = new Dictionary<IntPtr, RuntimeDebuggerBase>();
 		m_registerRuntimeDebugger = new Dictionary<string, RuntimeDebuggerBase>();
 		m_registerRuntimeDebugger.Add("/",new RuntimeDebuggerInformation());
+		m_registerRuntimeDebugger.Add("/log",new DebuggerLog());
 
+		StartCoroutine(TestLog());
 		try
         {
            
@@ -97,6 +99,15 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 		Debug.Log("OnDestroy.");
 	}
 
+	IEnumerator TestLog()
+	{
+		var wfs = new WaitForSeconds(1);
+		while (true)
+		{
+			yield return wfs;
+			Debug.Log($"TestLog {UnityEngine.Random.Range(0,99999999).ToString("D8")} {DateTime.Now} #");
+		}
+	}
 
 	public void Send(IntPtr channel,string message)
 	{

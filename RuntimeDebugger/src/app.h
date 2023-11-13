@@ -13,7 +13,7 @@
 
 #include "imgui_impl_sdl2_opengl3_app.h"
 #include "TextEditor.h"
-#include "information/information_window.h"
+#include "app_window.h"
 
 class App :public ImplApp
 {
@@ -25,6 +25,7 @@ private:
 
     std::string server_url_;
     std::map<std::string,AppWindow*> windows_;
+    std::map<std::string,AppWindow*> menu_windows_;
     void ConnectToServer();
 public:
     void OnImGuiDraw() override;

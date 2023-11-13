@@ -7,14 +7,22 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "app_window.h"
 
 class LogWindow : public AppWindow
 {
+
 public:
     LogWindow();
     ~LogWindow();
+
+private:
+    std::vector<std::string> logs_;
+public:
+    void OnMessage(const std::string &message) override;
+    bool OnDraw() override;
 };
 
 
