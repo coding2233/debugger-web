@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "imgui.h"
 #include "easywsclient.hpp"
 using easywsclient::WebSocket;
 #include "nlohmann/json.hpp"
@@ -22,10 +23,21 @@ public:
     {}
     ~AppWindow()
     {}
+
+    virtual void OnMessage(const std::string &message)
+    {
+
+    }
+
     virtual bool CheckConnect()
     {
         if(ws_ && ws_->getReadyState() != WebSocket::CLOSED)
         {
+            ws_->poll();
+            WebSocket::pointer wsp = &*ws_;
+            ws_->dispatch([wsp,this](const std::string & message) {
+                this->OnMessage(message);
+            });
             return true;
         }
         return false;

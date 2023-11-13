@@ -86,6 +86,7 @@ public class RuntimeDebuggerInformation : RuntimeDebuggerBase
 	{
 		stringBuilder.Append(key);
 		stringBuilder.Append(":");
-		stringBuilder.AppendLine(value.ToString());
+		stringBuilder.Append(value.ToString());
+		stringBuilder.Append("\n");
 	}
 }

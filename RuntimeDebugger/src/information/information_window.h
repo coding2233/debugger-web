@@ -5,6 +5,9 @@
 #ifndef RUNTIMEDEBUGGER_INFORMATIONWINDOW_H
 #define RUNTIMEDEBUGGER_INFORMATIONWINDOW_H
 
+#include <map>
+#include <string>
+
 #include "app_window.h"
 
 class InformationWindow:public AppWindow
@@ -13,7 +16,10 @@ public:
     InformationWindow();
     ~InformationWindow();
 
-//    bool OnDraw() override;
+private:
+    std::map<std::string,std::string> information_;
+    bool OnDraw() override;
+    void OnMessage(const std::string &message) override;
 };
 
 
