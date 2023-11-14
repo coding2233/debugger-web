@@ -17,9 +17,9 @@ App::App():ImplApp("",1280,800,0)
 {
     server_url_ = "ws://127.0.0.1:2233";
     windows_.insert({"/",new InformationWindow()});
-    windows_.insert({"/log",new LogWindow()});
+    //windows_.insert({"/log",new LogWindow()});
 
-//    menu_windows_.insert({"/log",new LogWindow()});
+    menu_windows_.insert({"/log",new LogWindow()});
     menu_windows_.insert({"/file",new FileWindow()});
     menu_windows_.insert({"/inspector",new InspectorWindow()});
 }
@@ -66,7 +66,14 @@ void App::OnImGuiDraw()
                 {
                     if(ImGui::MenuItem(iter->first.c_str()))
                     {
+                        std::string url;
+                        int charLen = strlen(server_url_.c_str());
+                        url.append(server_url_.c_str(),charLen);
+                        url.append(iter->first);
+                        iter->second->Connect(url);
 
+                        windows_.insert(make_pair(iter->first,iter->second));
+                        menu_windows_.erase(iter);
                     }
                     ImGui::Separator();
                 }
@@ -96,8 +103,6 @@ void App::OnImGuiDraw()
             ImGui::InputText("server url",(char*)server_url_.c_str(),128);
             if (ImGui::Button("Connect"))
             {
-//                int server_url_len = strlen(server_url_.c_str());
-//                server_url_.resize(server_url_len);
                 ConnectToServer();
                 ImGui::CloseCurrentPopup();
             }
