@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "app_window.h"
+#include "log_node.h"
 
 class LogWindow : public AppWindow
 {
@@ -20,6 +21,7 @@ public:
 
 private:
     std::vector<std::string> logs_;
+    std::vector<LogNode> log_nodes_;
 public:
     void OnMessage(const std::string &message) override;
     bool OnDraw() override;
