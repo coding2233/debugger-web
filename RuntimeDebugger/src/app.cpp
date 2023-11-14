@@ -90,6 +90,10 @@ void App::OnImGuiDraw()
     {
         bool connected = iter->second->OnDraw();
         allConnected = allConnected && connected;
+        if(!connected)
+        {
+            break;
+        }
     }
 
     if (!allConnected)

@@ -9,3 +9,14 @@ InspectorWindow::InspectorWindow()
 
 InspectorWindow::~InspectorWindow()
 {}
+
+void InspectorWindow::OnMessage(const std::string &message)
+{}
+
+
+bool InspectorWindow::OnDraw()
+{
+    bool connected = CheckConnect();
+
+    return connected;
+}

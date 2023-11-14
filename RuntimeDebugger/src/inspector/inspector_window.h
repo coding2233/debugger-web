@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "app_window.h"
 
@@ -15,7 +16,9 @@ class InspectorWindow :public AppWindow
 public:
     InspectorWindow();
     ~InspectorWindow();
-
+public:
+    void OnMessage(const std::string &message) override;
+    bool OnDraw() override;
 };
 
 
