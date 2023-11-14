@@ -29,15 +29,15 @@ public:
     std::string Tag;
     int Layer;
     bool Active;
-    std::vector<HierarchyNode> ChildrenNodes;
+    std::vector<const HierarchyNode*> ChildrenNodes;
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(HierarchyNode,InstanceID,ParentInstanceID,Name,Tag,Layer,Active);
 
-    void AddChild(HierarchyNode node)
+    void AddChild(const HierarchyNode* node)
     {
         bool has_node = false;
         for (int i=0;i< ChildrenNodes.size();i++)
         {
-            if (ChildrenNodes[i].InstanceID == node.InstanceID)
+            if (ChildrenNodes[i]->InstanceID == node->InstanceID)
             {
                 has_node = true;
                 break;

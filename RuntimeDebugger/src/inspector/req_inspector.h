@@ -17,9 +17,9 @@ using json = nlohmann::json;
 
 enum ReqInspectorCmd
 {
-    FindGameObjects,
-    FindComponent,
-    Edit,
+    Req_Cmd_FindGameObjects,
+    Req_Cmd_FindComponent,
+    Req_Cmd_Edit,
 };
 
 class ReqInspector

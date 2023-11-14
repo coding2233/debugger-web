@@ -56,6 +56,14 @@ public:
         return  ws_ != NULL;
     }
 
+    virtual void Send(const std::string & message)
+    {
+        if(CheckConnect())
+        {
+            ws_->send(message);
+        }
+    }
+
     virtual bool OnDraw()
     {
         return CheckConnect();

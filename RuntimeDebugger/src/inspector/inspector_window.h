@@ -19,8 +19,10 @@ public:
     InspectorWindow();
     ~InspectorWindow();
 private:
-    std::vector<HierarchyNode> hierarchy_root_nodes_;
+    std::vector<const HierarchyNode*> hierarchy_root_nodes_;
     std::map<int,HierarchyNode> map_hierarchy_nodes_;
+
+    void DrawInspectorNode(const HierarchyNode* hierarchy_node);
 public:
     void OnMessage(const std::string &message) override;
     bool OnDraw() override;
