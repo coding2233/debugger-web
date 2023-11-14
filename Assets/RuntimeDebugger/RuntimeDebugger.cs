@@ -106,6 +106,11 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 		{
 			yield return wfs;
 			Debug.Log($"TestLog {UnityEngine.Random.Range(0,99999999).ToString("D8")} {DateTime.Now} #");
+			yield return wfs;
+			Debug.LogWarning($"TestLog {UnityEngine.Random.Range(0, 99999999).ToString("D8")} {DateTime.Now} #");
+			yield return wfs;
+			Debug.LogError($"TestLog {UnityEngine.Random.Range(0, 99999999).ToString("D8")} {DateTime.Now} #");
+
 		}
 	}
 

@@ -12,16 +12,18 @@
 #include "app_window.h"
 #include "log_node.h"
 
+#define MAX_RUNTIME_DEBUGGER_LOG_NUMBER 1024
+
 class LogWindow : public AppWindow
 {
-
 public:
     LogWindow();
     ~LogWindow();
 
 private:
-    std::vector<std::string> logs_;
     std::vector<LogNode> log_nodes_;
+    int log_node_index_;
+    int log_node_selected_index_;
 public:
     void OnMessage(const std::string &message) override;
     bool OnDraw() override;

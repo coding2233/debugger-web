@@ -56,13 +56,6 @@ bool InformationWindow::OnDraw()
                 }
                 ImGui::EndTabBar();
             }
-
-//            ImGui::Text(iter->first.c_str());
-//            ImGui::Separator();
-////            ImGui::Text(iter->second.c_str());
-////            ImGui::Separator();
-//            ImGui::Separator();
-//            ImGui::Separator();
         }
         ImGui::End();
     }
