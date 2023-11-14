@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
@@ -25,15 +26,28 @@ public:
     int InstanceID;
     int ParentInstanceID;
     std::string Name;
-    ImVec3 LocalPosition;
-    ImVec3 LocalAngle;
-    ImVec4 LocalQuaternion;
-    ImVec3 LocalScale;
     std::string Tag;
-    std::string Layer;
+    int Layer;
     bool Active;
     std::vector<HierarchyNode> ChildrenNodes;
-    //    NLOHMANN_DEFINE_TYPE_INTRUSIVE(LogNode,LogTime,LogType,LogFrameCount,LogMessage,StackTrack);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(HierarchyNode,InstanceID,ParentInstanceID,Name,Tag,Layer,Active);
+
+    void AddChild(HierarchyNode node)
+    {
+        bool has_node = false;
+        for (int i=0;i< ChildrenNodes.size();i++)
+        {
+            if (ChildrenNodes[i].InstanceID == node.InstanceID)
+            {
+                has_node = true;
+                break;
+            }
+        }
+        if (!has_node)
+        {
+            ChildrenNodes.push_back(node);
+        }
+    }
 };
 
 #endif //RUNTIMEDEBUGGER_HIERARCHY_NODE_H

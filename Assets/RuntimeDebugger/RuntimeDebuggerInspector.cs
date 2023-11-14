@@ -19,7 +19,8 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 
 	public RuntimeDebuggerInspector()
 	{
-		FindGameObjectSend(null);
+		//FindGameObjectSend(null);
+		//FindComponentsSend(GameObject.Find("Main Camera").gameObject);
 	}
 
 	public override void OnOpen(RuntimeDebugger runtimeDebugger, IntPtr channel)
@@ -69,7 +70,7 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 	{
 		string message = JsonConvert.SerializeObject(rsp,new VectorConverter());
 		Debug.Log(message);
-		//Send(message);
+		Send(message);
 	}
 
 	private RspInspector FindGameObject(Transform parent)
@@ -158,6 +159,15 @@ public class ReflectionInspector
 		CanWrite = propertyInfo.CanWrite;
 		ReflectionType = typeof(PropertyInfo).Name;
 	}
+
+	public ReflectionInspector(Component component, FieldInfo fieldInfo)
+	{
+		Name = fieldInfo.Name;
+		ValueType = fieldInfo.FieldType.Name;
+		Value = fieldInfo.GetValue(component);
+		CanWrite = true;
+		ReflectionType = typeof(FieldInfo).Name;
+	}
 }
 
 public class ComponentInspector
@@ -188,15 +198,24 @@ public class ComponentInspector
 				ReflectionValues.Add(new ReflectionInspector(component,item));
 			}
         }
-        //FieldInfos = type.GetFields();
-        //MemberInfos = type.GetMembers();
-    }
+        var fieldInfos = type.GetFields();
+		foreach (var item in fieldInfos)
+		{
+			if (CheckType(item.FieldType))
+			{
+				ReflectionValues.Add(new ReflectionInspector(component, item));
+			}
+		}
+		//MemberInfos = type.GetMembers();
+	}
 
 	private static bool CheckType(Type type)
 	{
 		if (s_checkTypes == null || s_checkTypes.Count == 0)
 		{
-			s_checkTypes = new HashSet<Type>() {typeof(string), typeof(int), typeof(float), typeof(double), typeof(long), typeof(uint),typeof(ulong),typeof(Vector2), typeof(Vector3), typeof(Vector4), typeof(Vector2Int), typeof(Vector3Int)};
+			s_checkTypes = new HashSet<Type>() {typeof(string), typeof(int), typeof(float), typeof(double),
+				typeof(long), typeof(uint),typeof(ulong),typeof(Color),typeof(Color32),typeof(Quaternion),
+				typeof(Vector2), typeof(Vector3), typeof(Vector4), typeof(Vector2Int), typeof(Vector3Int)};
 		}
 
 		return s_checkTypes.Contains(type);

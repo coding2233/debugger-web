@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "app_window.h"
+#include "hierarchy_node.h"
+#include "req_inspector.h"
 
 class InspectorWindow :public AppWindow
 {
@@ -17,8 +19,8 @@ public:
     InspectorWindow();
     ~InspectorWindow();
 private:
-//    std::vector<HierarchyNode> hierarchy_nodes_;
-//    std::vector<int,HierarchyNode> map_hierarchy_nodes_;
+    std::vector<HierarchyNode> hierarchy_root_nodes_;
+    std::map<int,HierarchyNode> map_hierarchy_nodes_;
 public:
     void OnMessage(const std::string &message) override;
     bool OnDraw() override;

@@ -71,6 +71,7 @@ bool LogWindow::OnDraw()
         {
             const LogNode &select_log_node = log_nodes_[log_node_selected_index_];
             ImGui::BeginChild("LogWindow_StackTrack",ImVec2(0, 0),true);
+            ImGui::Spacing();
             ImGui::Text(select_log_node.LogTime.c_str());
             ImGui::Separator();
             ImGui::Text(select_log_node.LogMessage.c_str());
