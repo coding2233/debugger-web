@@ -67,7 +67,8 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 		m_runtimeDebugger = new Dictionary<IntPtr, RuntimeDebuggerBase>();
 		m_registerRuntimeDebugger = new Dictionary<string, RuntimeDebuggerBase>();
 		m_registerRuntimeDebugger.Add("/",new RuntimeDebuggerInformation());
-		m_registerRuntimeDebugger.Add("/log",new DebuggerLog());
+		m_registerRuntimeDebugger.Add("/log",new RuntimeDebuggerLog());
+		m_registerRuntimeDebugger.Add("/inspector", new RuntimeDebuggerInspector());
 
 		StartCoroutine(TestLog());
 		try
@@ -101,15 +102,15 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 
 	IEnumerator TestLog()
 	{
-		var wfs = new WaitForSeconds(1);
+		var wfs = new WaitForSeconds(3);
 		while (true)
 		{
 			yield return wfs;
 			Debug.Log($"TestLog {UnityEngine.Random.Range(0,99999999).ToString("D8")} {DateTime.Now} #");
 			yield return wfs;
 			Debug.LogWarning($"TestLog {UnityEngine.Random.Range(0, 99999999).ToString("D8")} {DateTime.Now} #");
-			yield return wfs;
-			Debug.LogError($"TestLog {UnityEngine.Random.Range(0, 99999999).ToString("D8")} {DateTime.Now} #");
+			//yield return wfs;
+			//Debug.LogError($"TestLog {UnityEngine.Random.Range(0, 99999999).ToString("D8")} {DateTime.Now} #");
 
 		}
 	}

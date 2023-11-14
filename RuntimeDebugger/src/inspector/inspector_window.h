@@ -16,6 +16,9 @@ class InspectorWindow :public AppWindow
 public:
     InspectorWindow();
     ~InspectorWindow();
+private:
+//    std::vector<HierarchyNode> hierarchy_nodes_;
+//    std::vector<int,HierarchyNode> map_hierarchy_nodes_;
 public:
     void OnMessage(const std::string &message) override;
     bool OnDraw() override;

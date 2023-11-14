@@ -6,7 +6,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Pool;
 
-public class DebuggerLog: RuntimeDebuggerBase
+public class RuntimeDebuggerLog: RuntimeDebuggerBase
 {
 	LogNode m_logNode;
 	public override void OnOpen(RuntimeDebugger runtimeDebugger, IntPtr channel)

@@ -1,0 +1,13 @@
+//
+// Created by EDY on 2023/11/14.
+//
+
+#ifndef RUNTIMEDEBUGGER_INSPECTOR_COMPOENT_H
+#define RUNTIMEDEBUGGER_INSPECTOR_COMPOENT_H
+
+class CompoentInspector
+{
+
+};
+
+#endif //RUNTIMEDEBUGGER_INSPECTOR_COMPOENT_H
