@@ -24,7 +24,7 @@ jobs:
       run: |
         xmake --version
         cd xhv
-        xmake -v -y
+        xmake -v -y xhv
         ls -lah build
 
     - name: push xhvlib
@@ -102,7 +102,7 @@ jobs:
       run: |
         xmake --version
         cd xhv
-        xmake -v -y
+        xmake -v -y xhv
         dir build
     
     - name: push xhvlib
@@ -110,7 +110,7 @@ jobs:
         git config --global user.name "coding2233"
         git config --global user.email "dutifulwanderer@gmail.com"
         git clone -b xhv-lib https://github.com/coding2233/GameFramework.git xhvlib
-        XCOPY xhv\build\windows xhvlib\Assets\RuntimeDebugger\Plugins\ /E /Y
+        XCOPY xhv\build\windows xhvlib\Assets\RuntimeDebugger\Plugins\windows\ /E /Y
         cd xhvlib
         git add Assets/RuntimeDebugger/Plugins
         git commit -m "update xhv lib at $(date "+%Y-%m-%d %T") - by github actions"
@@ -133,7 +133,7 @@ jobs:
       run: |
         xmake --version
         cd xhv
-        xmake -v -y
+        xmake -v -y xhv
         ls -lah build
     
     - name: push xhvlib
@@ -167,7 +167,7 @@ jobs:
         xmake --version
         cd xhv
         xmake f -p iphoneos -a arm64 -y
-        xmake -v -y
+        xmake -v -y xhv
         ls -lah build
     
     - name: push xhvlib
