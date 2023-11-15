@@ -109,10 +109,8 @@ jobs:
       run: |
         git config --global user.name "coding2233"
         git config --global user.email "dutifulwanderer@gmail.com"
-        export GITHUB_REPO_URL=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git
-        echo $GITHUB_REPO_URL
-        git clone -b xhv-lib $GITHUB_REPO_URL xhvlib
-        cp -r -f xhv/build/windows xhvlib/Assets/RuntimeDebugger/Plugins/
+        git clone -b xhv-lib $GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git xhvlib
+        XCOPY xhv\build\windows xhvlib\Assets\RuntimeDebugger\Plugins\ /E /Y
         cd xhvlib
         git add Assets/RuntimeDebugger/Plugins
         git commit -m "update xhv lib at $(date "+%Y-%m-%d %T") - by github actions"
