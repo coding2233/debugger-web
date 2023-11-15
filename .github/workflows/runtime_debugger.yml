@@ -38,8 +38,9 @@ jobs:
       run: |
         git config --global user.name "coding2233"
         git config --global user.email "dutifulwanderer@gmail.com"
-     
-        git clone $https://github.com/coding2233/coding2233.github.io.git
+        git clone https://github.com/coding2233/coding2233.github.io.git
+        ls -lah
+        ls -alh build
         cp -r -f build/wasm/x64/release coding2233.github.io/webgl/runtime_debugger
         cd coding2233.github.io
         git add webgl/runtime_debugger

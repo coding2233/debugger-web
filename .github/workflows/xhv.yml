@@ -34,6 +34,8 @@ jobs:
         export GITHUB_REPO_URL=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git
         echo $GITHUB_REPO_URL
         git clone $GITHUB_REPO_URL xhvlib
+        ls -lah
+        ls -alh build
         cp -r -f build/linux xhvlib/Assets/RuntimeDebugger/Plugins/
         cd xhvlib
         git add Assets/RuntimeDebugger/Plugins
