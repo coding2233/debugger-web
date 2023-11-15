@@ -33,6 +33,19 @@ jobs:
         cp index.html build/wasm/x64/release/
         ls -lah build
         cd ..
+    
+    - name: push xhvlib
+      run: |
+        git config --global user.name "coding2233"
+        git config --global user.email "dutifulwanderer@gmail.com"
+     
+        git clone $https://github.com/coding2233/coding2233.github.io.git
+        cp -r -f build/wasm/x64/release coding2233.github.io/webgl/runtime_debugger
+        cd coding2233.github.io
+        git add webgl/runtime_debugger
+        git commit -m "update runtime-debugger at $(date "+%Y-%m-%d %T") - by github actions"
+        git remote set-url origin https://coding2233:${{ secrets.PUSH_TOKEN }}@github.com/coding2233/coding2233.github.io.git
+        git push
 
     - uses: actions/upload-artifact@v3
       with:
