@@ -24,7 +24,7 @@ public:
 private:
     std::unique_ptr<WebSocket> ws_;
     std::string server_url_;
-    std::map<uint8_t,AppWindow> windows_;
+    std::map<uint8_t,AppWindow*> windows_;
 
     void ConnectToServer();
 

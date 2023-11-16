@@ -47,10 +47,6 @@ public:
     virtual void OnShow(bool show)
     {
         printf("AppWindow::OnShow");
-        if (show)
-        {
-            Send("show");
-        }
     }
 
     void SetShow(bool show)
@@ -78,6 +74,11 @@ public:
                 OnDraw();
             }
             ImGui::End();
+
+            if(!show_)
+            {
+                OnShow(false);
+            }
         }
     }
 

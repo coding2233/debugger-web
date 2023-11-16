@@ -17,21 +17,25 @@ App::App():ImplApp("",1280,800,0)
 {
     server_url_ = "ws://127.0.0.1:2233";
 
-    windows_.insert({1,InformationWindow()});
-    windows_.insert({2,LogWindow()});
-    windows_.insert({3,InspectorWindow()});
-    windows_.insert({4,FileWindow()});
+    windows_.insert({1,new InformationWindow()});
+    windows_.insert({2,new LogWindow()});
+    windows_.insert({3,new InspectorWindow()});
+    windows_.insert({4,new FileWindow()});
 
     //bind websocket send
     for (auto iter = windows_.begin();iter!= windows_.end();iter++)
     {
-        iter->second.BindSend(std::bind(&App::OnWebSocketSend,this,std::placeholders::_1,std::placeholders::_2),iter->first);
+        iter->second->BindSend(std::bind(&App::OnWebSocketSend,this,std::placeholders::_1,std::placeholders::_2),iter->first);
     }
 
 }
 
 App::~App()
 {
+    for (auto iter = windows_.begin();iter!= windows_.end();iter++)
+    {
+        delete iter->second;
+    }
     // app_web_socket_->Close();
     // delete app_web_socket_;
 }
@@ -87,10 +91,10 @@ void App::OnImGuiDraw()
             {
                 for (auto iter = windows_.begin(); iter != windows_.end(); iter++)
                 {
-                    bool show_window = iter->second.GetShow();
-                    if(ImGui::MenuItem(iter->second.GetName().c_str(),NULL,&show_window))
+                    bool show_window = iter->second->GetShow();
+                    if(ImGui::MenuItem(iter->second->GetName().c_str(),NULL,&show_window))
                     {
-                        iter->second.SetShow(show_window);
+                        iter->second->SetShow(show_window);
                     }
 //                    ImGui::Separator();
                 }
@@ -105,8 +109,7 @@ void App::OnImGuiDraw()
     //绘制窗口
     for (auto iter = windows_.begin(); iter != windows_.end(); iter++)
     {
-        AppWindow & app_window = iter->second;
-        app_window.DrawWindow();
+        iter->second->DrawWindow();
     }
 
 }
@@ -163,7 +166,7 @@ void App::DispatchMessage(uint8_t key,const std::string & message)
     auto window_iter = windows_.find(key);
     if (window_iter!=windows_.end())
     {
-        window_iter->second.OnMessage(message);
+        window_iter->second->OnMessage(message);
     }
 }
 
