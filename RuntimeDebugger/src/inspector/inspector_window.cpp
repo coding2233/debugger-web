@@ -65,7 +65,7 @@ void InspectorWindow::OnMessage(const std::string &message)
 
 
 
-bool InspectorWindow::OnDraw()
+void InspectorWindow::OnDraw()
 {
     //bool connected = CheckConnect();
     bool connected = true;
@@ -76,7 +76,6 @@ bool InspectorWindow::OnDraw()
     }
 
     ImGui::End();
-    return connected;
 }
 
 

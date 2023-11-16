@@ -25,7 +25,7 @@ private:
     void DrawInspectorNode(const HierarchyNode* hierarchy_node);
 public:
     void OnMessage(const std::string &message) override;
-    bool OnDraw() override;
+    void OnDraw() override;
 };
 
 

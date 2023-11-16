@@ -26,7 +26,7 @@ private:
     int log_node_selected_index_;
 public:
     void OnMessage(const std::string &message) override;
-    bool OnDraw() override;
+    void OnDraw() override;
 };
 
 

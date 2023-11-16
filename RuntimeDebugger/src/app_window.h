@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <functional>
 
 #include "imgui.h"
 #include "easywsclient.hpp"
@@ -28,13 +29,15 @@ public:
 protected:
     std::string name_;
     bool show_;
+    std::function<void(uint8_t,const std::string &message)> websocket_send_callback_;
+    uint8_t key_;
 public:
     std::string GetName() const
     {
         return name_;
     }
 
-    bool  GetShow()
+    bool GetShow()
     {
         return  show_;
     }
@@ -44,11 +47,20 @@ public:
         show_ = show;
     }
 
+    void BindSend( std::function<void(uint8_t,const std::string &message)> websocket_send_callback,uint8_t key)
+    {
+        websocket_send_callback_ = websocket_send_callback;
+        key_ = key;
+    }
+
     void DrawWindow()
     {
         if (show_)
         {
-            ImGui::Begin(name_.c_str(), &show_);
+            if(ImGui::Begin(name_.c_str(), &show_))
+            {
+                OnDraw();
+            }
             ImGui::End();
         }
     }
@@ -60,17 +72,15 @@ public:
 
     virtual void Send(const std::string & message)
     {
-//        ws_->send(message);
-//        if(CheckConnect())
-//        {
-//            ws_->send(message);
-//        }
+        if (websocket_send_callback_)
+        {
+            websocket_send_callback_(key_,message);
+        }
     }
 
-    virtual bool OnDraw()
+    virtual void OnDraw()
     {
-//        return CheckConnect();
-        return  true;
+
     }
 };
 

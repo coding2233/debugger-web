@@ -18,7 +18,7 @@ void InformationWindow::OnMessage(const std::string &message)
         information_ = infor;
 }
 
-bool InformationWindow::OnDraw()
+void InformationWindow::OnDraw()
 {
     //bool connected = CheckConnect();
     bool connected = true;
@@ -63,5 +63,4 @@ bool InformationWindow::OnDraw()
         ImGui::End();
     }
 
-    return connected;
 }

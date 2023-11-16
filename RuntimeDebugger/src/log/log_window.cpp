@@ -35,7 +35,7 @@ void LogWindow::OnMessage(const std::string &message)
     log_nodes_.insert(log_nodes_.begin()+log_node_index_-1,log_node);
 }
 
-bool LogWindow::OnDraw()
+void LogWindow::OnDraw()
 {
 //    bool connected = CheckConnect();
 //    if(connected)
@@ -84,5 +84,4 @@ bool LogWindow::OnDraw()
     }
     ImGui::End();
 
-    return true;
 }

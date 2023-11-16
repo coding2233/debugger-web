@@ -35,6 +35,9 @@ private:
 
     bool CheckConnect();
     bool Connect(std::string server_url);
+    void DispatchMessage(uint8_t key,const std::string & message);
+
+    void OnWebSocketSend(uint8_t key,const std::string & message);
 public:
     void OnImGuiDraw() override;
 };

@@ -17,10 +17,17 @@ App::App():ImplApp("",1280,800,0)
 {
     server_url_ = "ws://127.0.0.1:2233";
 
-    windows_.insert({0,InformationWindow()});
-    windows_.insert({1,LogWindow()});
-    windows_.insert({2,InspectorWindow()});
-    windows_.insert({3,FileWindow()});
+    windows_.insert({1,InformationWindow()});
+    windows_.insert({2,LogWindow()});
+    windows_.insert({3,InspectorWindow()});
+    windows_.insert({4,FileWindow()});
+
+    //bind websocket send
+    for (auto iter = windows_.begin();iter!= windows_.end();iter++)
+    {
+        iter->second.BindSend(std::bind(&App::OnWebSocketSend,this,std::placeholders::_1,std::placeholders::_2),iter->first);
+    }
+
 }
 
 App::~App()
@@ -122,13 +129,14 @@ bool App::CheckConnect()
 ////            ws_->dispatch([wsp,this](const std::string & message) {
 ////                this->OnMessage(message);
 ////            });
-        ws_->dispatchBinary([wsp](const std::vector<uint8_t> & message) {
+        ws_->dispatchBinary([wsp,this](const std::vector<uint8_t> & message) {
             const int *message_size_ = (const int *)&message[0];
             int message_size = *message_size_;
             int message_sieze_o = message.size();
             uint8_t message_type = message[4];
             std::string json_mssage(message.begin()+5, message.end());
             printf(json_mssage.c_str());
+            this->DispatchMessage(message_type,json_mssage);
 //                this->OnMessage(message);
         });
 
@@ -136,6 +144,8 @@ bool App::CheckConnect()
     }
     return false;
 }
+
+
 
 bool App::Connect(std::string server_url)
 {
@@ -148,3 +158,15 @@ bool App::Connect(std::string server_url)
     return  ws_ != NULL;
 }
 
+
+void App::DispatchMessage(uint8_t key,const std::string & message)
+{
+    auto window_iter = windows_.find(key);
+    if (window_iter!=windows_.end())
+    {
+        window_iter->second.OnMessage(message);
+    }
+}
+
+void App::OnWebSocketSend(uint8_t key,const std::string & message)
+{}

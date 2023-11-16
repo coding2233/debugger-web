@@ -18,7 +18,7 @@ public:
 
 private:
     std::map<std::string,std::map<std::string,std::string>> information_;
-    bool OnDraw() override;
+    void OnDraw() override;
     void OnMessage(const std::string &message) override;
 };
 
