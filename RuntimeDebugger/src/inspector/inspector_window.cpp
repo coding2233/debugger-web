@@ -97,18 +97,22 @@ void InspectorWindow::OnShow(bool show)
 
 void InspectorWindow::OnDraw()
 {
-    //bool connected = CheckConnect();
-    bool connected = true;
-    float log_window_height = ImGui::GetWindowWidth()*0.35f;
+
+    bool node_selected = hierarchy_node_selected_;
+
+    float log_window_height = node_selected? ImGui::GetWindowWidth()*0.35f:0;
     ImGui::BeginChild("Inspector_Child_Hierarchy",ImVec2(log_window_height,0));
     for (int i = 0;i<hierarchy_root_nodes_.size();i++)
     {
         DrawInspectorNode(hierarchy_root_nodes_[i]);
     }
     ImGui::EndChild();
-    ImGui::SameLine();
-    ImGui::BeginChild("Inspector_Child_Component");
-    ImGui::EndChild();
+    if (node_selected)
+    {
+        ImGui::SameLine();
+        ImGui::BeginChild("Inspector_Child_Component");
+        ImGui::EndChild();
+    }
 }
 
 
