@@ -53,7 +53,17 @@ void App::OnImGuiDraw()
             ImGui::InputText("server url",(char*)server_url_.c_str(),128);
             if (ImGui::Button("Connect"))
             {
-                ConnectToServer();
+                if (ConnectToServer())
+                {
+                    for (auto iter = windows_.begin();iter!= windows_.end();iter++)
+                    {
+                        if (iter->second->GetShow())
+                        {
+                            //重新激活，去拉取数据
+                            iter->second->SetShow(true);
+                        }
+                    }
+                }
                 ImGui::CloseCurrentPopup();
             }
             ImGui::EndPopup();
@@ -114,12 +124,12 @@ void App::OnImGuiDraw()
 
 }
 
-void App::ConnectToServer()
+bool App::ConnectToServer()
 {
     std::string url;
     int charLen = strlen(server_url_.c_str());
     url.append(server_url_.c_str(),charLen);
-    Connect(url);
+    return Connect(url);
 }
 
 bool App::CheckConnect()
@@ -137,7 +147,7 @@ bool App::CheckConnect()
             int message_sieze_o = message.size();
             uint8_t message_type = message[4];
             std::string json_mssage(message.begin()+5, message.end());
-            printf(json_mssage.c_str());
+            printf("%s\n",json_mssage.c_str());
             this->DispatchMessage(message_type,json_mssage);
 //                this->OnMessage(message);
         });

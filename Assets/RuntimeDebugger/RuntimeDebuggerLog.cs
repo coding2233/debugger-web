@@ -34,7 +34,7 @@ public class RuntimeDebuggerLog: RuntimeDebuggerBase
 		Send(logNodeMessage);
 	}
 
-	internal class LogNode
+	private class LogNode
 	{
 		public DateTime LogTime { get; private set; }
 		public int LogFrameCount { get; private set; }
@@ -91,19 +91,5 @@ public class RuntimeDebuggerLog: RuntimeDebuggerBase
 
 	}
 
-	internal static class LogNodePool
-	{
-		private static readonly ObjectPool<LogNode> _objectPool = new ObjectPool<LogNode>(null, null);
-
-		public static LogNode Get(string condition, string stackTrace, LogType type)
-		{
-			return _objectPool.Get().Set(condition, stackTrace, type);
-		}
-
-		public static void Release(LogNode logNode)
-		{
-			_objectPool.Release(logNode);
-		}
-
-	}
+	
 }

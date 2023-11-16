@@ -26,7 +26,7 @@ private:
     std::string server_url_;
     std::map<uint8_t,AppWindow*> windows_;
 
-    void ConnectToServer();
+    bool ConnectToServer();
 
     bool CheckConnect();
     bool Connect(std::string server_url);

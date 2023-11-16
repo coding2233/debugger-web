@@ -38,7 +38,11 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 			case ReqInspectorCmd.FindGameObjects:
 				if (m_idFindAllGameObjects.TryGetValue(req.InstanceID, out GameObject findParent))
 				{
-					FindGameObjectSend(findParent == null ? null: findParent.transform);
+					FindGameObjectSend(findParent.transform);
+				}
+				else
+				{
+					FindGameObjectSend(null);
 				}
 				break;
 			case ReqInspectorCmd.FindComponent:
@@ -73,7 +77,7 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 		Send(message);
 	}
 
-	private RspInspector FindGameObject(Transform parent)
+	private List<GameObject> FindGameObjects(Transform parent)
 	{
 		List<GameObject> findGameObjects = new List<GameObject>();
 		if (parent == null)
@@ -86,11 +90,27 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 		}
 		else
 		{
-            for (int i = 0; i < parent.childCount; i++)
-            {
+			for (int i = 0; i < parent.childCount; i++)
+			{
 				findGameObjects.Add(parent.GetChild(i).gameObject);
 			}
-        }
+		}
+
+		List<GameObject> findAllChild = new List<GameObject>();
+        foreach (var item in findGameObjects)
+        {
+			var itemChild = FindGameObjects(item.transform);
+			findAllChild.AddRange(itemChild);
+		}
+
+		findGameObjects.AddRange(findAllChild);
+
+		return findGameObjects;
+	}
+
+	private RspInspector FindGameObject(Transform parent)
+	{
+		List<GameObject> findGameObjects = FindGameObjects(parent);
 
 		List<HierarchyNode> nodes = new List<HierarchyNode>();
         foreach (var item in findGameObjects)

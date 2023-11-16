@@ -46,7 +46,7 @@ public:
 
     virtual void OnShow(bool show)
     {
-        printf("AppWindow::OnShow");
+        printf("AppWindow::OnShow\n");
     }
 
     void SetShow(bool show)

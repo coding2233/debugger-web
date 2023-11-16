@@ -21,7 +21,8 @@ public:
     {}
     ~HierarchyNode()
     {}
-
+private:
+    bool tree_node_opened_;
 public:
     int InstanceID;
     int ParentInstanceID;
@@ -30,6 +31,7 @@ public:
     int Layer;
     bool Active;
     std::vector<const HierarchyNode*> ChildrenNodes;
+
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(HierarchyNode,InstanceID,ParentInstanceID,Name,Tag,Layer,Active);
 
     void AddChild(const HierarchyNode* node)
@@ -47,6 +49,16 @@ public:
         {
             ChildrenNodes.push_back(node);
         }
+    }
+
+    bool CheckTreeNodeOpened(bool opened)
+    {
+        if (tree_node_opened_!=opened)
+        {
+            tree_node_opened_ = opened;
+            return true;
+        }
+        return false;
     }
 };
 

@@ -20,7 +20,6 @@ void InformationWindow::OnMessage(const std::string &message)
 
 void InformationWindow::OnShow(bool show)
 {
-    printf("InformationWindow::OnShow");
     if(show)
     {
         Send("show");
@@ -29,16 +28,8 @@ void InformationWindow::OnShow(bool show)
 
 void InformationWindow::OnDraw()
 {
-    //bool connected = CheckConnect();
-    bool connected = true;
-    if(connected)
-    {
-
-    }
-
     if (information_.size() > 0)
     {
-        ImGui::Begin("Information",&show_);
         for (auto iter = information_.begin();iter!=information_.end();iter++)
         {
             ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
@@ -69,7 +60,5 @@ void InformationWindow::OnDraw()
                 ImGui::EndTabBar();
             }
         }
-        ImGui::End();
     }
-
 }

@@ -37,51 +37,41 @@ void LogWindow::OnMessage(const std::string &message)
 
 void LogWindow::OnDraw()
 {
-//    bool connected = CheckConnect();
-//    if(connected)
-//    {
-//
-//    }
-
-    if(ImGui::Begin("Log",&show_))
+    if (log_node_index_ > 0)
     {
-        if (log_node_index_ > 0)
+        float log_window_height = log_node_selected_index_<0?0: ImGui::GetWindowHeight()*0.55f;
+        ImGui::BeginChild("LogWindow_log_node",ImVec2(0,log_window_height));
+        for (int i = 0; i < log_node_index_; ++i)
         {
-            float log_window_height = log_node_selected_index_<0?0: ImGui::GetWindowHeight()*0.55f;
-            ImGui::BeginChild("LogWindow_log_node",ImVec2(0,log_window_height));
-            for (int i = 0; i < log_node_index_; ++i)
+            ImGui::PushStyleColor(ImGuiCol_Text, log_nodes_[i].GetColor());
+            if (ImGui::RadioButton(log_nodes_[i].SortLog.c_str(), log_node_selected_index_ == i))
             {
-                ImGui::PushStyleColor(ImGuiCol_Text, log_nodes_[i].GetColor());
-                if (ImGui::RadioButton(log_nodes_[i].SortLog.c_str(), log_node_selected_index_ == i))
+                if (log_node_selected_index_ == i)
                 {
-                    if (log_node_selected_index_ == i)
-                    {
-                        log_node_selected_index_ = -1;
-                    }
-                    else
-                    {
-                        log_node_selected_index_ = i;
-                    }
+                    log_node_selected_index_ = -1;
                 }
-                ImGui::PopStyleColor();
+                else
+                {
+                    log_node_selected_index_ = i;
+                }
             }
-            ImGui::EndChild();
+            ImGui::PopStyleColor();
         }
-
-        if (log_node_selected_index_ >= 0 && log_node_selected_index_ < MAX_RUNTIME_DEBUGGER_LOG_NUMBER)
-        {
-            const LogNode &select_log_node = log_nodes_[log_node_selected_index_];
-            ImGui::BeginChild("LogWindow_StackTrack",ImVec2(0, 0),true);
-            ImGui::Spacing();
-            ImGui::Text(select_log_node.LogTime.c_str());
-            ImGui::Separator();
-            ImGui::Text(select_log_node.LogMessage.c_str());
-            ImGui::Separator();
-            ImGui::Text(select_log_node.StackTrack.c_str());
-            ImGui::EndChild();
-        }
-
+        ImGui::EndChild();
     }
-    ImGui::End();
+
+    if (log_node_selected_index_ >= 0 && log_node_selected_index_ < MAX_RUNTIME_DEBUGGER_LOG_NUMBER)
+    {
+        const LogNode &select_log_node = log_nodes_[log_node_selected_index_];
+        ImGui::BeginChild("LogWindow_StackTrack",ImVec2(0, 0),true);
+        ImGui::Spacing();
+        ImGui::Text(select_log_node.LogTime.c_str());
+        ImGui::Separator();
+        ImGui::Text(select_log_node.LogMessage.c_str());
+        ImGui::Separator();
+        ImGui::Text(select_log_node.StackTrack.c_str());
+        ImGui::EndChild();
+    }
+
 
 }

@@ -31,14 +31,14 @@ public:
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(ReqInspector,Cmd,InstanceID,ComponentInstanceID);
 };
 
-class RspInspector
-{
-public:
-    ReqInspectorCmd Cmd;
-    std::vector<HierarchyNode> FindNodes;
-//    int ComponentInstanceID;
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(RspInspector,Cmd,FindNodes);
-};
+//class RspInspector
+//{
+//public:
+//    ReqInspectorCmd Cmd;
+//    std::vector<HierarchyNode> FindNodes;
+////    int ComponentInstanceID;
+//    NLOHMANN_DEFINE_TYPE_INTRUSIVE(RspInspector,Cmd,FindNodes);
+//};
 
 
 

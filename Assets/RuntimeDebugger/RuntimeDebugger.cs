@@ -16,9 +16,6 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 	private SynchronizationContext m_mainSynchronizationContext;
 	private IntPtr m_channel;
 
-	//private byte[] m_receiverBuffer;
-	//private MemoryStream m_receiveBufferStream;
-
 	void OnOpen(IntPtr channel, string req_path)
 	{
 		Console.WriteLine(string.Format("RuntimeDebugger.OnOpen {0} {1}", channel, channel));
@@ -47,6 +44,7 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 		{
 			m_mainSynchronizationContext.Post((state) =>
 			{
+				Debug.Log(message);
 				runtimeDebugger.OnMessage(message);
 			}, null);
 		}
@@ -83,9 +81,6 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 	// Start is called before the first frame update
 	void Start()
     {
-		//m_receiverBuffer = new byte[1024*10];
-		//m_receiveBufferStream = new MemoryStream(m_receiverBuffer);
-		//m_receiveBufferStream.Seek(0, SeekOrigin.Begin);
 
 		m_mainSynchronizationContext = SynchronizationContext.Current;
 		if (m_mainSynchronizationContext == null)
@@ -94,8 +89,9 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 		}
 
 		m_runtimeDebugger = new Dictionary<byte, RuntimeDebuggerBase>();
-		//m_registerRuntimeDebugger = new Dictionary<RuntimeDebuggerType, RuntimeDebuggerBase>();
 		m_runtimeDebugger.Add(1, new RuntimeDebuggerInformation());
+		m_runtimeDebugger.Add(2, new RuntimeDebuggerLog());
+		m_runtimeDebugger.Add(3, new RuntimeDebuggerInspector());
 		//m_registerRuntimeDebugger.Add("/log",new RuntimeDebuggerLog());
 		//m_registerRuntimeDebugger.Add("/inspector", new RuntimeDebuggerInspector());
 
