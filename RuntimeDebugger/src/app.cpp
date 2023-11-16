@@ -93,7 +93,7 @@ void App::OnImGuiDraw()
                     {
                         app_window.SetShow(show_window);
                     }
-                    ImGui::Separator();
+//                    ImGui::Separator();
                 }
 
                 ImGui::EndMenu();
@@ -169,4 +169,19 @@ void App::DispatchMessage(uint8_t key,const std::string & message)
 }
 
 void App::OnWebSocketSend(uint8_t key,const std::string & message)
-{}
+{
+    int message_size = message.size();
+    if (message_size<=0)
+    {
+        return;
+    }
+    int size = message.size()+4+1;
+    std::vector<uint_8> data;
+    data.assign(message.begin(),message.end());
+    message_size = data.size();
+    data.insert(message.begin(),key);
+    message_size = data.size();
+    uint8_t *size_t = &size;
+    data.insert(message.begin(),size_t,size_t+4);
+    message_size = data.size();
+}
