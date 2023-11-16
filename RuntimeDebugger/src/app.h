@@ -15,11 +15,6 @@
 #include "TextEditor.h"
 #include "app_window.h"
 
-enum AppType : uint8_t
-{
-    Information
-};
-
 class App :public ImplApp
 {
 public:

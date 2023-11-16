@@ -9,18 +9,18 @@ using UnityEngine.Pool;
 public class RuntimeDebuggerLog: RuntimeDebuggerBase
 {
 	LogNode m_logNode;
-	public override void OnOpen(RuntimeDebugger runtimeDebugger, IntPtr channel)
+
+	public RuntimeDebuggerLog()
 	{
-		base.OnOpen(runtimeDebugger, channel);
-		
 		Application.logMessageReceived += OnLogMessageReceived;
 	}
 
-	public override void OnClose()
+	public override void Dispose()
 	{
 		Application.logMessageReceived -= OnLogMessageReceived;
-		base.OnClose();
+		base.Dispose();
 	}
+
 
 	private void OnLogMessageReceived(string condition, string stackTrace, LogType type)
 	{

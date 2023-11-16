@@ -22,13 +22,15 @@ class AppWindow
 public:
     AppWindow()
     {
-        show_ = true;
+        show_ = false;
+        show_first_time_ = true;
     }
     ~AppWindow()
     {}
 protected:
     std::string name_;
     bool show_;
+    bool show_first_time_;
     std::function<void(uint8_t,const std::string &message)> websocket_send_callback_;
     uint8_t key_;
 public:
@@ -42,9 +44,23 @@ public:
         return  show_;
     }
 
-    void SetShow(bool  show)
+    virtual void OnShow(bool show)
+    {
+        printf("AppWindow::OnShow");
+        if (show)
+        {
+            Send("show");
+        }
+    }
+
+    void SetShow(bool show)
     {
         show_ = show;
+        this->OnShow(show);
+        if (show_ && show_first_time_)
+        {
+            show_first_time_ = false;
+        }
     }
 
     void BindSend( std::function<void(uint8_t,const std::string &message)> websocket_send_callback,uint8_t key)

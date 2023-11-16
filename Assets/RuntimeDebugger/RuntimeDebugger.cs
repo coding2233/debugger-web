@@ -10,17 +10,9 @@ using Unity.VisualScripting;
 using UnityEngine;
 
 
-public enum RuntimeDebuggerType : byte
-{
-	Information,
-	Log,
-	Inspector
-}
-
-
 public unsafe class RuntimeDebugger : MonoBehaviour
 {
-	private Dictionary<RuntimeDebuggerType, RuntimeDebuggerBase> m_runtimeDebugger;
+	private Dictionary<byte, RuntimeDebuggerBase> m_runtimeDebugger;
 	private SynchronizationContext m_mainSynchronizationContext;
 	private IntPtr m_channel;
 
@@ -48,7 +40,7 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 		//}
 		int* dataSizePtr = (int*)data;
 		int dataSize = *dataSizePtr;
-		RuntimeDebuggerType type = (RuntimeDebuggerType)data[4];
+		byte type = data[4];
 		string message = System.Text.Encoding.UTF8.GetString(data + 5, size - 5);
 
 		if (m_runtimeDebugger.TryGetValue(type, out RuntimeDebuggerBase runtimeDebugger))
@@ -101,13 +93,18 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 			m_mainSynchronizationContext = new SynchronizationContext();
 		}
 
-		m_runtimeDebugger = new Dictionary<RuntimeDebuggerType, RuntimeDebuggerBase>();
+		m_runtimeDebugger = new Dictionary<byte, RuntimeDebuggerBase>();
 		//m_registerRuntimeDebugger = new Dictionary<RuntimeDebuggerType, RuntimeDebuggerBase>();
-		m_runtimeDebugger.Add(RuntimeDebuggerType.Information, new RuntimeDebuggerInformation());
+		m_runtimeDebugger.Add(1, new RuntimeDebuggerInformation());
 		//m_registerRuntimeDebugger.Add("/log",new RuntimeDebuggerLog());
 		//m_registerRuntimeDebugger.Add("/inspector", new RuntimeDebuggerInspector());
 
-		StartCoroutine(TestLog());
+		foreach (var item in m_runtimeDebugger)
+		{
+			item.Value.BindSend(WebSocketSend, item.Key);
+		}
+
+		//StartCoroutine(TestLog());
 		try
         {
            
@@ -152,7 +149,7 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 		}
 	}
 
-	public void Send(RuntimeDebuggerType runtimeDebuggerType, string message)
+	public void WebSocketSend(byte key, string message)
 	{
 		if (m_channel == IntPtr.Zero)
 		{
@@ -168,7 +165,7 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 		int size = bytes.Length+4+1;
 		List<byte> datas = new List<byte>();
 		datas.AddRange(BitConverter.GetBytes(size));
-		datas.Add((byte)runtimeDebuggerType);
+		datas.Add(key);
 		datas.AddRange(bytes);
 
 		fixed (byte* aaa = datas.ToArray())

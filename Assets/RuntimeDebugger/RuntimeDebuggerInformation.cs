@@ -7,10 +7,15 @@ using UnityEngine;
 
 public class RuntimeDebuggerInformation : RuntimeDebuggerBase
 {
-	public override void OnOpen(RuntimeDebugger runtimeDebugger, IntPtr channel)
+	public RuntimeDebuggerInformation()
 	{
-		base.OnOpen(runtimeDebugger, channel);
+		
+	}
 
+	public override void OnMessage(string message)
+	{
+		Debug.Log($"OnMessage: {message}");
+		//收到消息，直接回包
 		var information = BuildInformation();
 		string informationDump = JsonConvert.SerializeObject(information);
 		Debug.Log(informationDump);

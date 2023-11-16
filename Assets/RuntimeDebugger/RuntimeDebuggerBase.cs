@@ -2,25 +2,27 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public abstract class RuntimeDebuggerBase
+public abstract class RuntimeDebuggerBase:IDisposable
 {
-	protected RuntimeDebugger m_runtimeDebugger;
-	protected RuntimeDebuggerType m_runtimeDebuggerType;
+	private byte m_sendKey;
+	private Action<byte, string> m_sendAction;
 
-	public virtual void OnOpen(RuntimeDebugger runtimeDebugger, RuntimeDebuggerType runtimeDebuggerType)
+	public void BindSend(Action<byte,string> sendAction, byte key)
 	{
-		m_runtimeDebugger = runtimeDebugger;
-		m_runtimeDebuggerType = runtimeDebuggerType;
+		m_sendKey = key;
+		m_sendAction = sendAction;
 	}
+
+	
 
 	public virtual void OnMessage(string message)
 	{
 
 	}
 
-	public virtual void OnClose()
+	public virtual void Dispose()
 	{
-		m_runtimeDebugger = null;
+		m_sendAction = null;
 	}
 
 	protected virtual void Send(string message)
@@ -30,9 +32,9 @@ public abstract class RuntimeDebuggerBase
 			return;
 		}
 
-		if (m_runtimeDebugger != null)
+		if (m_sendAction != null)
 		{
-			m_runtimeDebugger.Send(m_runtimeDebuggerType, message);
+			m_sendAction(m_sendKey, message);
 		}
 	}
 }

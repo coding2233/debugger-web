@@ -18,6 +18,15 @@ void InformationWindow::OnMessage(const std::string &message)
         information_ = infor;
 }
 
+void InformationWindow::OnShow(bool show)
+{
+    printf("InformationWindow::OnShow");
+    if(show)
+    {
+        Send("show");
+    }
+}
+
 void InformationWindow::OnDraw()
 {
     //bool connected = CheckConnect();

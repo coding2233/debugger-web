@@ -20,6 +20,7 @@ private:
     std::map<std::string,std::map<std::string,std::string>> information_;
     void OnDraw() override;
     void OnMessage(const std::string &message) override;
+    void OnShow(bool show) override;
 };
 
 

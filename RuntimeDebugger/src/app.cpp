@@ -39,22 +39,22 @@ App::~App()
 
 void App::OnImGuiDraw()
 {
-//    if(!CheckConnect())
-//    {
-//        ImGui::OpenPopup("Connect Modal window");
-//        bool connect_modal_window_open = true;
-//        ImGui::SetNextWindowSize(ImVec2(400,200),ImGuiCond_FirstUseEver);
-//        if (ImGui::BeginPopupModal("Connect Modal window", &connect_modal_window_open))
-//        {
-//            ImGui::InputText("server url",(char*)server_url_.c_str(),128);
-//            if (ImGui::Button("Connect"))
-//            {
-//                ConnectToServer();
-//                ImGui::CloseCurrentPopup();
-//            }
-//            ImGui::EndPopup();
-//        }
-//    }
+    if(!CheckConnect())
+    {
+        ImGui::OpenPopup("Connect Modal window");
+        bool connect_modal_window_open = true;
+        ImGui::SetNextWindowSize(ImVec2(400,200),ImGuiCond_FirstUseEver);
+        if (ImGui::BeginPopupModal("Connect Modal window", &connect_modal_window_open))
+        {
+            ImGui::InputText("server url",(char*)server_url_.c_str(),128);
+            if (ImGui::Button("Connect"))
+            {
+                ConnectToServer();
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+    }
 
     static bool show_information = true;
     static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
@@ -87,11 +87,10 @@ void App::OnImGuiDraw()
             {
                 for (auto iter = windows_.begin(); iter != windows_.end(); iter++)
                 {
-                    AppWindow & app_window = iter->second;
-                    bool show_window = app_window.GetShow();
-                    if(ImGui::MenuItem(app_window.GetName().c_str(),NULL,&show_window))
+                    bool show_window = iter->second.GetShow();
+                    if(ImGui::MenuItem(iter->second.GetName().c_str(),NULL,&show_window))
                     {
-                        app_window.SetShow(show_window);
+                        iter->second.SetShow(show_window);
                     }
 //                    ImGui::Separator();
                 }
@@ -176,12 +175,17 @@ void App::OnWebSocketSend(uint8_t key,const std::string & message)
         return;
     }
     int size = message.size()+4+1;
-    std::vector<uint_8> data;
+    std::vector<uint8_t> data;
     data.assign(message.begin(),message.end());
     message_size = data.size();
-    data.insert(message.begin(),key);
+    data.insert(data.begin(),key);
     message_size = data.size();
-    uint8_t *size_t = &size;
-    data.insert(message.begin(),size_t,size_t+4);
+    uint8_t *size_t = (uint8_t *)&size;
+    data.insert(data.begin(),size_t,size_t+4);
     message_size = data.size();
+
+    if(ws_ && ws_->getReadyState() != WebSocket::CLOSED)
+    {
+        ws_->sendBinary(data);
+    }
 }

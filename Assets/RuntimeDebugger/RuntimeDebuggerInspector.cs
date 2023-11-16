@@ -23,12 +23,12 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 		//FindComponentsSend(GameObject.Find("Main Camera").gameObject);
 	}
 
-	public override void OnOpen(RuntimeDebugger runtimeDebugger, IntPtr channel)
-	{
-		base.OnOpen(runtimeDebugger, channel);
+	//public override void OnOpen(RuntimeDebugger runtimeDebugger, IntPtr channel)
+	//{
+	//	base.OnOpen(runtimeDebugger, channel);
 
-		FindGameObjectSend(null);
-	}
+	//	FindGameObjectSend(null);
+	//}
 
 	public override void OnMessage(string message)
 	{
@@ -54,10 +54,10 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 		}
 	}
 
-	public override void OnClose()
-	{
-		base.OnClose();
-	}
+	//public override void OnClose()
+	//{
+	//	base.OnClose();
+	//}
 
 
 	private void FindGameObjectSend(Transform parent)
