@@ -24,6 +24,8 @@ private:
     std::map<int,HierarchyNode> map_hierarchy_nodes_;
     const HierarchyNode* hierarchy_node_selected_;
 
+    std::map<int,CompoentInspector> map_components_;
+
     void DrawInspectorNode(const HierarchyNode* hierarchy_node);
 public:
     void OnMessage(const std::string &message) override;

@@ -120,6 +120,7 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 
 		RspInspector rsp = new RspInspector();
 		rsp.Cmd = ReqInspectorCmd.FindGameObjects;
+		rsp.InstanceID = parent == null?0 : parent.gameObject.GetInstanceID();
 		rsp.FindNodes = nodes.ToArray();
 
 		return rsp;
@@ -147,6 +148,7 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 		}
 		RspInspector rsp = new RspInspector();
 		rsp.Cmd = ReqInspectorCmd.FindComponent;
+		rsp.InstanceID = target.GetInstanceID();
 		rsp.Components = componentInspectors.ToArray();
 		return rsp;
 	}
@@ -284,6 +286,7 @@ public class ReqInspector
 public class RspInspector
 {
 	public ReqInspectorCmd Cmd { get; set; }
+	public int InstanceID { get; set; }
 	public HierarchyNode[] FindNodes { get; set; }
 	public ComponentInspector[] Components { get; set; }
 }

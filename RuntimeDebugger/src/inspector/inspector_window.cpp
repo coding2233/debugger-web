@@ -67,15 +67,29 @@ void InspectorWindow::OnMessage(const std::string &message)
     }
     else if (req_cmd==Req_Cmd_FindComponent)
     {
+        map_components_.clear();
         if (json_rsp["Components"].empty())
         {
             return;
         }
         else
         {
+            int instanceID = json_rsp["InstanceID"].template get<int>();
+            if (!hierarchy_node_selected_ || instanceID!=hierarchy_node_selected_->InstanceID)
+            {
+                return;
+            }
             auto find_components = json_rsp["Components"].template get<std::vector<CompoentInspector>>();
             int components_size = find_components.size();
             //todo value to void*
+            if (components_size>0)
+            {
+                for (int i=0;i<components_size;i++)
+                {
+                    const CompoentInspector compoent_inspector = find_components[i];
+                    map_components_.insert({compoent_inspector.InstanceID, compoent_inspector});
+                }
+            }
         }
     }
 }
@@ -101,7 +115,7 @@ void InspectorWindow::OnDraw()
     bool node_selected = hierarchy_node_selected_;
 
     float log_window_height = node_selected? ImGui::GetWindowWidth()*0.35f:0;
-    ImGui::BeginChild("Inspector_Child_Hierarchy",ImVec2(log_window_height,0));
+    ImGui::BeginChild("Inspector_Child_Hierarchy",ImVec2(log_window_height,0),true);
     for (int i = 0;i<hierarchy_root_nodes_.size();i++)
     {
         DrawInspectorNode(hierarchy_root_nodes_[i]);
@@ -111,6 +125,29 @@ void InspectorWindow::OnDraw()
     {
         ImGui::SameLine();
         ImGui::BeginChild("Inspector_Child_Component");
+        //gameObject
+        ImGui::Text(hierarchy_node_selected_->Name.c_str());
+        ImGui::Text(hierarchy_node_selected_->Tag.c_str());
+
+        if (map_components_.size()>0)
+        {
+            for (auto iter = map_components_.begin();iter!=map_components_.end();iter++)
+            {
+                ImGui::Separator();
+                if(ImGui::TreeNode(iter->second.Name.c_str()))
+                {
+                    auto ref_values = iter->second.ReflectionValues;
+                    for (int i=0;i < ref_values.size();i++)
+                    {
+                        ImGui::Text(ref_values[i].Name.c_str());
+                        ImGui::Text(ref_values[i].ValueType.c_str());
+                        ImGui::Text(ref_values[i].ReflectionType.c_str());
+                    }
+                    ImGui::TreePop();
+                }
+            }
+        }
+
         ImGui::EndChild();
     }
 }
