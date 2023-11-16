@@ -15,6 +15,11 @@
 #include "TextEditor.h"
 #include "app_window.h"
 
+enum AppType : uint8_t
+{
+    Information
+};
+
 class App :public ImplApp
 {
 public:
@@ -22,11 +27,14 @@ public:
     //App(int width,int height,int flags):ImplApp(width,height,flags);
     ~App();
 private:
-
+    std::unique_ptr<WebSocket> ws_;
     std::string server_url_;
-    std::map<std::string,AppWindow*> windows_;
-    std::map<std::string,AppWindow*> menu_windows_;
+    std::map<uint8_t,AppWindow> windows_;
+
     void ConnectToServer();
+
+    bool CheckConnect();
+    bool Connect(std::string server_url);
 public:
     void OnImGuiDraw() override;
 };

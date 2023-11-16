@@ -6,6 +6,7 @@
 
 LogWindow::LogWindow()
 {
+    name_ = "Log";
     log_node_index_ = 0;
     log_node_selected_index_ = -1;
     log_nodes_.resize(MAX_RUNTIME_DEBUGGER_LOG_NUMBER);
@@ -36,11 +37,11 @@ void LogWindow::OnMessage(const std::string &message)
 
 bool LogWindow::OnDraw()
 {
-    bool connected = CheckConnect();
-    if(connected)
-    {
-
-    }
+//    bool connected = CheckConnect();
+//    if(connected)
+//    {
+//
+//    }
 
     if(ImGui::Begin("Log",&show_))
     {
@@ -83,5 +84,5 @@ bool LogWindow::OnDraw()
     }
     ImGui::End();
 
-    return connected;
+    return true;
 }

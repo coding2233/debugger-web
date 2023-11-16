@@ -16,12 +16,11 @@
 App::App():ImplApp("",1280,800,0)
 {
     server_url_ = "ws://127.0.0.1:2233";
-    windows_.insert({"/",new InformationWindow()});
-    //windows_.insert({"/log",new LogWindow()});
 
-    menu_windows_.insert({"/log",new LogWindow()});
-    menu_windows_.insert({"/file",new FileWindow()});
-    menu_windows_.insert({"/inspector",new InspectorWindow()});
+    windows_.insert({0,InformationWindow()});
+    windows_.insert({1,LogWindow()});
+    windows_.insert({2,InspectorWindow()});
+    windows_.insert({3,FileWindow()});
 }
 
 App::~App()
@@ -33,6 +32,23 @@ App::~App()
 
 void App::OnImGuiDraw()
 {
+//    if(!CheckConnect())
+//    {
+//        ImGui::OpenPopup("Connect Modal window");
+//        bool connect_modal_window_open = true;
+//        ImGui::SetNextWindowSize(ImVec2(400,200),ImGuiCond_FirstUseEver);
+//        if (ImGui::BeginPopupModal("Connect Modal window", &connect_modal_window_open))
+//        {
+//            ImGui::InputText("server url",(char*)server_url_.c_str(),128);
+//            if (ImGui::Button("Connect"))
+//            {
+//                ConnectToServer();
+//                ImGui::CloseCurrentPopup();
+//            }
+//            ImGui::EndPopup();
+//        }
+//    }
+
     static bool show_information = true;
     static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
@@ -62,18 +78,13 @@ void App::OnImGuiDraw()
         {
             if (ImGui::BeginMenu("Window"))
             {
-                for (auto iter = menu_windows_.begin(); iter != menu_windows_.end(); iter++)
+                for (auto iter = windows_.begin(); iter != windows_.end(); iter++)
                 {
-                    if(ImGui::MenuItem(iter->first.c_str()))
+                    AppWindow & app_window = iter->second;
+                    bool show_window = app_window.GetShow();
+                    if(ImGui::MenuItem(app_window.GetName().c_str(),NULL,&show_window))
                     {
-                        std::string url;
-                        int charLen = strlen(server_url_.c_str());
-                        url.append(server_url_.c_str(),charLen);
-                        url.append(iter->first);
-                        iter->second->Connect(url);
-
-                        windows_.insert(make_pair(iter->first,iter->second));
-                        menu_windows_.erase(iter);
+                        app_window.SetShow(show_window);
                     }
                     ImGui::Separator();
                 }
@@ -85,50 +96,55 @@ void App::OnImGuiDraw()
     }
     ImGui::End();
 
-    bool allConnected = true;
+    //绘制窗口
     for (auto iter = windows_.begin(); iter != windows_.end(); iter++)
     {
-        bool connected = iter->second->OnDraw();
-        allConnected = allConnected && connected;
-        if(!connected)
-        {
-            break;
-        }
+        AppWindow & app_window = iter->second;
+        app_window.DrawWindow();
     }
 
-    if (!allConnected)
-    {
-        ImGui::OpenPopup("Connect Modal window");
-
-        bool connect_modal_window_open = true;
-        ImGui::SetNextWindowSize(ImVec2(400,200),ImGuiCond_FirstUseEver);
-        if (ImGui::BeginPopupModal("Connect Modal window", &connect_modal_window_open))
-        {
-            ImGui::InputText("server url",(char*)server_url_.c_str(),128);
-            if (ImGui::Button("Connect"))
-            {
-                ConnectToServer();
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndPopup();
-        }
-    }
 }
 
 void App::ConnectToServer()
 {
-    for (auto iter = windows_.begin(); iter != windows_.end(); iter++)
-    {
-        bool connected = iter->second->CheckConnect();
-        if(!connected)
-        {
-            std::string url;
-            int charLen = strlen(server_url_.c_str());
-            url.append(server_url_.c_str(),charLen);
-            url.append(iter->first);
-            iter->second->Connect(url);
-        }
-    }
+    std::string url;
+    int charLen = strlen(server_url_.c_str());
+    url.append(server_url_.c_str(),charLen);
+    Connect(url);
 }
 
+bool App::CheckConnect()
+{
+    if(ws_ && ws_->getReadyState() != WebSocket::CLOSED)
+    {
+        ws_->poll();
+        WebSocket::pointer wsp = &*ws_;
+////            ws_->dispatch([wsp,this](const std::string & message) {
+////                this->OnMessage(message);
+////            });
+        ws_->dispatchBinary([wsp](const std::vector<uint8_t> & message) {
+            const int *message_size_ = (const int *)&message[0];
+            int message_size = *message_size_;
+            int message_sieze_o = message.size();
+            uint8_t message_type = message[4];
+            std::string json_mssage(message.begin()+5, message.end());
+            printf(json_mssage.c_str());
+//                this->OnMessage(message);
+        });
+
+        return true;
+    }
+    return false;
+}
+
+bool App::Connect(std::string server_url)
+{
+    if(CheckConnect())
+    {
+        ws_->close();
+    }
+    ws_ = std::unique_ptr<WebSocket>(WebSocket::from_url(server_url.c_str()));
+
+    return  ws_ != NULL;
+}
 

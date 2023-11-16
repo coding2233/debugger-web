@@ -6,7 +6,9 @@
 
 
 InspectorWindow::InspectorWindow()
-{}
+{
+    name_ = "Inspector";
+}
 
 InspectorWindow::~InspectorWindow()
 {}
@@ -65,7 +67,8 @@ void InspectorWindow::OnMessage(const std::string &message)
 
 bool InspectorWindow::OnDraw()
 {
-    bool connected = CheckConnect();
+    //bool connected = CheckConnect();
+    bool connected = true;
     ImGui::Begin("Inspector",&show_);
     for (int i = 0;i<hierarchy_root_nodes_.size();i++)
     {

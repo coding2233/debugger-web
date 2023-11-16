@@ -6,6 +6,7 @@
 #define RUNTIMEDEBUGGER_APP_WINDOW_H
 
 #include <string>
+#include <vector>
 
 #include "imgui.h"
 #include "easywsclient.hpp"
@@ -13,11 +14,10 @@ using easywsclient::WebSocket;
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
 
+
 class AppWindow
 {
-protected:
-    bool show_;
-    std::unique_ptr<WebSocket> ws_;
+//    const std::unique_ptr<WebSocket> ws_;
 public:
     AppWindow()
     {
@@ -25,48 +25,52 @@ public:
     }
     ~AppWindow()
     {}
+protected:
+    std::string name_;
+    bool show_;
+public:
+    std::string GetName() const
+    {
+        return name_;
+    }
+
+    bool  GetShow()
+    {
+        return  show_;
+    }
+
+    void SetShow(bool  show)
+    {
+        show_ = show;
+    }
+
+    void DrawWindow()
+    {
+        if (show_)
+        {
+            ImGui::Begin(name_.c_str(), &show_);
+            ImGui::End();
+        }
+    }
 
     virtual void OnMessage(const std::string &message)
     {
-
     }
 
-    virtual bool CheckConnect()
-    {
-        if(ws_ && ws_->getReadyState() != WebSocket::CLOSED)
-        {
-            ws_->poll();
-            WebSocket::pointer wsp = &*ws_;
-            ws_->dispatch([wsp,this](const std::string & message) {
-                this->OnMessage(message);
-            });
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool Connect(std::string server_url)
-    {
-        if(CheckConnect())
-        {
-            ws_->close();
-        }
-        ws_ = std::unique_ptr<WebSocket>(WebSocket::from_url(server_url.c_str()));
-
-        return  ws_ != NULL;
-    }
 
     virtual void Send(const std::string & message)
     {
-        if(CheckConnect())
-        {
-            ws_->send(message);
-        }
+//        ws_->send(message);
+//        if(CheckConnect())
+//        {
+//            ws_->send(message);
+//        }
     }
 
     virtual bool OnDraw()
     {
-        return CheckConnect();
+//        return CheckConnect();
+        return  true;
     }
 };
 

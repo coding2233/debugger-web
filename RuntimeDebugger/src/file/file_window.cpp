@@ -6,7 +6,9 @@
 
 
 FileWindow::FileWindow()
-{}
+{
+    name_ = "File";
+}
 
 FileWindow::~FileWindow()
 {}

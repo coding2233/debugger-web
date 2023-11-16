@@ -5,12 +5,12 @@ using System.Collections.Generic;
 public abstract class RuntimeDebuggerBase
 {
 	protected RuntimeDebugger m_runtimeDebugger;
-	protected IntPtr m_channel;
+	protected RuntimeDebuggerType m_runtimeDebuggerType;
 
-	public virtual void OnOpen(RuntimeDebugger runtimeDebugger, IntPtr channel)
+	public virtual void OnOpen(RuntimeDebugger runtimeDebugger, RuntimeDebuggerType runtimeDebuggerType)
 	{
 		m_runtimeDebugger = runtimeDebugger;
-		m_channel = channel;
+		m_runtimeDebuggerType = runtimeDebuggerType;
 	}
 
 	public virtual void OnMessage(string message)
@@ -20,7 +20,6 @@ public abstract class RuntimeDebuggerBase
 
 	public virtual void OnClose()
 	{
-		m_channel = IntPtr.Zero;
 		m_runtimeDebugger = null;
 	}
 
@@ -31,9 +30,9 @@ public abstract class RuntimeDebuggerBase
 			return;
 		}
 
-		if (m_runtimeDebugger != null && m_channel != IntPtr.Zero)
+		if (m_runtimeDebugger != null)
 		{
-			m_runtimeDebugger.Send(m_channel, message);
+			m_runtimeDebugger.Send(m_runtimeDebuggerType, message);
 		}
 	}
 }

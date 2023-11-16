@@ -5,7 +5,9 @@
 #include "information_window.h"
 
 InformationWindow::InformationWindow()
-{}
+{
+    name_ = "Information";
+}
 
 InformationWindow::~InformationWindow()
 {}
@@ -18,7 +20,8 @@ void InformationWindow::OnMessage(const std::string &message)
 
 bool InformationWindow::OnDraw()
 {
-    bool connected = CheckConnect();
+    //bool connected = CheckConnect();
+    bool connected = true;
     if(connected)
     {
 
