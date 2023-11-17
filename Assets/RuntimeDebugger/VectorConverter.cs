@@ -145,10 +145,8 @@ public class ConverterTypes
 	public static bool CheckType(Type t)
 	{
 		bool result = s_checkTypes.Contains(t);
-		if (!result)
-		{
-			return t.IsEnum;
-		}
+		result = result || t.IsEnum;
+		result = result || t==typeof(Material) || t == typeof(Material[]);
 		return result;
 	}
 
