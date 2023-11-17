@@ -233,27 +233,34 @@ public class ReflectionInspector
 
 	public void SetValue(Component target)
 	{
-		if (target == null || string.IsNullOrEmpty(Name) || string.IsNullOrEmpty(ReflectionType))
+		try
 		{
-			return;
+			if (target == null)
+			{
+				return;
+			}
+			var targetType = target.GetType();
+			switch (ReflectionType)
+			{
+				case "PropertyInfo":
+					var property = targetType.GetProperty(Name);
+					if (property != null)
+					{
+						property.SetValue(target, ConverterTypes.GetConverterValue(ValueType, Value));
+					}
+					break;
+				case "FieldInfo":
+					var field = targetType.GetField(Name);
+					if (field != null)
+					{
+						field.SetValue(target, ConverterTypes.GetConverterValue(ValueType, Value));
+					}
+					break;
+			}
 		}
-		var targetType = target.GetType();
-		switch (ReflectionType)
+		catch (System.Exception e)
 		{
-			case "PropertyInfo":
-				var property = targetType.GetProperty(Name);
-				if (property != null)
-				{
-					property.SetValue(target, ConverterTypes.GetConverterValue(ValueType, Value));
-				}
-				break;
-			case "FieldInfo":
-				var field = targetType.GetField(Name);
-				if (field != null)
-				{
-					field.SetValue(target, ConverterTypes.GetConverterValue(ValueType, Value));
-				}
-				break;
+			Debug.LogWarning($"SetValue Exception e:{e}");
 		}
 	}
 }

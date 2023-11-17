@@ -61,7 +61,7 @@ public:
         {
             ReflectionInt32 = value_json;
             draw_value_callback_ =[this](const char *value_name){
-                return ImGui::InputInt(value_name,&ReflectionInt32);
+                return ImGui::DragInt(value_name,&ReflectionInt32,1);
             };
             to_json_callback_=[this](){
                 return ReflectionInt32;
@@ -104,7 +104,7 @@ public:
         {
             ReflectionSingle = value_json;
             draw_value_callback_ = [this](const char *value_name){
-                return ImGui::InputFloat(value_name,&ReflectionSingle);
+                return ImGui::DragFloat(value_name,&ReflectionSingle,0.1f);
             };
             to_json_callback_=[this](){
                 return ReflectionSingle;
@@ -125,7 +125,7 @@ public:
             ReflectionVector[0] = value_json["x"].template get<float>();
             ReflectionVector[1] = value_json["y"].template get<float>();
             draw_value_callback_ = [this](const char *value_name){
-                return ImGui::InputFloat2(value_name,ReflectionVector);
+                return ImGui::DragFloat2(value_name,ReflectionVector,0.1f);
             };
             to_json_callback_=[this](){
                 std::map<std::string,float> vector_to_json = {{"x",ReflectionVector[0]},{"y",ReflectionVector[1]}};
@@ -138,7 +138,7 @@ public:
             ReflectionVector[1] = value_json["y"].template get<float>();
             ReflectionVector[2] = value_json["z"].template get<float>();
             draw_value_callback_ = [this](const char *value_name){
-                return ImGui::InputFloat3(value_name,ReflectionVector);
+                return ImGui::DragFloat3(value_name,ReflectionVector,0.1f);
             };
             to_json_callback_=[this](){
                 std::map<std::string,float> vector_to_json = {{"x",ReflectionVector[0]},{"y",ReflectionVector[1]},{"z",ReflectionVector[2]}};
@@ -152,7 +152,7 @@ public:
             ReflectionVector[2] = value_json["z"].template get<float>();
             ReflectionVector[3] = value_json["w"].template get<float>();
             draw_value_callback_ = [this](const char *value_name){
-                return ImGui::InputFloat4(value_name,ReflectionVector);
+                return ImGui::DragFloat4(value_name,ReflectionVector,0.1f);
             };
             to_json_callback_=[this](){
                 std::map<std::string,float> vector_to_json = {{"x",ReflectionVector[0]},{"y",ReflectionVector[1]},{"z",ReflectionVector[2]},{"w",ReflectionVector[3]}};
@@ -180,7 +180,7 @@ public:
             ReflectionVectorInt[0] = value_json["x"].template get<int>();
             ReflectionVectorInt[1] = value_json["y"].template get<int>();
             draw_value_callback_ = [this](const char *value_name){
-                return ImGui::InputInt2(value_name,ReflectionVectorInt);
+                return ImGui::DragInt2(value_name,ReflectionVectorInt,1);
             };
             to_json_callback_=[this](){
                 std::map<std::string,float> vector_to_json = {{"x",ReflectionVectorInt[0]},{"y",ReflectionVectorInt[1]}};
@@ -193,7 +193,7 @@ public:
             ReflectionVectorInt[1] = value_json["y"].template get<int>();
             ReflectionVectorInt[2] = value_json["z"].template get<int>();
             draw_value_callback_ = [this](const char *value_name){
-                return ImGui::InputInt3(value_name,ReflectionVectorInt);
+                return ImGui::DragInt3(value_name,ReflectionVectorInt);
             };
             to_json_callback_=[this](){
                 std::map<std::string,float> vector_to_json = {{"x",ReflectionVectorInt[0]},{"y",ReflectionVectorInt[1]},{"z",ReflectionVectorInt[2]}};
