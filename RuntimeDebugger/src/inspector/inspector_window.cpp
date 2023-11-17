@@ -8,6 +8,7 @@
 InspectorWindow::InspectorWindow()
 {
     name_ = "Inspector";
+    hierarchy_node_selected_ = nullptr;
 }
 
 InspectorWindow::~InspectorWindow()
@@ -129,8 +130,12 @@ void InspectorWindow::OnDraw()
         if(ImGui::BeginChild("Inspector_Child_Component"))
         {
             //gameObject
-            ImGui::Text(hierarchy_node_selected_->Name.c_str());
-            ImGui::Text(hierarchy_node_selected_->Tag.c_str());
+            bool  active = hierarchy_node_selected_->Active;
+            ImGui::Checkbox(hierarchy_node_selected_->Name.c_str(),&active);
+            ImGui::Text("Tag:%s",hierarchy_node_selected_->Tag.c_str());
+            ImGui::SameLine();
+            int layer = hierarchy_node_selected_->Layer;
+            ImGui::InputInt("Layer",&layer);
 
             if (map_components_.size() > 0)
             {
