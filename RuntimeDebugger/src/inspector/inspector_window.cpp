@@ -69,7 +69,8 @@ void InspectorWindow::OnMessage(const std::string &message)
     else if (req_cmd==Req_Cmd_FindComponent)
     {
         map_components_.clear();
-        if (json_rsp["Components"].empty())
+        auto json_rsp_components = json_rsp["Components"];
+        if (json_rsp_components.empty())
         {
             return;
         }
@@ -80,15 +81,30 @@ void InspectorWindow::OnMessage(const std::string &message)
             {
                 return;
             }
-            auto find_components = json_rsp["Components"].template get<std::vector<CompoentInspector>>();
+            auto find_components = json_rsp_components.template get<std::vector<CompoentInspector>>();
             int components_size = find_components.size();
             //todo value to void*
             if (components_size>0)
             {
                 for (int i=0;i<components_size;i++)
                 {
-                    const CompoentInspector compoent_inspector = find_components[i];
-                    map_components_.insert({compoent_inspector.InstanceID, compoent_inspector});
+                    int component_id = find_components[i].InstanceID;
+                    if (map_components_.find(component_id) != map_components_.end())
+                    {
+                        continue;
+                    }
+                    map_components_.insert({component_id, find_components[i]});
+                    const CompoentInspector* compoent_inspector = &(map_components_.find(component_id)->second);
+                    auto json_rsp_reflection = json_rsp_components[i]["ReflectionValues"];
+                    for (int j = 0; j < compoent_inspector->ReflectionValues.size(); ++j)
+                    {
+                        auto json_rsp_reflection_value = json_rsp_reflection[j];
+                        auto value_json = json_rsp_reflection_value["Value"];
+
+                        ReflectionInspector* reflection_value = (ReflectionInspector*)&(compoent_inspector->ReflectionValues[j]);
+                        reflection_value->Value.ToData(reflection_value->ValueType,value_json);
+                        //printf("%s %s\n",compoent_inspector.ReflectionValues[j].ValueType.c_str(),value_json.dump());
+                    }
                 }
             }
         }
@@ -129,13 +145,14 @@ void InspectorWindow::OnDraw()
         ImGui::SameLine();
         if(ImGui::BeginChild("Inspector_Child_Component"))
         {
+            float  one_third_width = ImGui::GetWindowWidth() * 0.3f;
             //gameObject
-            bool  active = hierarchy_node_selected_->Active;
-            ImGui::Checkbox(hierarchy_node_selected_->Name.c_str(),&active);
-            ImGui::Text("Tag:%s",hierarchy_node_selected_->Tag.c_str());
+            ImGui::Checkbox(hierarchy_node_selected_->Name.c_str(),&hierarchy_node_selected_->Active);
+            ImGui::SetNextItemWidth(one_third_width);
+            ImGui::InputText("Tag", hierarchy_node_selected_->Tag.data(),128);
             ImGui::SameLine();
-            int layer = hierarchy_node_selected_->Layer;
-            ImGui::InputInt("Layer",&layer);
+            ImGui::SetNextItemWidth(one_third_width);
+            ImGui::InputText("Layer", hierarchy_node_selected_->Layer.data(),128);
 
             if (map_components_.size() > 0)
             {
@@ -145,11 +162,12 @@ void InspectorWindow::OnDraw()
                     if (ImGui::TreeNode(iter->second.Name.c_str()))
                     {
                         auto ref_values = iter->second.ReflectionValues;
-                        for (int i = 0; i < ref_values.size(); i++)
+                        if(ref_values.size()>0)
                         {
-                            ImGui::Text(ref_values[i].Name.c_str());
-                            ImGui::Text(ref_values[i].ValueType.c_str());
-                            ImGui::Text(ref_values[i].ReflectionType.c_str());
+                            for (int i = 0; i < ref_values.size(); i++)
+                            {
+                                DrawReflectionInspector(&ref_values[i]);
+                            }
                         }
                         ImGui::TreePop();
                     }
@@ -160,6 +178,14 @@ void InspectorWindow::OnDraw()
     }
 }
 
+void InspectorWindow::DrawReflectionInspector(ReflectionInspector *reflection_node)
+{
+    if (reflection_node)
+    {
+        reflection_node->DrawReflectionValue();
+    }
+
+}
 
 void InspectorWindow::DrawInspectorNode(const HierarchyNode* hierarchy_node)
 {
@@ -186,7 +212,7 @@ void InspectorWindow::DrawInspectorNode(const HierarchyNode* hierarchy_node)
         {
             if (!selected)
             {
-                hierarchy_node_selected_ = hierarchy_node;
+                hierarchy_node_selected_ = (HierarchyNode*)hierarchy_node;
 
                 ReqInspector req;
                 req.Cmd = Req_Cmd_FindComponent;

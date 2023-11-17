@@ -12,6 +12,7 @@
 using json = nlohmann::json;
 
 #include "imgui.h"
+#include "reflection_value.h"
 
 class ReflectionInspector
 {
@@ -25,7 +26,19 @@ public:
     std::string ValueType;
     std::string ReflectionType;
     bool CanWrite;
-    const void* Value;
+    ReflectionValue Value;
+    void DrawReflectionValue()
+    {
+        if (!CanWrite)
+        {
+            ImGui::BeginDisabled();
+        }
+        Value.DrawValue(Name.c_str());
+        if (!CanWrite)
+        {
+            ImGui::EndDisabled();
+        }
+    }
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(ReflectionInspector,Name,ValueType,ReflectionType,CanWrite);
 };
 

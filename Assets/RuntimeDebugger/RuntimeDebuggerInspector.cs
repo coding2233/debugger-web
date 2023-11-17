@@ -19,6 +19,7 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 
 	public RuntimeDebuggerInspector()
 	{
+
 		//FindGameObjectSend(null);
 		//FindComponentsSend(GameObject.Find("Main Camera").gameObject);
 	}
@@ -250,7 +251,7 @@ public class HierarchyNode
 	public int ParentInstanceID { get; private set; }
 	public string Name { get; private set; }
 	public string Tag { get; private set; }
-	public int Layer { get; private set; }
+	public string Layer { get; private set; }
 	public bool Active { get; private set; }
 	//public ComponentInspector[] Components { get; set; }
 
@@ -259,7 +260,7 @@ public class HierarchyNode
 		InstanceID = gameObject.GetInstanceID();
 		Name = gameObject.name;
 		Tag = gameObject.tag;
-		Layer = gameObject.layer;
+		Layer = LayerMask.LayerToName(gameObject.layer);
 		Active = gameObject.activeSelf;
 		if (gameObject.transform.parent != null)
 		{
