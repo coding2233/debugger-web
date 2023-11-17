@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 using System.Buffers;
 using System.Collections;
@@ -81,7 +82,6 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 	// Start is called before the first frame update
 	void Start()
     {
-
 		m_mainSynchronizationContext = SynchronizationContext.Current;
 		if (m_mainSynchronizationContext == null)
 		{
@@ -156,7 +156,7 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 		{
 			return;
 		}
-
+		Debug.Log(message);
 		var bytes = System.Text.Encoding.UTF8.GetBytes(message);
 		int size = bytes.Length+4+1;
 		List<byte> datas = new List<byte>();

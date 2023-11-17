@@ -36,6 +36,10 @@ public:
 
     void ToData(std::string value_type,json value_json)
     {
+        if (value_json.empty())
+        {
+            printf("value_json.empty %s",value_type);
+        }
         if(value_type=="String")
         {
             ReflectionString = value_json;
@@ -112,16 +116,16 @@ public:
                 ImGui::InputFloat4(value_name,ReflectionVector);
             };
         }
-        //Color32 byte类型 0-255
         //color float类型 0-1
+        //Color32 byte类型 0-255
         else if(value_type=="Color" || value_type=="Color32")
         {
-            ReflectionVector[0] = value_json["r"].template get<float>();
-            ReflectionVector[1] = value_json["g"].template get<float>();
-            ReflectionVector[2] = value_json["b"].template get<float>();
-            ReflectionVector[3] = value_json["a"].template get<float>();
+            ReflectionVector[0] = value_json["x"].template get<float>();
+            ReflectionVector[1] = value_json["y"].template get<float>();
+            ReflectionVector[2] = value_json["z"].template get<float>();
+            ReflectionVector[3] = value_json["w"].template get<float>();
             draw_value_callback_ = [this](const char *value_name){
-                ImGui::InputFloat4(value_name,ReflectionVector);
+                ImGui::ColorEdit4(value_name,ReflectionVector);
             };
         }
         else if(value_type=="Vector2Int")

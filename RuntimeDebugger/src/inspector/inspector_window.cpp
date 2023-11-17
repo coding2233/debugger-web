@@ -2,6 +2,8 @@
 // Created by wanderer on 2023/11/14.
 //
 
+#include <iostream>
+#include <exception>
 #include "inspector_window.h"
 
 
@@ -102,7 +104,14 @@ void InspectorWindow::OnMessage(const std::string &message)
                         auto value_json = json_rsp_reflection_value["Value"];
 
                         ReflectionInspector* reflection_value = (ReflectionInspector*)&(compoent_inspector->ReflectionValues[j]);
-                        reflection_value->Value.ToData(reflection_value->ValueType,value_json);
+                        try
+                        {
+                            reflection_value->Value.ToData(reflection_value->ValueType, value_json);
+                        }
+                        catch(std::exception& e)
+                        {
+                            std::cout << "Standard exception: " << e.what() << "  json: "<< json_rsp_reflection_value.dump() << std::endl;
+                        }
                         //printf("%s %s\n",compoent_inspector.ReflectionValues[j].ValueType.c_str(),value_json.dump());
                     }
                 }
