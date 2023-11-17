@@ -144,7 +144,12 @@ public class ConverterTypes
 
 	public static bool CheckType(Type t)
 	{
-		return s_checkTypes.Contains(t);
+		bool result = s_checkTypes.Contains(t);
+		if (!result)
+		{
+			return t.IsEnum;
+		}
+		return result;
 	}
 
 	public static object GetConverterValue(string typeName,object value)

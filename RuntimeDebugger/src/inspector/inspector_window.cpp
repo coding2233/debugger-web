@@ -156,12 +156,38 @@ void InspectorWindow::OnDraw()
         {
             float  one_third_width = ImGui::GetWindowWidth() * 0.3f;
             //gameObject
-            ImGui::Checkbox(hierarchy_node_selected_->Name.c_str(),&(hierarchy_node_selected_->Active));
+            bool edit_gameobject= false;
+            if(ImGui::Checkbox(hierarchy_node_selected_->Name.c_str(),&(hierarchy_node_selected_->Active)))
+            {
+                edit_gameobject = true;
+            }
             ImGui::SetNextItemWidth(one_third_width);
-            ImGui::InputText("Tag", hierarchy_node_selected_->Tag.data(),128);
+            if(ImGui::InputText("Tag", hierarchy_node_selected_->Tag.data(),128,ImGuiInputTextFlags_ReadOnly))
+            {
+                edit_gameobject = true;
+            }
             ImGui::SameLine();
             ImGui::SetNextItemWidth(one_third_width);
-            ImGui::InputText("Layer", hierarchy_node_selected_->Layer.data(),128);
+            if(ImGui::InputText("Layer", hierarchy_node_selected_->Layer.data(),128,ImGuiInputTextFlags_EnterReturnsTrue))
+            {
+                int end_index = hierarchy_node_selected_->Layer.find('\0');
+                if (end_index>0)
+                {
+                    hierarchy_node_selected_->Layer = hierarchy_node_selected_->Layer.substr(0, end_index);
+                }
+                edit_gameobject = true;
+            }
+            if (edit_gameobject)
+            {
+                ReqInspector req;
+                req.Cmd = Req_Cmd_EditGameObject;
+                req.InstanceID = hierarchy_node_selected_->InstanceID;
+                json json_req = req;
+                json_req["HierarchyNode"] = *hierarchy_node_selected_;
+                std::string message = json_req.dump();
+                printf("req %s\n", message.c_str());
+                Send(message);
+            }
 
             if (map_components_.size() > 0)
             {
@@ -228,8 +254,16 @@ void InspectorWindow::DrawInspectorNode(const HierarchyNode* hierarchy_node)
     {
         node_flags = node_flags | ImGuiTreeNodeFlags_Selected;
     }
+
+    if (!hierarchy_node->Active)
+    {
+        ImGui::PushStyleColor( ImGuiCol_Text, ImGui::GetStyle().Colors[ ImGuiCol_TextDisabled ] );
+    }
     bool tree_open = ImGui::TreeNodeEx(hierarchy_node->Name.c_str(),node_flags);
-//    if (tree_open !=  hierarchy_node->TreeNodeOpened)
+    if (!hierarchy_node->Active)
+    {
+        ImGui::PopStyleColor();
+    }
     if (!hasChild || !((HierarchyNode*)hierarchy_node)->CheckTreeNodeOpened(tree_open))
     {
         if (ImGui::IsItemClicked())

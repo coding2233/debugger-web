@@ -35,13 +35,14 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 	{
 		try
 		{
+			GameObject findGameObject;
 			ReqInspector req = JsonConvert.DeserializeObject<ReqInspector>(message);
 			switch (req.Cmd)
 			{
 				case ReqInspectorCmd.FindGameObjects:
-					if (m_idFindAllGameObjects.TryGetValue(req.InstanceID, out GameObject findParent))
+					if (m_idFindAllGameObjects.TryGetValue(req.InstanceID, out findGameObject))
 					{
-						FindGameObjectSend(findParent.transform);
+						FindGameObjectSend(findGameObject.transform);
 					}
 					else
 					{
@@ -49,15 +50,21 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 					}
 					break;
 				case ReqInspectorCmd.FindComponent:
-					if (m_idFindAllGameObjects.TryGetValue(req.InstanceID, out GameObject findGameObject))
+					if (m_idFindAllGameObjects.TryGetValue(req.InstanceID, out findGameObject))
 					{
 						FindComponentsSend(findGameObject);
 					}
 					break;
 				case ReqInspectorCmd.EditReflectionValue:
-					if (m_idFindAllGameObjects.TryGetValue(req.InstanceID, out GameObject findEditGameObject))
+					if (m_idFindAllGameObjects.TryGetValue(req.InstanceID, out findGameObject))
 					{
-						EditorComponent(findEditGameObject, req.ComponentInstanceID, req.ReflectionValue);
+						EditComponent(findGameObject, req.ComponentInstanceID, req.ReflectionValue);
+					}
+					break;
+				case ReqInspectorCmd.EditGameObject:
+					if (m_idFindAllGameObjects.TryGetValue(req.InstanceID, out findGameObject))
+					{
+						EditGameObject(findGameObject, req.HierarchyNode);
 					}
 					break;
 				default:
@@ -179,7 +186,24 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 	}
 
 	#region 编辑属性
-	private void EditorComponent(GameObject target, int componentInstanceId, ReflectionInspector reflectionValue)
+	private void EditGameObject(GameObject target, HierarchyNode hierarchyNode)
+	{
+		if (target != null)
+		{
+			try
+			{
+				target.name = hierarchyNode.Name;
+				target.layer = LayerMask.NameToLayer(hierarchyNode.Layer);
+				target.tag = hierarchyNode.Tag;
+				target.SetActive(hierarchyNode.Active);
+			}
+			catch (Exception e)
+			{
+				Debug.LogWarning(e);
+			}
+		}
+	}
+	private void EditComponent(GameObject target, int componentInstanceId, ReflectionInspector reflectionValue)
 	{
 		if (target != null)
 		{
@@ -216,7 +240,7 @@ public class ReflectionInspector
 	public ReflectionInspector(Component component, PropertyInfo propertyInfo)
 	{
 		Name = propertyInfo.Name;
-		ValueType = propertyInfo.PropertyType.Name;
+		ValueType = propertyInfo.PropertyType.IsEnum ? typeof(int).Name : propertyInfo.PropertyType.Name;
 		Value = propertyInfo.GetValue(component);
 		CanWrite = propertyInfo.CanWrite;
 		ReflectionType = typeof(PropertyInfo).Name;
@@ -225,7 +249,7 @@ public class ReflectionInspector
 	public ReflectionInspector(Component component, FieldInfo fieldInfo)
 	{
 		Name = fieldInfo.Name;
-		ValueType = fieldInfo.FieldType.Name;
+		ValueType = fieldInfo.FieldType.IsEnum ? typeof(int).Name: fieldInfo.FieldType.Name;
 		Value = fieldInfo.GetValue(component);
 		CanWrite = true;
 		ReflectionType = typeof(FieldInfo).Name;
@@ -341,6 +365,7 @@ public enum ReqInspectorCmd
 	FindGameObjects,
 	FindComponent,
 	EditReflectionValue,
+	EditGameObject,
 }
 
 public class ReqInspector
@@ -349,6 +374,7 @@ public class ReqInspector
 	public int InstanceID { get; set; }
 	public int ComponentInstanceID { get; set; }
 	public ReflectionInspector ReflectionValue { get; set; }
+	public HierarchyNode HierarchyNode { get; set; }
 }
 
 public class RspInspector

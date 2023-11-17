@@ -21,6 +21,7 @@ enum ReqInspectorCmd
     Req_Cmd_FindGameObjects,
     Req_Cmd_FindComponent,
     Req_Cmd_EditReflectionValue,
+    Req_Cmd_EditGameObject,
 };
 
 class ReqInspector
