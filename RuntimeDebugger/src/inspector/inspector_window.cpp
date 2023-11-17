@@ -156,7 +156,7 @@ void InspectorWindow::OnDraw()
         {
             float  one_third_width = ImGui::GetWindowWidth() * 0.3f;
             //gameObject
-            ImGui::Checkbox(hierarchy_node_selected_->Name.c_str(),&hierarchy_node_selected_->Active);
+            ImGui::Checkbox(hierarchy_node_selected_->Name.c_str(),&(hierarchy_node_selected_->Active));
             ImGui::SetNextItemWidth(one_third_width);
             ImGui::InputText("Tag", hierarchy_node_selected_->Tag.data(),128);
             ImGui::SameLine();
