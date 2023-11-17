@@ -37,23 +37,27 @@ void InformationWindow::OnDraw()
             {
                 if (ImGui::BeginTabItem(iter->first.c_str()))
                 {
-                    ImGui::BeginChild("Information_Child");
-                    ImGuiTableFlags table_flags = ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable ;
-                    ImGui::BeginTable("Information_Table",2,table_flags);
-                    ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed);
-                    ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
-//                    ImGui::TableHeadersRow();
-                    const std::map<std::string,std::string> infos = iter->second;
-                    for (auto iterInfo = infos.begin(); iterInfo!=infos.end();iterInfo++)
+                    if(ImGui::BeginChild("Information_Child"))
                     {
-                        ImGui::TableNextRow();
-                        ImGui::TableSetColumnIndex(0);
-                        ImGui::Text(iterInfo->first.c_str());
-                        ImGui::TableSetColumnIndex(1);
-                        ImGui::TextWrapped(iterInfo->second.c_str());
+                        ImGuiTableFlags table_flags =
+                                ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable;
+                        if(ImGui::BeginTable("Information_Table", 2, table_flags))
+                        {
+                            ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed);
+                            ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+//                    ImGui::TableHeadersRow();
+                            const std::map<std::string, std::string> infos = iter->second;
+                            for (auto iterInfo = infos.begin(); iterInfo != infos.end(); iterInfo++)
+                            {
+                                ImGui::TableNextRow();
+                                ImGui::TableSetColumnIndex(0);
+                                ImGui::Text(iterInfo->first.c_str());
+                                ImGui::TableSetColumnIndex(1);
+                                ImGui::TextWrapped(iterInfo->second.c_str());
+                            }
+                        }
+                        ImGui::EndTable();
                     }
-
-                    ImGui::EndTable();
                     ImGui::EndChild();
                     ImGui::EndTabItem();
                 }
