@@ -175,7 +175,7 @@ void InspectorWindow::OnDraw()
                         {
                             for (int i = 0; i < ref_values.size(); i++)
                             {
-                                DrawReflectionInspector(&ref_values[i]);
+                                DrawReflectionInspector(&ref_values[i],iter->second.InstanceID);
                             }
                         }
                         ImGui::TreePop();
@@ -187,11 +187,26 @@ void InspectorWindow::OnDraw()
     }
 }
 
-void InspectorWindow::DrawReflectionInspector(ReflectionInspector *reflection_node)
+void InspectorWindow::DrawReflectionInspector(ReflectionInspector *reflection_node,int component_id)
 {
     if (reflection_node)
     {
-        reflection_node->DrawReflectionValue();
+        if(reflection_node->DrawReflectionValue())
+        {
+            if (hierarchy_node_selected_)
+            {
+                ReqInspector req;
+                req.Cmd = Req_Cmd_EditReflectionValue;
+                req.InstanceID = hierarchy_node_selected_->InstanceID;
+                req.ComponentInstanceID = component_id;
+                json json_req = req;
+                json_req["ReflectionValue"] = *reflection_node;
+                json_req["ReflectionValue"]["Value"] = reflection_node->ToJson();
+                std::string message = json_req.dump();
+                printf("req %s\n", message.c_str());
+                Send(message);
+            }
+        }
     }
 
 }

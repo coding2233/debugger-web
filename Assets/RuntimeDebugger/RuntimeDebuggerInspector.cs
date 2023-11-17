@@ -33,29 +33,40 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 
 	public override void OnMessage(string message)
 	{
-		ReqInspector req = JsonConvert.DeserializeObject<ReqInspector>(message);
-		switch (req.Cmd)
+		try
 		{
-			case ReqInspectorCmd.FindGameObjects:
-				if (m_idFindAllGameObjects.TryGetValue(req.InstanceID, out GameObject findParent))
-				{
-					FindGameObjectSend(findParent.transform);
-				}
-				else
-				{
-					FindGameObjectSend(null);
-				}
-				break;
-			case ReqInspectorCmd.FindComponent:
-				if (m_idFindAllGameObjects.TryGetValue(req.InstanceID, out GameObject findGameObject))
-				{
-					FindComponentsSend(findGameObject);
-				}
-				break;
-			case ReqInspectorCmd.Edit:
-				break;
-			default:
-				break;
+			ReqInspector req = JsonConvert.DeserializeObject<ReqInspector>(message, new VectorConverter());
+			switch (req.Cmd)
+			{
+				case ReqInspectorCmd.FindGameObjects:
+					if (m_idFindAllGameObjects.TryGetValue(req.InstanceID, out GameObject findParent))
+					{
+						FindGameObjectSend(findParent.transform);
+					}
+					else
+					{
+						FindGameObjectSend(null);
+					}
+					break;
+				case ReqInspectorCmd.FindComponent:
+					if (m_idFindAllGameObjects.TryGetValue(req.InstanceID, out GameObject findGameObject))
+					{
+						FindComponentsSend(findGameObject);
+					}
+					break;
+				case ReqInspectorCmd.EditReflectionValue:
+					if (m_idFindAllGameObjects.TryGetValue(req.InstanceID, out GameObject findEditGameObject))
+					{
+						EditorComponent(findEditGameObject, req.ComponentInstanceID, req.ReflectionValue);
+					}
+					break;
+				default:
+					break;
+			}
+		}
+		catch (System.Exception e)
+		{
+			Debug.LogWarning(e.ToString());
 		}
 	}
 
@@ -64,6 +75,7 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 	//	base.OnClose();
 	//}
 
+	
 
 	private void FindGameObjectSend(Transform parent)
 	{
@@ -165,15 +177,42 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 		}
 		return node;
 	}
+
+	#region 编辑属性
+	private void EditorComponent(GameObject target, int componentInstanceId, ReflectionInspector reflectionValue)
+	{
+		if (target != null)
+		{
+			var components = target.GetComponents<Component>();
+			if (components != null && components.Length > 0)
+			{
+				for (int i = 0; i < components.Length; i++)
+				{
+					if (componentInstanceId == components[i].GetInstanceID())
+					{
+						if (reflectionValue != null)
+						{
+							reflectionValue.SetValue(components[i]);
+						}
+						break;
+					}
+				}
+			}
+		}
+	}
+	#endregion
 }
 
 public class ReflectionInspector
 {
-	public string Name { get; private set; }
-	public string ValueType { get; private set; }
-	public object Value { get; private set; }
-	public string ReflectionType { get; private set; }
-	public bool CanWrite { get; private set; }
+	public string Name { get; set; }
+	public string ValueType { get; set; }
+	public object Value { get; set; }
+	public string ReflectionType { get; set; }
+	public bool CanWrite { get; set; }
+	public ReflectionInspector()
+	{ }
+
 	public ReflectionInspector(Component component, PropertyInfo propertyInfo)
 	{
 		Name = propertyInfo.Name;
@@ -191,17 +230,52 @@ public class ReflectionInspector
 		CanWrite = true;
 		ReflectionType = typeof(FieldInfo).Name;
 	}
+
+	public void SetValue(Component target)
+	{
+		if (target == null || string.IsNullOrEmpty(Name) || string.IsNullOrEmpty(ReflectionType))
+		{
+			return;
+		}
+		var targetType = target.GetType();
+		switch (ReflectionType)
+		{
+
+			case "PropertyInfo":
+				var property = targetType.GetProperty(Name);
+				if (property != null)
+				{
+					property.SetValue(target, Value);
+				}
+				break;
+			case "FieldInfo":
+				var field = targetType.GetField(Name);
+				if (field != null)
+				{
+					field.SetValue(target, Value);
+				}
+				break;
+		}
+	}
+
+
+
 }
 
 public class ComponentInspector
 {
-	public int InstanceID { get; private set; }
-	public string Name { get; private set; }
-	public bool Enable { get; private set; } = true;
+	public int InstanceID { get; set; }
+	public string Name { get; set; }
+	public bool Enable { get; set; } = true;
 
 	public List<ReflectionInspector> ReflectionValues { get; private set; }
 
 	private static HashSet<Type> s_checkTypes;
+
+	public ComponentInspector()
+	{
+
+	}
 
 	public ComponentInspector(Component component)
 	{
@@ -247,13 +321,16 @@ public class ComponentInspector
 
 public class HierarchyNode
 {
-	public int InstanceID { get; private set; }
-	public int ParentInstanceID { get; private set; }
-	public string Name { get; private set; }
-	public string Tag { get; private set; }
-	public string Layer { get; private set; }
-	public bool Active { get; private set; }
+	public int InstanceID { get; set; }
+	public int ParentInstanceID { get; set; }
+	public string Name { get; set; }
+	public string Tag { get; set; }
+	public string Layer { get; set; }
+	public bool Active { get; set; }
 	//public ComponentInspector[] Components { get; set; }
+
+	public HierarchyNode()
+	{ }
 
 	public HierarchyNode(GameObject gameObject)
 	{
@@ -274,7 +351,7 @@ public enum ReqInspectorCmd
 {
 	FindGameObjects,
 	FindComponent,
-	Edit,
+	EditReflectionValue,
 }
 
 public class ReqInspector
@@ -282,6 +359,7 @@ public class ReqInspector
 	public ReqInspectorCmd Cmd { get; set; }
 	public int InstanceID { get; set; }
 	public int ComponentInstanceID { get; set; }
+	public ReflectionInspector ReflectionValue { get; set; }
 }
 
 public class RspInspector

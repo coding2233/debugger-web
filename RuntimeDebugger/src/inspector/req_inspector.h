@@ -13,13 +13,14 @@ using json = nlohmann::json;
 
 #include "imgui.h"
 #include "hierarchy_node.h"
+#include "compoent_inspector.h"
 
 
 enum ReqInspectorCmd
 {
     Req_Cmd_FindGameObjects,
     Req_Cmd_FindComponent,
-    Req_Cmd_Edit,
+    Req_Cmd_EditReflectionValue,
 };
 
 class ReqInspector

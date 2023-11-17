@@ -27,7 +27,7 @@ private:
     std::map<int,CompoentInspector> map_components_;
 
     void DrawInspectorNode(const HierarchyNode* hierarchy_node);
-    void DrawReflectionInspector(ReflectionInspector *reflection_node);
+    void DrawReflectionInspector(ReflectionInspector *reflection_node,int component_id);
 public:
     void OnMessage(const std::string &message) override;
     void OnDraw() override;

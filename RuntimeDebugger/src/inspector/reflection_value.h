@@ -8,6 +8,8 @@
 #include <vector>
 #include <string>
 #include <functional>
+#include <iostream>
+#include <exception>
 
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
@@ -22,7 +24,8 @@ public:
     ~ReflectionValue()
     {}
 private:
-    std::function<void(const char *value_name)> draw_value_callback_;
+    std::function<bool(const char *value_name)> draw_value_callback_;
+    std::function<json()> to_json_callback_;
 public:
     std::string ReflectionString;
     int ReflectionInt32;
@@ -38,20 +41,30 @@ public:
     {
         if (value_json.empty())
         {
-            printf("value_json.empty %s",value_type);
+            printf("value_json.empty %s",value_type.c_str());
+            return;
         }
+
+        printf("value_json: %s\n",value_json.dump().c_str());
+
         if(value_type=="String")
         {
             ReflectionString = value_json;
             draw_value_callback_ = [this](const char *value_name){
-                ImGui::InputText(value_name,ReflectionString.data(),256);
+                return ImGui::InputText(value_name,ReflectionString.data(),256);
+            };
+            to_json_callback_=[this](){
+                return ReflectionString;
             };
         }
         else if(value_type=="Int32")
         {
             ReflectionInt32 = value_json;
             draw_value_callback_ =[this](const char *value_name){
-                ImGui::InputInt(value_name,&ReflectionInt32);
+                return ImGui::InputInt(value_name,&ReflectionInt32);
+            };
+            to_json_callback_=[this](){
+                return ReflectionInt32;
             };
         }
         else if(value_type=="UInt32")
@@ -59,6 +72,10 @@ public:
             ReflectionUInt32 = value_json;
             draw_value_callback_ = [this,value_type](const char *value_name){
                 ImGui::Text("[unsupported] %s %s %u",value_name,value_type.c_str(),ReflectionUInt32);
+                return false;
+            };
+            to_json_callback_=[this](){
+                return ReflectionUInt32;
             };
         }
         else if(value_type=="Int64")
@@ -66,6 +83,10 @@ public:
             ReflectionInt64 = value_json;
             draw_value_callback_ = [this,value_type](const char *value_name){
                 ImGui::Text("[unsupported] %s %s %ld",value_name,value_type.c_str(),ReflectionInt64);
+                return false;
+            };
+            to_json_callback_=[this](){
+                return ReflectionInt64;
             };
         }
         else if(value_type=="UInt64")
@@ -73,20 +94,30 @@ public:
             ReflectionUInt64 = value_json;
             draw_value_callback_ = [this,value_type](const char *value_name){
                 ImGui::Text("[unsupported] %s %s %llu",value_name,value_type.c_str(),ReflectionUInt64);
+                return false;
+            };
+            to_json_callback_=[this](){
+                return ReflectionUInt64;
             };
         }
         else if(value_type=="Single")
         {
             ReflectionSingle = value_json;
             draw_value_callback_ = [this](const char *value_name){
-                ImGui::InputFloat(value_name,&ReflectionSingle);
+                return ImGui::InputFloat(value_name,&ReflectionSingle);
+            };
+            to_json_callback_=[this](){
+                return ReflectionSingle;
             };
         }
         else if(value_type=="Double")
         {
             ReflectionDouble = value_json;
             draw_value_callback_ = [this](const char *value_name){
-                ImGui::InputDouble(value_name,&ReflectionDouble);
+                return ImGui::InputDouble(value_name,&ReflectionDouble);
+            };
+            to_json_callback_=[this](){
+                return ReflectionDouble;
             };
         }
         else if(value_type=="Vector2")
@@ -94,7 +125,11 @@ public:
             ReflectionVector[0] = value_json["x"].template get<float>();
             ReflectionVector[1] = value_json["y"].template get<float>();
             draw_value_callback_ = [this](const char *value_name){
-                ImGui::InputFloat2(value_name,ReflectionVector);
+                return ImGui::InputFloat2(value_name,ReflectionVector);
+            };
+            to_json_callback_=[this](){
+                std::map<std::string,float> vector_to_json = {{"x",ReflectionVector[0]},{"y",ReflectionVector[1]}};
+                return vector_to_json;
             };
         }
         else if(value_type=="Vector3")
@@ -103,7 +138,11 @@ public:
             ReflectionVector[1] = value_json["y"].template get<float>();
             ReflectionVector[2] = value_json["z"].template get<float>();
             draw_value_callback_ = [this](const char *value_name){
-                ImGui::InputFloat3(value_name,ReflectionVector);
+                return ImGui::InputFloat3(value_name,ReflectionVector);
+            };
+            to_json_callback_=[this](){
+                std::map<std::string,float> vector_to_json = {{"x",ReflectionVector[0]},{"y",ReflectionVector[1]},{"z",ReflectionVector[2]}};
+                return vector_to_json;
             };
         }
         else if(value_type=="Vector4" || value_type=="Quaternion")
@@ -113,7 +152,11 @@ public:
             ReflectionVector[2] = value_json["z"].template get<float>();
             ReflectionVector[3] = value_json["w"].template get<float>();
             draw_value_callback_ = [this](const char *value_name){
-                ImGui::InputFloat4(value_name,ReflectionVector);
+                return ImGui::InputFloat4(value_name,ReflectionVector);
+            };
+            to_json_callback_=[this](){
+                std::map<std::string,float> vector_to_json = {{"x",ReflectionVector[0]},{"y",ReflectionVector[1]},{"z",ReflectionVector[2]},{"w",ReflectionVector[3]}};
+                return vector_to_json;
             };
         }
         //color float类型 0-1
@@ -125,7 +168,11 @@ public:
             ReflectionVector[2] = value_json["z"].template get<float>();
             ReflectionVector[3] = value_json["w"].template get<float>();
             draw_value_callback_ = [this](const char *value_name){
-                ImGui::ColorEdit4(value_name,ReflectionVector);
+                return ImGui::ColorEdit4(value_name,ReflectionVector);
+            };
+            to_json_callback_=[this](){
+                std::map<std::string,float> vector_to_json = {{"x",ReflectionVector[0]},{"y",ReflectionVector[1]},{"z",ReflectionVector[2]},{"w",ReflectionVector[3]}};
+                return vector_to_json;
             };
         }
         else if(value_type=="Vector2Int")
@@ -133,7 +180,11 @@ public:
             ReflectionVectorInt[0] = value_json["x"].template get<int>();
             ReflectionVectorInt[1] = value_json["y"].template get<int>();
             draw_value_callback_ = [this](const char *value_name){
-                ImGui::InputInt2(value_name,ReflectionVectorInt);
+                return ImGui::InputInt2(value_name,ReflectionVectorInt);
+            };
+            to_json_callback_=[this](){
+                std::map<std::string,float> vector_to_json = {{"x",ReflectionVectorInt[0]},{"y",ReflectionVectorInt[1]}};
+                return vector_to_json;
             };
         }
         else if(value_type=="Vector3Int")
@@ -142,23 +193,49 @@ public:
             ReflectionVectorInt[1] = value_json["y"].template get<int>();
             ReflectionVectorInt[2] = value_json["z"].template get<int>();
             draw_value_callback_ = [this](const char *value_name){
-                ImGui::InputInt3(value_name,ReflectionVectorInt);
+                return ImGui::InputInt3(value_name,ReflectionVectorInt);
+            };
+            to_json_callback_=[this](){
+                std::map<std::string,float> vector_to_json = {{"x",ReflectionVectorInt[0]},{"y",ReflectionVectorInt[1]},{"z",ReflectionVectorInt[2]}};
+                return vector_to_json;
             };
         }
         else
         {
             draw_value_callback_ = [this,value_type](const char *value_name) {
                 ImGui::Text("[unsupported] %s %s",value_name,value_type.c_str());
+                return false;
+            };
+            to_json_callback_=[this](){
+                return "";
             };
         }
     }
 
-    void DrawValue(const char* value_name)
+    json ToJson()
+    {
+        try
+        {
+            if(to_json_callback_)
+            {
+                return to_json_callback_();
+            }
+        }
+        catch(std::exception& e)
+        {
+            std::cout << "Standard exception: " << e.what() << std::endl;
+        }
+
+        return NULL;
+    }
+
+    bool DrawValue(const char* value_name)
     {
         if (draw_value_callback_)
         {
-            draw_value_callback_(value_name);
+            return draw_value_callback_(value_name);
         }
+        return false;
     }
 };
 

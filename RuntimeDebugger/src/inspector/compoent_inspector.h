@@ -27,17 +27,17 @@ public:
     std::string ReflectionType;
     bool CanWrite;
     ReflectionValue Value;
-    void DrawReflectionValue()
+    bool DrawReflectionValue()
     {
-        if (!CanWrite)
-        {
-            ImGui::BeginDisabled();
-        }
-        Value.DrawValue(Name.c_str());
-        if (!CanWrite)
-        {
-            ImGui::EndDisabled();
-        }
+        bool result = false;
+        ImGui::BeginDisabled(!CanWrite);
+        result = Value.DrawValue(Name.c_str());
+        ImGui::EndDisabled();
+        return result;
+    }
+    json ToJson()
+    {
+        return Value.ToJson();
     }
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(ReflectionInspector,Name,ValueType,ReflectionType,CanWrite);
 };
