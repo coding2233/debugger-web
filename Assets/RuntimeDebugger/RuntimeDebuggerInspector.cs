@@ -35,7 +35,7 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 	{
 		try
 		{
-			ReqInspector req = JsonConvert.DeserializeObject<ReqInspector>(message, new VectorConverter());
+			ReqInspector req = JsonConvert.DeserializeObject<ReqInspector>(message);
 			switch (req.Cmd)
 			{
 				case ReqInspectorCmd.FindGameObjects:
@@ -240,26 +240,22 @@ public class ReflectionInspector
 		var targetType = target.GetType();
 		switch (ReflectionType)
 		{
-
 			case "PropertyInfo":
 				var property = targetType.GetProperty(Name);
 				if (property != null)
 				{
-					property.SetValue(target, Value);
+					property.SetValue(target, ConverterTypes.GetConverterValue(ValueType, Value));
 				}
 				break;
 			case "FieldInfo":
 				var field = targetType.GetField(Name);
 				if (field != null)
 				{
-					field.SetValue(target, Value);
+					field.SetValue(target, ConverterTypes.GetConverterValue(ValueType, Value));
 				}
 				break;
 		}
 	}
-
-
-
 }
 
 public class ComponentInspector
@@ -269,8 +265,6 @@ public class ComponentInspector
 	public bool Enable { get; set; } = true;
 
 	public List<ReflectionInspector> ReflectionValues { get; private set; }
-
-	private static HashSet<Type> s_checkTypes;
 
 	public ComponentInspector()
 	{
@@ -290,7 +284,7 @@ public class ComponentInspector
 		var properties = type.GetProperties();
         foreach (var item in properties)
         {
-			if ( item.CanRead && CheckType(item.PropertyType))
+			if ( item.CanRead && ConverterTypes.CheckType(item.PropertyType))
 			{
 				ReflectionValues.Add(new ReflectionInspector(component,item));
 			}
@@ -298,24 +292,12 @@ public class ComponentInspector
         var fieldInfos = type.GetFields();
 		foreach (var item in fieldInfos)
 		{
-			if (CheckType(item.FieldType))
+			if (ConverterTypes.CheckType(item.FieldType))
 			{
 				ReflectionValues.Add(new ReflectionInspector(component, item));
 			}
 		}
 		//MemberInfos = type.GetMembers();
-	}
-
-	private static bool CheckType(Type type)
-	{
-		if (s_checkTypes == null || s_checkTypes.Count == 0)
-		{
-			s_checkTypes = new HashSet<Type>() {typeof(string), typeof(int), typeof(float), typeof(double),
-				typeof(long), typeof(uint),typeof(ulong),typeof(Color),typeof(Color32),typeof(Quaternion),
-				typeof(Vector2), typeof(Vector3), typeof(Vector4), typeof(Vector2Int), typeof(Vector3Int)};
-		}
-
-		return s_checkTypes.Contains(type);
 	}
 }
 

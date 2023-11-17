@@ -163,15 +163,15 @@ public:
         //Color32 byte类型 0-255
         else if(value_type=="Color" || value_type=="Color32")
         {
-            ReflectionVector[0] = value_json["x"].template get<float>();
-            ReflectionVector[1] = value_json["y"].template get<float>();
-            ReflectionVector[2] = value_json["z"].template get<float>();
-            ReflectionVector[3] = value_json["w"].template get<float>();
+            ReflectionVector[0] = value_json["r"].template get<float>();
+            ReflectionVector[1] = value_json["g"].template get<float>();
+            ReflectionVector[2] = value_json["b"].template get<float>();
+            ReflectionVector[3] = value_json["a"].template get<float>();
             draw_value_callback_ = [this](const char *value_name){
                 return ImGui::ColorEdit4(value_name,ReflectionVector);
             };
             to_json_callback_=[this](){
-                std::map<std::string,float> vector_to_json = {{"x",ReflectionVector[0]},{"y",ReflectionVector[1]},{"z",ReflectionVector[2]},{"w",ReflectionVector[3]}};
+                std::map<std::string,float> vector_to_json = {{"r",ReflectionVector[0]},{"g",ReflectionVector[1]},{"b",ReflectionVector[2]},{"a",ReflectionVector[3]}};
                 return vector_to_json;
             };
         }
