@@ -67,6 +67,12 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 						EditGameObject(findGameObject, req.HierarchyNode);
 					}
 					break;
+				case ReqInspectorCmd.EditComponentEnable:
+					if (m_idFindAllGameObjects.TryGetValue(req.InstanceID, out findGameObject))
+					{
+						EditComponentEnable(findGameObject, req.ComponentInstanceID);
+					}
+					break;
 				default:
 					break;
 			}
@@ -224,6 +230,28 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 			}
 		}
 	}
+	private void EditComponentEnable(GameObject target, int componentInstanceId)
+	{
+		if (target != null)
+		{
+			var components = target.GetComponents<Component>();
+			if (components != null && components.Length > 0)
+			{
+				for (int i = 0; i < components.Length; i++)
+				{
+					if (componentInstanceId == components[i].GetInstanceID())
+					{
+						var monoBehaivour = components[i] as MonoBehaviour;
+						if (monoBehaivour != null)
+						{
+							monoBehaivour.enabled = !monoBehaivour.enabled;
+						}
+						break;
+					}
+				}
+			}
+		}
+	}
 	#endregion
 }
 
@@ -294,7 +322,7 @@ public class ComponentInspector
 	public int InstanceID { get; set; }
 	public string Name { get; set; }
 	public bool Enable { get; set; } = true;
-
+	public bool IsMonoBehaviour { get; set; }
 	public List<ReflectionInspector> ReflectionValues { get; private set; }
 
 	public ComponentInspector()
@@ -305,7 +333,8 @@ public class ComponentInspector
 	public ComponentInspector(Component component)
 	{
 		InstanceID = component.GetInstanceID();
-		if (component is MonoBehaviour)
+		IsMonoBehaviour = component is MonoBehaviour;
+		if (IsMonoBehaviour)
 		{
 			Enable = (component as MonoBehaviour).enabled;
 		}
@@ -366,6 +395,8 @@ public enum ReqInspectorCmd
 	FindComponent,
 	EditReflectionValue,
 	EditGameObject,
+	EditComponentEnable,
+	EditorMaterial,
 }
 
 public class ReqInspector

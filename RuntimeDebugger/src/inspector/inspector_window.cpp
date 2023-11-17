@@ -157,8 +157,18 @@ void InspectorWindow::OnDraw()
             float  one_third_width = ImGui::GetWindowWidth() * 0.3f;
             //gameObject
             bool edit_gameobject= false;
-            if(ImGui::Checkbox(hierarchy_node_selected_->Name.c_str(),&(hierarchy_node_selected_->Active)))
+            if(ImGui::Checkbox("Active",&(hierarchy_node_selected_->Active)))
             {
+                edit_gameobject = true;
+            }
+            ImGui::SameLine();
+            if(ImGui::InputText("Name",hierarchy_node_selected_->Name.data(),128,ImGuiInputTextFlags_EnterReturnsTrue))
+            {
+                int name_end_index = hierarchy_node_selected_->Name.find('\0');
+                if (name_end_index>0)
+                {
+                    hierarchy_node_selected_->Name = hierarchy_node_selected_->Name.substr(0, name_end_index);
+                }
                 edit_gameobject = true;
             }
             ImGui::SetNextItemWidth(one_third_width);
@@ -196,6 +206,19 @@ void InspectorWindow::OnDraw()
                     ImGui::Separator();
                     if (ImGui::TreeNode(iter->second.Name.c_str()))
                     {
+                        ImGui::BeginDisabled(!iter->second.IsMonoBehaviour);
+                        if(ImGui::Checkbox("Enable",&(iter->second.Enable)))
+                        {
+                            ReqInspector req;
+                            req.Cmd = Req_Cmd_EditComponentEnable;
+                            req.InstanceID = hierarchy_node_selected_->InstanceID;
+                            req.ComponentInstanceID = iter->second.InstanceID;
+                            json json_req = req;
+                            std::string message = json_req.dump();
+                            printf("req %s\n", message.c_str());
+                            Send(message);
+                        }
+                        ImGui::EndDisabled();
                         auto ref_values = iter->second.ReflectionValues;
                         if(ref_values.size()>0)
                         {
