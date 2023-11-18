@@ -3,14 +3,12 @@
 
 #if defined _WIN32 || defined __CYGWIN__
 #include "windows.h"
-//#define API __declspec(dllexport)
-//#elif __GNUC__
-//#define API  __attribute__((__visibility__("default")))
-//#else
-//#define API
-#endif
-
 #define API __declspec(dllexport)
+#elif __GNUC__
+#define API  __attribute__((__visibility__("default")))
+#else
+#define API
+#endif
 
 #if defined __cplusplus
 #define EXTERN extern "C"
