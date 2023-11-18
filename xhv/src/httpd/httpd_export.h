@@ -10,6 +10,8 @@
 #define API
 #endif
 
+#define API __declspec(dllexport)
+
 #if defined __cplusplus
 #define EXTERN extern "C"
 #else
