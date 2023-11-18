@@ -1,3 +1,4 @@
+using AOT;
 using Newtonsoft.Json;
 using System;
 using System.Buffers;
@@ -13,29 +14,20 @@ using UnityEngine;
 
 public unsafe class RuntimeDebugger : MonoBehaviour
 {
-	private Dictionary<byte, RuntimeDebuggerBase> m_runtimeDebugger;
-	private SynchronizationContext m_mainSynchronizationContext;
-	private IntPtr m_channel;
+	private static Dictionary<byte, RuntimeDebuggerBase> m_runtimeDebugger;
+	private static SynchronizationContext m_mainSynchronizationContext;
+	private static IntPtr m_channel;
 
-	void OnOpen(IntPtr channel, string req_path)
+	[MonoPInvokeCallback(typeof(OnWebSocketOpenCallback))]
+	private static void OnOpen(IntPtr channel, string req_path)
 	{
 		Console.WriteLine(string.Format("RuntimeDebugger.OnOpen {0} {1}", channel, channel));
 		m_channel = channel;
-		//if (m_registerRuntimeDebugger.TryGetValue(req_path, out RuntimeDebuggerBase runtimeDebugger))
-		//{
-		//	m_runtimeDebugger.Add(channel, runtimeDebugger);
-		//	m_mainSynchronizationContext.Post((state) => {
-		//		runtimeDebugger.OnOpen(this, channel);
-		//	}, null);
-		//}
 	}
-	void OnMessage(IntPtr channel, byte* data, int size)
+
+	[MonoPInvokeCallback(typeof(OnWebSocketMessageCallback))]
+	private static void OnMessage(IntPtr channel, byte* data, int size)
 	{
-		//if (m_receiveBufferStream != null && size > 0)
-		//{
-		//	ReadOnlySpan<byte> dataSpan = new ReadOnlySpan<byte>(data,size);
-		//	m_receiveBufferStream.Write(dataSpan);
-		//}
 		int* dataSizePtr = (int*)data;
 		int dataSize = *dataSizePtr;
 		byte type = data[4];
@@ -50,33 +42,12 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 			}, null);
 		}
 
-		//var message = System.Text.Encoding.UTF8.GetString(data, size);
-		////Console.WriteLine("on message " + message);
-		//if (m_runtimeDebugger.TryGetValue(channel, out RuntimeDebuggerBase runtimeDebugger))
-		//{
-		//	m_mainSynchronizationContext.Post((state) => {
-		//		runtimeDebugger.OnMessage(message);
-		//	}, null);
-		//}
-
-		//var bytes = System.Text.Encoding.UTF8.GetBytes(message);
-		//fixed (byte* aaa = bytes)
-		//{
-		//	WebSocketSendBinary(channel, aaa, bytes.Length);
-		//}
 	}
 
-	void OnClose(IntPtr channel)
+	[MonoPInvokeCallback(typeof(OnWebSocketCloseCallback))]
+	private static void OnClose(IntPtr channel)
 	{
 		m_channel = IntPtr.Zero;
-		//Console.WriteLine("on close");
-		//if (m_runtimeDebugger.TryGetValue(channel, out RuntimeDebuggerBase runtimeDebugger))
-		//{
-		//	m_mainSynchronizationContext.Post((state) => {
-		//		runtimeDebugger.OnClose();
-		//	}, null);
-		//	m_runtimeDebugger.Remove(channel);
-		//}
 	}
 
 	// Start is called before the first frame update
@@ -113,7 +84,7 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 				}
 				catch (Exception ex) 
 				{
-					Console.WriteLine(ex);
+					Debug.LogException(ex);
 				}
 				});
 			Debug.Log("RunHttpService.");

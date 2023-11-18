@@ -162,14 +162,14 @@ void InspectorWindow::OnDraw()
                 edit_gameobject = true;
             }
             ImGui::SameLine();
-            if(ImGui::InputText("Name",hierarchy_node_selected_->Name.data(),128,ImGuiInputTextFlags_EnterReturnsTrue))
+            if(ImGui::InputText("Name",hierarchy_node_selected_->Name.data(),128,ImGuiInputTextFlags_ReadOnly))
             {
-                int name_end_index = hierarchy_node_selected_->Name.find('\0');
-                if (name_end_index>0)
-                {
-                    hierarchy_node_selected_->Name = hierarchy_node_selected_->Name.substr(0, name_end_index);
-                }
-                edit_gameobject = true;
+//                int name_end_index = hierarchy_node_selected_->Name.find('\0');
+//                if (name_end_index>0)
+//                {
+//                    hierarchy_node_selected_->Name = hierarchy_node_selected_->Name.substr(0, name_end_index);
+//                }
+//                edit_gameobject = true;
             }
             ImGui::SetNextItemWidth(one_third_width);
             if(ImGui::InputText("Tag", hierarchy_node_selected_->Tag.data(),128,ImGuiInputTextFlags_ReadOnly))
