@@ -19,7 +19,6 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 
 	public RuntimeDebuggerInspector()
 	{
-
 		//FindGameObjectSend(null);
 		//FindComponentsSend(GameObject.Find("Main Camera").gameObject);
 	}
@@ -265,23 +264,35 @@ public class ReflectionInspector
 	public ReflectionInspector()
 	{ }
 
-	public ReflectionInspector(Component component, PropertyInfo propertyInfo)
+	public ReflectionInspector(UnityEngine.Object component, PropertyInfo propertyInfo,string prefix=null)
 	{
 		Name = propertyInfo.Name;
+		if (!string.IsNullOrEmpty(prefix))
+		{
+			Name = $"{prefix}/{Name}";
+		}
 		ValueType = propertyInfo.PropertyType.IsEnum ? typeof(int).Name : propertyInfo.PropertyType.Name;
 		Value = propertyInfo.GetValue(component);
 		CanWrite = propertyInfo.CanWrite;
 		ReflectionType = typeof(PropertyInfo).Name;
+
 	}
 
-	public ReflectionInspector(Component component, FieldInfo fieldInfo)
+	public ReflectionInspector(UnityEngine.Object component, FieldInfo fieldInfo, string prefix = null)
 	{
 		Name = fieldInfo.Name;
-		ValueType = fieldInfo.FieldType.IsEnum ? typeof(int).Name: fieldInfo.FieldType.Name;
+		if (!string.IsNullOrEmpty(prefix))
+		{
+			Name = $"{prefix}/{Name}";
+		}
+		ValueType = fieldInfo.FieldType.IsEnum ? typeof(int).Name : fieldInfo.FieldType.Name;
 		Value = fieldInfo.GetValue(component);
 		CanWrite = true;
 		ReflectionType = typeof(FieldInfo).Name;
 	}
+
+
+
 
 	public void SetValue(Component target)
 	{
@@ -323,7 +334,7 @@ public class ComponentInspector
 	public string Name { get; set; }
 	public bool Enable { get; set; } = true;
 	public bool IsMonoBehaviour { get; set; }
-	public List<ReflectionInspector> ReflectionValues { get; private set; }
+	public List<ReflectionInspector> ReflectionValues { get; set; }
 
 	public ComponentInspector()
 	{
@@ -341,12 +352,17 @@ public class ComponentInspector
 		var type = component.GetType();
 		Name = type.Name;
 		ReflectionValues = new List<ReflectionInspector>();
+		List<Material> materials= new List<Material>();
 		var properties = type.GetProperties();
         foreach (var item in properties)
         {
-			if ( item.CanRead && ConverterTypes.CheckType(item.PropertyType))
+			if (ConverterTypes.CheckType(item.PropertyType))
 			{
-				ReflectionValues.Add(new ReflectionInspector(component,item));
+				ReflectionValues.Add(new ReflectionInspector(component, item));
+			}
+			else if (item.PropertyType == typeof(Material))
+			{
+				materials.Add(item.GetValue(component) as Material);
 			}
         }
         var fieldInfos = type.GetFields();
@@ -356,9 +372,45 @@ public class ComponentInspector
 			{
 				ReflectionValues.Add(new ReflectionInspector(component, item));
 			}
+			else if (item.FieldType == typeof(Material))
+			{
+				materials.Add(item.GetValue(component) as Material);
+			}
 		}
-		//MemberInfos = type.GetMembers();
+
+		//materials
+		foreach (var item in materials)
+		{
+			SetMaterialValues(item);
+		}
+	
 	}
+
+	private void SetMaterialValues(Material material)
+	{
+		if (material == null)
+		{
+			return;
+		}
+		var type = material.GetType();
+		var properties = type.GetProperties();
+		foreach (var item in properties)
+		{
+			if (ConverterTypes.CheckType(item.PropertyType))
+			{
+				ReflectionValues.Add(new ReflectionInspector(material, item, material.name));
+			}
+		}
+		var fieldInfos = type.GetFields();
+		foreach (var item in fieldInfos)
+		{
+			if (ConverterTypes.CheckType(item.FieldType))
+			{
+				ReflectionValues.Add(new ReflectionInspector(material, item, material.name));
+			}
+		}
+	}
+
 }
 
 public class HierarchyNode
