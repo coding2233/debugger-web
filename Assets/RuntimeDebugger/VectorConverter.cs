@@ -146,7 +146,6 @@ public class ConverterTypes
 	{
 		bool result = s_checkTypes.Contains(t);
 		result = result || t.IsEnum;
-		result = result || t==typeof(Material) || t == typeof(Material[]);
 		return result;
 	}
 

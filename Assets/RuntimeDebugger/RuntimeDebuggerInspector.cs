@@ -19,16 +19,8 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 
 	public RuntimeDebuggerInspector()
 	{
-		//FindGameObjectSend(null);
-		//FindComponentsSend(GameObject.Find("Main Camera").gameObject);
 	}
 
-	//public override void OnOpen(RuntimeDebugger runtimeDebugger, IntPtr channel)
-	//{
-	//	base.OnOpen(runtimeDebugger, channel);
-
-	//	FindGameObjectSend(null);
-	//}
 
 	public override void OnMessage(string message)
 	{
@@ -302,6 +294,97 @@ public class ReflectionInspector
 			{
 				return;
 			}
+			
+			if (string.IsNullOrEmpty(Name))
+			{
+				return;
+			}
+
+			if (Name.Contains("/"))
+			{
+				SetMaterialValue(target);
+			}
+			else
+			{
+				SetNormalValue(target);
+			}
+		}
+		catch (System.Exception e)
+		{
+			Debug.LogWarning($"SetValue Exception e:{e}");
+		}
+	}
+
+	private void SetMaterialValue(Component target)
+	{ 
+		try
+		{
+			if (target == null)
+			{
+				return;
+			}
+
+			if (string.IsNullOrEmpty(Name))
+			{
+				return;
+			}
+			var nameArgs = Name.Split('/');
+			if (nameArgs == null || nameArgs.Length != 3)
+			{
+				return;
+			}
+			string targetMaterilName = nameArgs[0];
+			int materialIndex = int.Parse(nameArgs[1]);
+			Name = nameArgs[2];
+			var targetType = target.GetType();
+			var property = targetType.GetProperty(nameArgs[0]);
+			if (property != null)
+			{
+				if (property.PropertyType == typeof(Material))
+				{
+					var materialObject = property.GetValue(target);
+					SetNormalValue(materialObject);
+					return;
+				}
+				else if (property.PropertyType == typeof(Material[]))
+				{
+					var materialObjects = property.GetValue(target) as Material[];
+					SetNormalValue(materialObjects[materialIndex]);
+					return;
+				}
+			}
+			var field = targetType.GetField(nameArgs[0]);
+			if (field != null)
+			{
+				if (field.FieldType == typeof(Material))
+				{
+					var materialObject = field.GetValue(target);
+					SetNormalValue(materialObject);
+					return;
+				}
+				else if (field.FieldType == typeof(Material[]))
+				{
+					var materialObjects = field.GetValue(target) as Material[];
+					SetNormalValue(materialObjects[materialIndex]);
+					return;
+				}
+			}
+			
+		}
+		catch (System.Exception e)
+		{
+			Debug.LogWarning($"SetValue Exception e:{e}");
+		}
+	}
+
+	private void SetNormalValue(object target)
+	{
+		try
+		{
+			if (target == null)
+			{
+				return;
+			}
 			var targetType = target.GetType();
 			switch (ReflectionType)
 			{
@@ -335,7 +418,6 @@ public class ComponentInspector
 	public bool Enable { get; set; } = true;
 	public bool IsMonoBehaviour { get; set; }
 	public List<ReflectionInspector> ReflectionValues { get; set; }
-
 	public ComponentInspector()
 	{
 
@@ -352,7 +434,6 @@ public class ComponentInspector
 		var type = component.GetType();
 		Name = type.Name;
 		ReflectionValues = new List<ReflectionInspector>();
-		List<Material> materials= new List<Material>();
 		var properties = type.GetProperties();
         foreach (var item in properties)
         {
@@ -362,9 +443,17 @@ public class ComponentInspector
 			}
 			else if (item.PropertyType == typeof(Material))
 			{
-				materials.Add(item.GetValue(component) as Material);
+				var material = item.GetValue(component) as Material;
+				var materialName = item.Name;
+				SetMaterialValues(new Material[] { material }, materialName);
 			}
-        }
+			else if (item.PropertyType == typeof(Material[]))
+			{
+				var materials = item.GetValue(component) as Material[];
+				var materialName = item.Name;
+				SetMaterialValues(materials, materialName);
+			}
+		}
         var fieldInfos = type.GetFields();
 		foreach (var item in fieldInfos)
 		{
@@ -374,40 +463,47 @@ public class ComponentInspector
 			}
 			else if (item.FieldType == typeof(Material))
 			{
-				materials.Add(item.GetValue(component) as Material);
+				var material = item.GetValue(component) as Material;
+				var materialName = item.Name;
+				SetMaterialValues(new Material[] { material }, materialName);
+			}
+			else if (item.FieldType == typeof(Material[]))
+			{
+				var materials = item.GetValue(component) as Material[];
+				var materialName = item.Name;
+				SetMaterialValues(materials, materialName);
 			}
 		}
-
-		//materials
-		foreach (var item in materials)
-		{
-			SetMaterialValues(item);
-		}
-	
 	}
 
-	private void SetMaterialValues(Material material)
+	private void SetMaterialValues(Material[] materials,string name)
 	{
-		if (material == null)
+		if (materials == null || materials.Length ==0)
 		{
 			return;
 		}
-		var type = material.GetType();
-		var properties = type.GetProperties();
-		foreach (var item in properties)
-		{
-			if (ConverterTypes.CheckType(item.PropertyType))
+
+		int materialIndex = 0;
+		foreach (var material in materials)
+        {
+			var type = material.GetType();
+			var properties = type.GetProperties();
+			foreach (var item in properties)
 			{
-				ReflectionValues.Add(new ReflectionInspector(material, item, material.name));
+				if (ConverterTypes.CheckType(item.PropertyType))
+				{
+					ReflectionValues.Add(new ReflectionInspector(material, item,$"{material.name}/{materialIndex}"));
+				}
 			}
-		}
-		var fieldInfos = type.GetFields();
-		foreach (var item in fieldInfos)
-		{
-			if (ConverterTypes.CheckType(item.FieldType))
+			var fieldInfos = type.GetFields();
+			foreach (var item in fieldInfos)
 			{
-				ReflectionValues.Add(new ReflectionInspector(material, item, material.name));
+				if (ConverterTypes.CheckType(item.FieldType))
+				{
+					ReflectionValues.Add(new ReflectionInspector(material, item, $"{material.name}/{materialIndex}"));
+				}
 			}
+			materialIndex++;
 		}
 	}
 
