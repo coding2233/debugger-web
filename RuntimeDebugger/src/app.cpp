@@ -3,6 +3,8 @@
 //
 #include <map>
 #include <exception>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 #include "app.h"
 
@@ -15,7 +17,7 @@
 
 App::App():ImplApp("",1280,800,0)
 {
-    server_url_ = "ws://127.0.0.1:2233";
+    server_url_ = "ws://100.80.191.48:2233";
 
     windows_.insert({1,new InformationWindow()});
     windows_.insert({2,new LogWindow()});
@@ -28,6 +30,12 @@ App::App():ImplApp("",1280,800,0)
         iter->second->BindSend(std::bind(&App::OnWebSocketSend,this,std::placeholders::_1,std::placeholders::_2),iter->first);
     }
 
+#ifdef __EMSCRIPTEN__
+    ImGuiIO &io = ImGui::GetIO();
+    io.IniFilename  = "/data/imgui.ini";
+    printf("/data/imgui.ini exists %d\n",fs::exists("/data/imgui.ini"));
+    io.Fonts->AddFontFromFileTTF("/data/wqy-microhei.ttc", 14.0f,NULL,io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+#endif
 }
 
 App::~App()
@@ -121,7 +129,6 @@ void App::OnImGuiDraw()
     {
         iter->second->DrawWindow();
     }
-
 }
 
 bool App::ConnectToServer()

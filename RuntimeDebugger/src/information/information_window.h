@@ -18,6 +18,7 @@ public:
 
 private:
     std::map<std::string,std::map<std::string,std::string>> information_;
+public:
     void OnDraw() override;
     void OnMessage(const std::string &message) override;
     void OnShow(bool show) override;

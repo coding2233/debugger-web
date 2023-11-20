@@ -28,7 +28,7 @@ public:
     int ParentInstanceID;
     std::string Name;
     std::string Tag;
-    int Layer;
+    std::string Layer;
     bool Active;
     std::vector<const HierarchyNode*> ChildrenNodes;
 

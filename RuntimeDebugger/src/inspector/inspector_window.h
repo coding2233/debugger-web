@@ -22,11 +22,12 @@ public:
 private:
     std::vector<const HierarchyNode*> hierarchy_root_nodes_;
     std::map<int,HierarchyNode> map_hierarchy_nodes_;
-    const HierarchyNode* hierarchy_node_selected_;
+    HierarchyNode* hierarchy_node_selected_;
 
     std::map<int,CompoentInspector> map_components_;
 
     void DrawInspectorNode(const HierarchyNode* hierarchy_node);
+    void DrawReflectionInspector(ReflectionInspector *reflection_node,int component_id);
 public:
     void OnMessage(const std::string &message) override;
     void OnDraw() override;

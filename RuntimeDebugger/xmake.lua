@@ -6,11 +6,13 @@ add_requires("libsdl",{alias="sdl"})
 -- xmake f -p wasm
 if is_plat("wasm") then
     -- xmake f -v -y -p wasm --links=websocket.js
+    --  xmake f -v -y -p wasm --links=websocket.js --cxxflags="-s ALLOW_MEMORY_GROWTH=1 --preload-file $(pwd)/data" 
     target("RuntimeDebugger")
         set_license("MIT")
         set_kind("binary")
         set_languages("cxx17")
         set_arch("x64")
+        add_ldflags({"-s","ALLOW_MEMORY_GROWTH=1"},{"--preload-file", "data"}, {expand = false, force = true})
         add_files("imgui/**.cpp", "src/**.cpp")
         add_includedirs("imgui","imgui/backends","src")
         add_files("easywsclient/emscripten_easywsclient.cpp")

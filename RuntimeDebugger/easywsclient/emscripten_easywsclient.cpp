@@ -48,7 +48,7 @@ namespace
     }
     EM_BOOL onerror(int eventType, const EmscriptenWebSocketErrorEvent* websocketEvent, void* userData)
     {
-        puts("onerror");
+        printf("error(eventType=%d, userData=%ld)\n", eventType, (long)userData);
         return EM_TRUE;
     }
     EM_BOOL onclose(int eventType, const EmscriptenWebSocketCloseEvent* websocketEvent, void* userData)

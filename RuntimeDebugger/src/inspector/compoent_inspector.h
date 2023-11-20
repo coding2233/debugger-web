@@ -12,6 +12,7 @@
 using json = nlohmann::json;
 
 #include "imgui.h"
+#include "reflection_value.h"
 
 class ReflectionInspector
 {
@@ -22,11 +23,24 @@ public:
     {}
 public:
     std::string Name;
+    std::string FullName;
     std::string ValueType;
     std::string ReflectionType;
     bool CanWrite;
-    const void* Value;
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ReflectionInspector,Name,ValueType,ReflectionType,CanWrite);
+    ReflectionValue Value;
+    bool DrawReflectionValue()
+    {
+        bool result = false;
+        ImGui::BeginDisabled(!CanWrite);
+        result = Value.DrawValue(Name.c_str());
+        ImGui::EndDisabled();
+        return result;
+    }
+    json ToJson()
+    {
+        return Value.ToJson();
+    }
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ReflectionInspector,Name,FullName,ValueType,ReflectionType,CanWrite);
 };
 
 class CompoentInspector
@@ -40,8 +54,10 @@ public:
     int InstanceID;
     std::string Name;
     bool Enable;
+    bool IsMonoBehaviour;
     std::vector<ReflectionInspector> ReflectionValues;
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(CompoentInspector,InstanceID,Name,Enable,ReflectionValues);
+    std::map<std::string, std::vector<std::vector<std::string>>> MapMaterialValues;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(CompoentInspector,InstanceID,Name,Enable,IsMonoBehaviour,ReflectionValues,MapMaterialValues);
 };
 
 #endif //RUNTIMEDEBUGGER_INSPECTOR_COMPOENT_H
