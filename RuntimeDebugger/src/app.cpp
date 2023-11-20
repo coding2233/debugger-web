@@ -3,6 +3,8 @@
 //
 #include <map>
 #include <exception>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 #include "app.h"
 
@@ -31,7 +33,8 @@ App::App():ImplApp("",1280,800,0)
 #ifdef __EMSCRIPTEN__
     ImGuiIO &io = ImGui::GetIO();
     io.IniFilename  = "/data/imgui.ini";
-    //io.Fonts->AddFontFromFileTTF("data/wqy-microhei.ttc", 14.0f,NULL,io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+    printf("/data/imgui.ini exists %d\n",fs::exists("/data/imgui.ini"));
+    io.Fonts->AddFontFromFileTTF("data/wqy-microhei.ttc", 14.0f,NULL,io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
 #endif
 }
 
