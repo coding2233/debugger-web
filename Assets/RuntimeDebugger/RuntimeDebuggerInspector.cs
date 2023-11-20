@@ -288,18 +288,20 @@ public class ReflectionInspector
 				return;
 			}
 			
-			if (string.IsNullOrEmpty(Name))
+			if (string.IsNullOrEmpty(Name) || string.IsNullOrEmpty(FullName))
 			{
 				return;
 			}
 
-			if (Name.Contains("/"))
+			//普通属性修改
+			if (Name == FullName)
 			{
-				SetMaterialValue(target);
+				SetNormalValue(target);
 			}
 			else
 			{
-				SetNormalValue(target);
+				//材质需要再处理
+				SetMaterialValue(target);
 			}
 		}
 		catch (System.Exception e)
@@ -312,24 +314,15 @@ public class ReflectionInspector
 	{ 
 		try
 		{
-			if (target == null)
-			{
-				return;
-			}
-
-			if (string.IsNullOrEmpty(Name))
-			{
-				return;
-			}
-			var nameArgs = Name.Split('/');
-			if (nameArgs == null || nameArgs.Length != 3)
-			{
-				return;
-			}
+			var nameArgs = FullName.Split('/');
 			string targetMaterilName = nameArgs[0];
-			int materialIndex = int.Parse(nameArgs[1]);
-			Name = nameArgs[2];
+			string materialName = nameArgs[1];
+			string materialRefType = nameArgs[2];
+			int materialIndex = int.Parse(nameArgs[3]);
+			string materialRefName = nameArgs[4];
+			
 			var targetType = target.GetType();
+
 			var property = targetType.GetProperty(nameArgs[0]);
 			if (property != null)
 			{
@@ -374,10 +367,6 @@ public class ReflectionInspector
 	{
 		try
 		{
-			if (target == null)
-			{
-				return;
-			}
 			var targetType = target.GetType();
 			switch (ReflectionType)
 			{
