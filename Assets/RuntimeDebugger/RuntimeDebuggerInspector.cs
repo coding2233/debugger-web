@@ -256,13 +256,9 @@ public class ReflectionInspector
 	public ReflectionInspector()
 	{ }
 
-	public ReflectionInspector(UnityEngine.Object component, PropertyInfo propertyInfo,string prefix=null)
+	public ReflectionInspector(UnityEngine.Object component, PropertyInfo propertyInfo,string name = null)
 	{
-		Name = propertyInfo.Name;
-		if (!string.IsNullOrEmpty(prefix))
-		{
-			Name = $"{prefix}/{Name}";
-		}
+		Name = string.IsNullOrEmpty(name) ? propertyInfo.Name : name;
 		ValueType = propertyInfo.PropertyType.IsEnum ? typeof(int).Name : propertyInfo.PropertyType.Name;
 		Value = propertyInfo.GetValue(component);
 		CanWrite = propertyInfo.CanWrite;
@@ -270,13 +266,9 @@ public class ReflectionInspector
 
 	}
 
-	public ReflectionInspector(UnityEngine.Object component, FieldInfo fieldInfo, string prefix = null)
+	public ReflectionInspector(UnityEngine.Object component, FieldInfo fieldInfo, string name = null)
 	{
-		Name = fieldInfo.Name;
-		if (!string.IsNullOrEmpty(prefix))
-		{
-			Name = $"{prefix}/{Name}";
-		}
+		Name = string.IsNullOrEmpty(name) ? fieldInfo.Name: name;
 		ValueType = fieldInfo.FieldType.IsEnum ? typeof(int).Name : fieldInfo.FieldType.Name;
 		Value = fieldInfo.GetValue(component);
 		CanWrite = true;
@@ -418,6 +410,8 @@ public class ComponentInspector
 	public bool Enable { get; set; } = true;
 	public bool IsMonoBehaviour { get; set; }
 	public List<ReflectionInspector> ReflectionValues { get; set; }
+	public Dictionary<string, List<List<string>>> MapMaterialValues { get; set; }
+
 	public ComponentInspector()
 	{
 
@@ -434,6 +428,7 @@ public class ComponentInspector
 		var type = component.GetType();
 		Name = type.Name;
 		ReflectionValues = new List<ReflectionInspector>();
+		MapMaterialValues = new Dictionary<string, List<List<string>>>();
 		var properties = type.GetProperties();
         foreach (var item in properties)
         {
@@ -483,16 +478,22 @@ public class ComponentInspector
 			return;
 		}
 
+		List<List<string>> materialsNames = new List<List<string>>();
+		MapMaterialValues.Add(name, materialsNames);
+
 		int materialIndex = 0;
 		foreach (var material in materials)
         {
+			List<string> materialNames = new List<string>(0);
 			var type = material.GetType();
 			var properties = type.GetProperties();
 			foreach (var item in properties)
 			{
 				if (ConverterTypes.CheckType(item.PropertyType))
 				{
-					ReflectionValues.Add(new ReflectionInspector(material, item,$"{material.name}/{materialIndex}"));
+					string refName = $"{name}/{materialIndex}/{item.PropertyType.Name}";
+					ReflectionValues.Add(new ReflectionInspector(material, item, refName));
+					materialNames.Add(refName);
 				}
 			}
 			var fieldInfos = type.GetFields();
@@ -500,10 +501,14 @@ public class ComponentInspector
 			{
 				if (ConverterTypes.CheckType(item.FieldType))
 				{
-					ReflectionValues.Add(new ReflectionInspector(material, item, $"{material.name}/{materialIndex}"));
+					string refName = $"{name}/{materialIndex}/{item.FieldType.Name}";
+					ReflectionValues.Add(new ReflectionInspector(material, item, refName));
+					materialNames.Add(refName);
 				}
 			}
 			materialIndex++;
+
+			materialsNames.Add(materialNames);
 		}
 	}
 

@@ -222,9 +222,47 @@ void InspectorWindow::OnDraw()
                         auto ref_values = iter->second.ReflectionValues;
                         if(ref_values.size()>0)
                         {
+                            std::map<std::string,ReflectionInspector*> material_reflection_nodes;
                             for (int i = 0; i < ref_values.size(); i++)
                             {
-                                DrawReflectionInspector(&ref_values[i],iter->second.InstanceID);
+                                ReflectionInspector *reflection_node = &ref_values[i];
+                                DrawReflectionInspector(reflection_node,iter->second.InstanceID);
+
+                                if (reflection_node->Name.find("/") >= 0)
+                                {
+                                    material_reflection_nodes.insert({reflection_node->Name,reflection_node});
+                                }
+                            }
+
+                            //materials
+                            auto ref_materials_values = iter->second.MapMaterialValues;
+                            if (ref_materials_values.size()>0)
+                            {
+                                for (auto iter_material = ref_materials_values.begin();iter_material != ref_materials_values.end();iter_material++)
+                                {
+                                    if (ImGui::TreeNode(iter_material->first.c_str()))
+                                    {
+                                        std::vector<std::vector<std::string>> material_values=iter_material->second;
+                                        for (int i=0;i<material_values.size();i++)
+                                        {
+                                            std::vector<std::string> material_ref_values = material_values[i];
+
+                                            std::string material_child_name = "Inspector_Child_Component_";
+                                            material_child_name.append(iter_material->first);
+                                            material_child_name.append(std::to_string(i));
+                                            if(ImGui::BeginChild(material_child_name.c_str(),ImVec2(0,200),true))
+                                            {
+                                                for (int j = 0;j<material_ref_values.size();j++)
+                                                {
+                                                    ReflectionInspector* find_ref_inspctor = material_reflection_nodes.find(material_ref_values[j])->second;
+                                                    DrawReflectionInspector(find_ref_inspctor,iter->second.InstanceID);
+                                                }
+                                            }
+                                            ImGui::EndChild();
+                                        }
+                                        ImGui::TreePop();
+                                    }
+                                }
                             }
                         }
                         ImGui::TreePop();

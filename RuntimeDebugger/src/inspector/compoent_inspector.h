@@ -55,7 +55,8 @@ public:
     bool Enable;
     bool IsMonoBehaviour;
     std::vector<ReflectionInspector> ReflectionValues;
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(CompoentInspector,InstanceID,Name,Enable,IsMonoBehaviour,ReflectionValues);
+    std::map<std::string, std::vector<std::vector<std::string>>> MapMaterialValues;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(CompoentInspector,InstanceID,Name,Enable,IsMonoBehaviour,ReflectionValues,MapMaterialValues);
 };
 
 #endif //RUNTIMEDEBUGGER_INSPECTOR_COMPOENT_H
