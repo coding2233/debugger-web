@@ -6,6 +6,7 @@ add_requires("libsdl",{alias="sdl"})
 -- xmake f -p wasm
 if is_plat("wasm") then
     -- xmake f -v -y -p wasm --links=websocket.js
+    --  xmake f -v -y -p wasm --links=websocket.js --cxxflags="-s ALLOW_MEMORY_GROWTH=1 --preload-file $(pwd)/data" 
     target("RuntimeDebugger")
         set_license("MIT")
         set_kind("binary")

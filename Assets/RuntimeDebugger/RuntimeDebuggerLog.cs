@@ -31,7 +31,7 @@ public class RuntimeDebuggerLog: RuntimeDebuggerBase
 		 m_logNode.Set(condition, stackTrace, type);
 		string logNodeMessage = JsonConvert.SerializeObject(m_logNode);
 		Debug.Log(logNodeMessage);
-		Send(logNodeMessage);
+		//Send(logNodeMessage);
 	}
 
 	private class LogNode
