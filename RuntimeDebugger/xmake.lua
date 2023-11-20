@@ -12,7 +12,6 @@ if is_plat("wasm") then
         set_kind("binary")
         set_languages("cxx17")
         set_arch("x64")
-        -- add_ldflags()
         add_ldflags({"-s","ALLOW_MEMORY_GROWTH=1"},{"--preload-file", "data"}, {expand = false, force = true})
         add_files("imgui/**.cpp", "src/**.cpp")
         add_includedirs("imgui","imgui/backends","src")

@@ -37,7 +37,6 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 		{
 			m_mainSynchronizationContext.Post((state) =>
 			{
-				Debug.Log(message);
 				runtimeDebugger.OnMessage(message);
 			}, null);
 		}
@@ -71,7 +70,7 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 			item.Value.BindSend(WebSocketSend, item.Key);
 		}
 
-		//StartCoroutine(TestLog());
+		StartCoroutine(TestLog());
 		try
         {
            
@@ -84,14 +83,14 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 				}
 				catch (Exception ex) 
 				{
-					Debug.LogException(ex);
+					Debug.LogWarning(ex);
 				}
 				});
 			Debug.Log("RunHttpService.");
 		}
 		catch (Exception e)
         {
-            Debug.LogException(e);
+			Debug.LogWarning(e);
         }
     }
 
@@ -103,7 +102,7 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 
 	IEnumerator TestLog()
 	{
-		var wfs = new WaitForSeconds(3);
+		var wfs = new WaitForSeconds(1);
 		while (true)
 		{
 			yield return wfs;
@@ -127,7 +126,6 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 		{
 			return;
 		}
-		Debug.Log(message);
 		var bytes = System.Text.Encoding.UTF8.GetBytes(message);
 		int size = bytes.Length+4+1;
 		List<byte> datas = new List<byte>();

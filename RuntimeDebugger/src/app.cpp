@@ -34,7 +34,7 @@ App::App():ImplApp("",1280,800,0)
     ImGuiIO &io = ImGui::GetIO();
     io.IniFilename  = "/data/imgui.ini";
     printf("/data/imgui.ini exists %d\n",fs::exists("/data/imgui.ini"));
-    io.Fonts->AddFontFromFileTTF("data/wqy-microhei.ttc", 14.0f,NULL,io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+    io.Fonts->AddFontFromFileTTF("/data/wqy-microhei.ttc", 14.0f,NULL,io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
 #endif
 }
 
@@ -129,8 +129,6 @@ void App::OnImGuiDraw()
     {
         iter->second->DrawWindow();
     }
-
-    ImplApp::OnImGuiDraw();
 }
 
 bool App::ConnectToServer()

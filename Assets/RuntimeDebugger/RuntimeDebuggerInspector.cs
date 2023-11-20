@@ -90,7 +90,6 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 	private void Send(RspInspector rsp)
 	{
 		string message = JsonConvert.SerializeObject(rsp,new VectorConverter());
-		Debug.Log(message);
 		Send(message);
 	}
 
