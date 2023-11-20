@@ -226,11 +226,15 @@ void InspectorWindow::OnDraw()
                             for (int i = 0; i < ref_values.size(); i++)
                             {
                                 ReflectionInspector *reflection_node = &ref_values[i];
-                                DrawReflectionInspector(reflection_node,iter->second.InstanceID);
-
-                                if (reflection_node->Name.find("/") >= 0)
+                                bool normal_reflection_node = reflection_node->Name == reflection_node->FullName;
+                                if (normal_reflection_node)
                                 {
-                                    material_reflection_nodes.insert({reflection_node->Name,reflection_node});
+                                    DrawReflectionInspector(reflection_node, iter->second.InstanceID);
+                                }
+                                //材质的属性
+                                else
+                                {
+                                    material_reflection_nodes.insert({reflection_node->FullName,reflection_node});
                                 }
                             }
 
@@ -250,12 +254,16 @@ void InspectorWindow::OnDraw()
                                             std::string material_child_name = "Inspector_Child_Component_";
                                             material_child_name.append(iter_material->first);
                                             material_child_name.append(std::to_string(i));
-                                            if(ImGui::BeginChild(material_child_name.c_str(),ImVec2(0,200),true))
+                                            if(ImGui::BeginChild(material_child_name.c_str(),ImVec2(0,220),true))
                                             {
-                                                for (int j = 0;j<material_ref_values.size();j++)
+                                                if (material_ref_values.size()>0)
                                                 {
-                                                    ReflectionInspector* find_ref_inspctor = material_reflection_nodes.find(material_ref_values[j])->second;
-                                                    DrawReflectionInspector(find_ref_inspctor,iter->second.InstanceID);
+                                                    ImGui::Text(material_ref_values[0].c_str());
+                                                    for (int j = 0;j<material_ref_values.size();j++)
+                                                    {
+                                                        ReflectionInspector* find_ref_inspctor = material_reflection_nodes.find(material_ref_values[j])->second;
+                                                        DrawReflectionInspector(find_ref_inspctor,iter->second.InstanceID);
+                                                    }
                                                 }
                                             }
                                             ImGui::EndChild();

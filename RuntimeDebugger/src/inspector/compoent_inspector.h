@@ -23,6 +23,7 @@ public:
     {}
 public:
     std::string Name;
+    std::string FullName;
     std::string ValueType;
     std::string ReflectionType;
     bool CanWrite;
@@ -39,7 +40,7 @@ public:
     {
         return Value.ToJson();
     }
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ReflectionInspector,Name,ValueType,ReflectionType,CanWrite);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ReflectionInspector,Name,FullName,ValueType,ReflectionType,CanWrite);
 };
 
 class CompoentInspector

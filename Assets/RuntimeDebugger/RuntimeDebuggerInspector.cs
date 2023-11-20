@@ -249,6 +249,7 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 public class ReflectionInspector
 {
 	public string Name { get; set; }
+	public string FullName { get; set; }
 	public string ValueType { get; set; }
 	public object Value { get; set; }
 	public string ReflectionType { get; set; }
@@ -256,9 +257,10 @@ public class ReflectionInspector
 	public ReflectionInspector()
 	{ }
 
-	public ReflectionInspector(UnityEngine.Object component, PropertyInfo propertyInfo,string name = null)
+	public ReflectionInspector(UnityEngine.Object component, PropertyInfo propertyInfo,string fullName = null)
 	{
-		Name = string.IsNullOrEmpty(name) ? propertyInfo.Name : name;
+		Name = propertyInfo.Name;
+		FullName = string.IsNullOrEmpty(fullName) ? propertyInfo.Name : fullName;
 		ValueType = propertyInfo.PropertyType.IsEnum ? typeof(int).Name : propertyInfo.PropertyType.Name;
 		Value = propertyInfo.GetValue(component);
 		CanWrite = propertyInfo.CanWrite;
@@ -266,16 +268,15 @@ public class ReflectionInspector
 
 	}
 
-	public ReflectionInspector(UnityEngine.Object component, FieldInfo fieldInfo, string name = null)
+	public ReflectionInspector(UnityEngine.Object component, FieldInfo fieldInfo, string fullName = null)
 	{
-		Name = string.IsNullOrEmpty(name) ? fieldInfo.Name: name;
+		Name = fieldInfo.Name;
+		FullName = string.IsNullOrEmpty(fullName) ? fieldInfo.Name: fullName;
 		ValueType = fieldInfo.FieldType.IsEnum ? typeof(int).Name : fieldInfo.FieldType.Name;
 		Value = fieldInfo.GetValue(component);
 		CanWrite = true;
 		ReflectionType = typeof(FieldInfo).Name;
 	}
-
-
 
 
 	public void SetValue(Component target)
@@ -491,7 +492,7 @@ public class ComponentInspector
 			{
 				if (ConverterTypes.CheckType(item.PropertyType))
 				{
-					string refName = $"{name}/{materialIndex}/{item.PropertyType.Name}";
+					string refName = $"{name}/{material.name}/{typeof(PropertyInfo).Name}/{materialIndex}/{item.PropertyType.Name}";
 					ReflectionValues.Add(new ReflectionInspector(material, item, refName));
 					materialNames.Add(refName);
 				}
@@ -501,13 +502,12 @@ public class ComponentInspector
 			{
 				if (ConverterTypes.CheckType(item.FieldType))
 				{
-					string refName = $"{name}/{materialIndex}/{item.FieldType.Name}";
+					string refName = $"{name}/{material.name}/{typeof(FieldInfo).Name}/{materialIndex}/{item.FieldType.Name}";
 					ReflectionValues.Add(new ReflectionInspector(material, item, refName));
 					materialNames.Add(refName);
 				}
 			}
 			materialIndex++;
-
 			materialsNames.Add(materialNames);
 		}
 	}
