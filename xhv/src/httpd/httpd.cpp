@@ -270,21 +270,21 @@ int main002(int argc, char** argv) {
 
 int main(int argc, char** argv)
 {
-    int ret = CreateHttpService(2233);
+    int ret = CreateHttpService(2233,".");
     BindWebSocketService(NULL,NULL,NULL);
     RunHttpService(true);
     return  ret;
 }
 
-int CreateHttpService(int port)
+int CreateHttpService(int port,const char* document_root_dir)
 {
     int worker_processes=0;
     int worker_threads=0;
     g_http_server.worker_processes = LIMIT(0, worker_processes, MAXNUM_WORKER_PROCESSES);
     g_http_server.worker_threads = LIMIT(0, worker_threads, 64);
     g_http_server.port = port;
-//g_http_server.https_port;
-    // http_server
+
+    g_http_service.document_root = document_root_dir;
     Router::Register(g_http_service);
     g_http_server.registerHttpService(&g_http_service);
 
