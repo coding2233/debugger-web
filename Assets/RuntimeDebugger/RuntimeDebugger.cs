@@ -6,18 +6,21 @@ using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
-
+using UnityEngine.Networking;
 
 public unsafe class RuntimeDebugger : MonoBehaviour
 {
 	private static Dictionary<byte, RuntimeDebuggerBase> m_runtimeDebugger;
 	private static SynchronizationContext m_mainSynchronizationContext;
 	private static IntPtr m_channel;
+	private string m_showIPAddressList;
 
 	[MonoPInvokeCallback(typeof(OnWebSocketOpenCallback))]
 	private static void OnOpen(IntPtr channel, string req_path)
@@ -55,7 +58,7 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 	}
 
 	// Start is called before the first frame update
-	void Start()
+	IEnumerator Start()
     {
 		m_mainSynchronizationContext = SynchronizationContext.Current;
 		if (m_mainSynchronizationContext == null)
@@ -74,33 +77,84 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 		}
 
 		//StartCoroutine(TestLog());
+
+		string documentPath = Path.Combine(Application.streamingAssetsPath, "debugger");
+		if (Application.platform == RuntimePlatform.Android)
+		{
+			string newDocumentPath = Path.Combine(Application.persistentDataPath, "debugger");
+			if (!Directory.Exists(newDocumentPath))
+			{
+				Directory.CreateDirectory(newDocumentPath);
+				string[] assetNames = new string[] { "index.html", "RuntimeDebugger.data", "RuntimeDebugger.html", "RuntimeDebugger.js", "RuntimeDebugger.wasm" };
+				foreach (var item in assetNames)
+				{
+					string srcPath = Path.Combine(documentPath, item);
+					string targetPath = Path.Combine(newDocumentPath, item);
+					var assetRequest = UnityWebRequest.Get(srcPath);
+					DownloadHandlerBuffer downloadHandler = new DownloadHandlerBuffer();
+					assetRequest.downloadHandler = downloadHandler;
+					yield return assetRequest.SendWebRequest();
+					File.WriteAllBytes(targetPath, downloadHandler.data);
+				}
+			}
+			documentPath = newDocumentPath;
+		}
+
+		RunHttpd(2233,documentPath);
+    }
+
+	private void RunHttpd(int port, string documentPath)
+	{
 		try
-        {
-           
-			Task.Run(() => {
+		{
+			Task.Run(async () => {
 				try
 				{
-					CreateHttpService(2233);
+					CreateHttpService(port, documentPath);
 					BindWebSocketService(OnOpen, OnMessage, OnClose);
 					RunHttpService(true);
 				}
-				catch (Exception ex) 
+				catch (Exception ex)
 				{
 					Debug.LogWarning(ex);
 				}
-				});
+			});
+
+			StringBuilder showIPAddressBuilder = new StringBuilder();
+			foreach (var item in NetworkInterface.GetAllNetworkInterfaces()) 
+			{
+                foreach (var ip in item.GetIPProperties().UnicastAddresses)
+                {
+					showIPAddressBuilder.Append("http://");
+					showIPAddressBuilder.Append(ip.Address.ToString());
+					showIPAddressBuilder.Append(":");
+					showIPAddressBuilder.Append(port);
+					showIPAddressBuilder.AppendLine("/");
+				}
+            }
+			showIPAddressBuilder.AppendLine("runtime-debugger service startup success.");
+			m_showIPAddressList = showIPAddressBuilder.ToString(); 
 			Debug.Log("RunHttpService.");
 		}
 		catch (Exception e)
-        {
+		{
+			m_showIPAddressList = $"runtime-debugger service exception: {e}";
 			Debug.LogWarning(e);
-        }
-    }
+		}
+	}
 
 	private void OnDestroy()
 	{
         StopHttpService();
 		Debug.Log("OnDestroy.");
+	}
+
+	private void OnGUI()
+	{
+		if (!string.IsNullOrEmpty(m_showIPAddressList))
+		{
+			GUILayout.Label(m_showIPAddressList);
+		}
 	}
 
 	IEnumerator TestLog()
@@ -170,7 +224,7 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 	delegate void OnWebSocketCloseCallback(IntPtr channel);
 
 	[DllImport(DLLXHV)]
-    extern static int CreateHttpService(int port);
+    extern static int CreateHttpService(int port,string document_root);
 
 	[DllImport(DLLXHV)]
 	extern static void RunHttpService(bool wait);
