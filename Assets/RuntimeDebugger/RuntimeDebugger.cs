@@ -23,6 +23,10 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 	private static void OnOpen(IntPtr channel, string req_path)
 	{
 		Console.WriteLine(string.Format("RuntimeDebugger.OnOpen {0} {1}", channel, channel));
+		if (m_channel != IntPtr.Zero)
+		{
+			WebSocketClose(m_channel);
+		}
 		m_channel = channel;
 	}
 
@@ -116,17 +120,14 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 
 	public void WebSocketSend(byte key, object messageObject)
 	{
-		if (m_channel == IntPtr.Zero)
-		{
-			return;
-		}
-
 		if (messageObject == null)
 		{
 			return;
 		}
-		var message =  JsonConvert.SerializeObject(messageObject);
+		var message =  JsonConvert.SerializeObject(messageObject,new VectorConverter());
 		var bytes = System.Text.Encoding.UTF8.GetBytes(message);
+
+		int maxSize = 4096; 
 
 		//using (MemoryStream ms = new MemoryStream())
 		//{
@@ -145,9 +146,15 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 		datas.Add(key);
 		datas.AddRange(bytes);
 
-		fixed (byte* aaa = datas.ToArray())
+		var dataArrary = datas.ToArray();
+		fixed (byte* aaa = dataArrary)
 		{
-			WebSocketSendBinary(m_channel, aaa, datas.Count);
+			if (m_channel == IntPtr.Zero)
+			{
+				return;
+			}
+			//int sendCount = dataArrary.Length > maxSize ? maxSize : dataArrary.Length;
+			WebSocketSendBinary(m_channel, aaa, dataArrary.Length);
 		}
 	}
 
