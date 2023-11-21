@@ -1,5 +1,6 @@
 using AOT;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Bson;
 using System;
 using System.Buffers;
 using System.Collections;
@@ -62,15 +63,13 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 		m_runtimeDebugger.Add(1, new RuntimeDebuggerInformation());
 		m_runtimeDebugger.Add(2, new RuntimeDebuggerLog());
 		m_runtimeDebugger.Add(3, new RuntimeDebuggerInspector());
-		//m_registerRuntimeDebugger.Add("/log",new RuntimeDebuggerLog());
-		//m_registerRuntimeDebugger.Add("/inspector", new RuntimeDebuggerInspector());
 
 		foreach (var item in m_runtimeDebugger)
 		{
 			item.Value.BindSend(WebSocketSend, item.Key);
 		}
 
-		StartCoroutine(TestLog());
+		//StartCoroutine(TestLog());
 		try
         {
            
@@ -115,19 +114,32 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 		}
 	}
 
-	public void WebSocketSend(byte key, string message)
+	public void WebSocketSend(byte key, object messageObject)
 	{
 		if (m_channel == IntPtr.Zero)
 		{
 			return;
 		}
 
-		if (string.IsNullOrEmpty(message))
+		if (messageObject == null)
 		{
 			return;
 		}
+		var message =  JsonConvert.SerializeObject(messageObject);
 		var bytes = System.Text.Encoding.UTF8.GetBytes(message);
-		int size = bytes.Length+4+1;
+
+		//using (MemoryStream ms = new MemoryStream())
+		//{
+		//	using (BsonWriter writer = new BsonWriter(ms))
+		//	{
+		//		JsonSerializer serializer = new JsonSerializer();
+		//		serializer.Serialize(writer, messageObject);
+		//	}
+		//	int oldSize = bytes.Length;
+		//	bytes = ms.ToArray();
+		//}
+
+		int size = bytes.Length + 4 + 1;
 		List<byte> datas = new List<byte>();
 		datas.AddRange(BitConverter.GetBytes(size));
 		datas.Add(key);
@@ -138,6 +150,7 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 			WebSocketSendBinary(m_channel, aaa, datas.Count);
 		}
 	}
+
 
 #if UNITY_IOS && !UNITY_EDITOR
 	const string DLLXHV = "__Internal";

@@ -16,8 +16,7 @@ public class RuntimeDebuggerInformation : RuntimeDebuggerBase
 	{
 		//收到消息，直接回包
 		var information = BuildInformation();
-		string informationDump = JsonConvert.SerializeObject(information);
-		Send(informationDump);
+		Send(information);
 	}
 
 	private Dictionary<string, Dictionary<string, string>> BuildInformation()

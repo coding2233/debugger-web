@@ -154,9 +154,7 @@ bool App::CheckConnect()
             int message_sieze_o = message.size();
             uint8_t message_type = message[4];
             std::string json_mssage(message.begin()+5, message.end());
-            printf("%s\n",json_mssage.c_str());
             this->DispatchMessage(message_type,json_mssage);
-//                this->OnMessage(message);
         });
 
         return true;

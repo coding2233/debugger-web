@@ -87,11 +87,6 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 		Send(rsp);
 	}
 
-	private void Send(RspInspector rsp)
-	{
-		string message = JsonConvert.SerializeObject(rsp,new VectorConverter());
-		Send(message);
-	}
 
 	private List<GameObject> FindGameObjects(Transform parent)
 	{
