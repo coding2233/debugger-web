@@ -64,7 +64,7 @@ public:
                 return ImGui::InputText(value_name,ReflectionString.data(),256);
             };
             to_json_callback_=[this](){
-                return ReflectionString;
+                return ReflectionString.c_str();
             };
         }
         else if(value_type=="Int32"||value_type=="Int")
