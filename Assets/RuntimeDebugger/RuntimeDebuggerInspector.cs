@@ -464,8 +464,6 @@ public class ComponentInspector
 {
 	public int InstanceID { get; set; }
 	public string Name { get; set; }
-	public bool Enable { get; set; } = true;
-	public bool IsMonoBehaviour { get; set; }
 	public List<ReflectionInspector> ReflectionValues { get; set; }
 	public Dictionary<string, List<List<string>>> MapMaterialValues { get; set; }
 
@@ -478,19 +476,12 @@ public class ComponentInspector
 	{
 		InstanceID = -1;
 		Name = "Missing (Mono Script)";
-		IsMonoBehaviour = false;
-		Enable = false;
 		return this;
 	}
 
 	public ComponentInspector(Component component)
 	{
 		InstanceID = component.GetInstanceID();
-		IsMonoBehaviour = component is MonoBehaviour;
-		if (IsMonoBehaviour)
-		{
-			Enable = (component as MonoBehaviour).enabled;
-		}
 		var type = component.GetType();
 		Name = type.Name;
 		ReflectionValues = new List<ReflectionInspector>();
@@ -514,6 +505,10 @@ public class ComponentInspector
 				var materialName = item.Name;
 				SetMaterialValues(materials, materialName);
 			}
+			else
+			{
+				//Debug.Log($"{typeof(PropertyInfo).Name} {item.Name} {item.PropertyType} {item.ReflectedType}");
+			}
 		}
         var fieldInfos = type.GetFields();
 		foreach (var item in fieldInfos)
@@ -533,6 +528,10 @@ public class ComponentInspector
 				var materials = item.GetValue(component) as Material[];
 				var materialName = item.Name;
 				SetMaterialValues(materials, materialName);
+			}
+			else
+			{
+				//Debug.Log($"{typeof(FileInfo).Name} {item.Name} {item.FieldType} {item.ReflectedType}");
 			}
 		}
 	}

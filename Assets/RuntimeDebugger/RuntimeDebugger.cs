@@ -31,6 +31,8 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 			WebSocketClose(m_channel);
 		}
 		m_channel = channel;
+		//发送版本信息
+		WebSocketSend(0,new RuntimeDebuggerVersion());
 	}
 
 	[MonoPInvokeCallback(typeof(OnWebSocketMessageCallback))]
@@ -172,7 +174,7 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 		}
 	}
 
-	public void WebSocketSend(byte key, object messageObject)
+	private  static void WebSocketSend(byte key, object messageObject)
 	{
 		if (messageObject == null)
 		{
@@ -244,3 +246,9 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 
 
 
+public class RuntimeDebuggerVersion
+{
+	public int Major { get; set; } = 0;
+	public int Minor { get; set; } = 1;
+	public int Patch { get; set; }= 0;
+}

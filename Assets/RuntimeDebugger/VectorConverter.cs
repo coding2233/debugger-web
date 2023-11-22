@@ -128,7 +128,7 @@ public class ConverterTypes
 	static ConverterTypes()
 	{
 		s_checkVectorTypes = new HashSet<Type>() { typeof(Vector2), typeof(Vector2Int), typeof(Vector3), typeof(Vector3Int), typeof(Vector4), typeof(Color), typeof(Color32), typeof(Quaternion) };
-		s_checkTypes = new HashSet<Type>() {typeof(string), typeof(int), typeof(float), typeof(double),typeof(long), typeof(uint),typeof(ulong),};
+		s_checkTypes = new HashSet<Type>() {typeof(bool),typeof(string), typeof(int), typeof(float), typeof(double),typeof(long), typeof(uint),typeof(ulong),};
 		s_mapCheckVectorTypes = new Dictionary<string, Type>();
 		s_mapCheckTypes = new Dictionary<string, Type>();
 		foreach (var item in s_checkVectorTypes)

@@ -27,6 +27,7 @@ private:
     std::function<bool(const char *value_name)> draw_value_callback_;
     std::function<json()> to_json_callback_;
 public:
+    bool ReflectionBoolean;
     std::string ReflectionString;
     int ReflectionInt32;
     unsigned int ReflectionUInt32;
@@ -46,8 +47,17 @@ public:
         }
 
         printf("value_type: %s value_json: %s\n",value_type.c_str(),value_json.dump().c_str());
-
-        if(value_type=="String"|| value_type=="Texture")
+        if (value_type == "Boolean")
+        {
+            ReflectionBoolean = value_json;
+            draw_value_callback_ = [this](const char *value_name){
+                return ImGui::Checkbox(value_name,&ReflectionBoolean);
+            };
+            to_json_callback_=[this](){
+                return ReflectionBoolean;
+            };
+        }
+        else if(value_type=="String"|| value_type=="Texture")
         {
             ReflectionString = value_json;
             draw_value_callback_ = [this](const char *value_name){

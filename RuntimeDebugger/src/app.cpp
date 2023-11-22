@@ -15,7 +15,7 @@ namespace fs = std::filesystem;
 #include "inspector/inspector_window.h"
 
 
-App::App():ImplApp("",1280,800,0)
+App::App():ImplApp("Debugger",1280,800,0)
 {
     server_url_ = "ws://127.0.0.1:2233";
 
@@ -119,8 +119,28 @@ void App::OnImGuiDraw()
 
                 ImGui::EndMenu();
             }
+
+            if (ImGui::BeginMenu("Version"))
+            {
+                if (ImGui::BeginMenu("Server"))
+                {
+                    ImGui::MenuItem(server_version_.Version.c_str());
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("Client"))
+                {
+                    ImGui::MenuItem(client_version_.Version.c_str());
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMenu();
+            }
+
             ImGui::EndMenuBar();
+
+
         }
+
+
     }
     ImGui::End();
 
@@ -182,6 +202,19 @@ void App::DispatchMessage(uint8_t key,const std::string & message)
     if (window_iter!=windows_.end())
     {
         window_iter->second->OnMessage(message);
+    }
+    else
+    {
+        if (key==0)
+        {
+            server_version_ = json::parse(message);
+            server_version_.BuildVersion();
+            AppVersion &client_version = client_version_;
+            client_version.Major = 0;
+            client_version.Minor = 1;
+            client_version.Patch = 0;
+            client_version.BuildVersion();
+        }
     }
 }
 

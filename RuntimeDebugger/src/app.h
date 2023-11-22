@@ -14,6 +14,7 @@
 #include "imgui_impl_sdl2_opengl3_app.h"
 #include "TextEditor.h"
 #include "app_window.h"
+#include "app_version.h"
 
 class App :public ImplApp
 {
@@ -25,6 +26,9 @@ private:
     std::unique_ptr<WebSocket> ws_;
     std::string server_url_;
     std::map<uint8_t,AppWindow*> windows_;
+
+    AppVersion server_version_;
+    AppVersion client_version_;
 
     bool ConnectToServer();
 

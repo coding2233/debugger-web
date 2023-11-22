@@ -235,19 +235,6 @@ void InspectorWindow::OnDraw()
                     ImGui::Separator();
                     if (ImGui::TreeNode(iter->second.Name.c_str()))
                     {
-                        ImGui::BeginDisabled(!iter->second.IsMonoBehaviour);
-                        if(ImGui::Checkbox("Enable",&(iter->second.Enable)))
-                        {
-                            ReqInspector req;
-                            req.Cmd = Req_Cmd_EditComponentEnable;
-                            req.InstanceID = hierarchy_node_selected_->InstanceID;
-                            req.ComponentInstanceID = iter->second.InstanceID;
-                            json json_req = req;
-                            std::string message = json_req.dump();
-                            printf("req %s\n", message.c_str());
-                            Send(message);
-                        }
-                        ImGui::EndDisabled();
                         auto ref_values = iter->second.ReflectionValues;
                         if(ref_values.size()>0)
                         {
