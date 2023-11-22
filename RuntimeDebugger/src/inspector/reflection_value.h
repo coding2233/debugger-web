@@ -45,9 +45,9 @@ public:
             return;
         }
 
-        printf("value_json: %s\n",value_json.dump().c_str());
+        printf("value_type: %s value_json: %s\n",value_type.c_str(),value_json.dump().c_str());
 
-        if(value_type=="String")
+        if(value_type=="String"|| value_type=="Texture")
         {
             ReflectionString = value_json;
             draw_value_callback_ = [this](const char *value_name){
@@ -57,7 +57,7 @@ public:
                 return ReflectionString;
             };
         }
-        else if(value_type=="Int32")
+        else if(value_type=="Int32"||value_type=="Int")
         {
             ReflectionInt32 = value_json;
             draw_value_callback_ =[this](const char *value_name){
@@ -100,7 +100,7 @@ public:
                 return ReflectionUInt64;
             };
         }
-        else if(value_type=="Single")
+        else if(value_type=="Single" || value_type=="Float" || value_type=="Range")
         {
             ReflectionSingle = value_json;
             draw_value_callback_ = [this](const char *value_name){
@@ -145,7 +145,7 @@ public:
                 return vector_to_json;
             };
         }
-        else if(value_type=="Vector4" || value_type=="Quaternion")
+        else if(value_type=="Vector4" || value_type=="Quaternion" || value_type=="Vector")
         {
             ReflectionVector[0] = value_json["x"].template get<float>();
             ReflectionVector[1] = value_json["y"].template get<float>();

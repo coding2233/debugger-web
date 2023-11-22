@@ -103,14 +103,15 @@ void InspectorWindow::OnMessage(const std::string &message)
                         auto json_rsp_reflection_value = json_rsp_reflection[j];
                         auto value_json = json_rsp_reflection_value["Value"];
 
-                        ReflectionInspector* reflection_value = (ReflectionInspector*)&(compoent_inspector->ReflectionValues[j]);
+                        ReflectionInspector *reflection_value = (ReflectionInspector *) &(compoent_inspector->ReflectionValues[j]);
                         try
                         {
                             reflection_value->Value.ToData(reflection_value->ValueType, value_json);
                         }
-                        catch(std::exception& e)
+                        catch (std::exception &e)
                         {
-                            std::cout << "Standard exception: " << e.what() << "  json: "<< json_rsp_reflection_value.dump() << std::endl;
+                            std::cout << "Standard exception: " << e.what() << "  json: "
+                                      << json_rsp_reflection_value.dump() << std::endl;
                         }
                         //printf("%s %s\n",compoent_inspector.ReflectionValues[j].ValueType.c_str(),value_json.dump());
                     }

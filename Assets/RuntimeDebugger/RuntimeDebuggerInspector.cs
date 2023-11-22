@@ -1,5 +1,4 @@
 using Newtonsoft.Json;
-using strange.extensions.reflector.api;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -152,6 +151,11 @@ public class RuntimeDebuggerInspector : RuntimeDebuggerBase
 			{
 				for (int i = 0; i < components.Length; i++)
 				{
+					//组件可能丢失
+					if(components[i] == null)
+					{
+						continue;
+					}
 					var ci = new ComponentInspector(components[i]);
 					componentInspectors.Add(ci);
 				}
@@ -272,6 +276,37 @@ public class ReflectionInspector
 		ReflectionType = typeof(FieldInfo).Name;
 	}
 
+	public ReflectionInspector(Material material, string name, UnityEngine.Rendering.ShaderPropertyType propertyType, string fullName)
+	{
+		Name = name;
+		FullName = fullName;
+		ValueType = propertyType.ToString();
+		CanWrite = true;
+		ReflectionType = typeof(Material).Name;
+		switch (propertyType)
+		{
+			case UnityEngine.Rendering.ShaderPropertyType.Color:
+				Value = material.GetColor(name);
+				break;
+			case UnityEngine.Rendering.ShaderPropertyType.Vector:
+				Value = material.GetVector(name);
+				break;
+			case UnityEngine.Rendering.ShaderPropertyType.Float:
+			case UnityEngine.Rendering.ShaderPropertyType.Range:
+				Value = material.GetFloat(name);
+				break;
+			case UnityEngine.Rendering.ShaderPropertyType.Texture:
+				CanWrite = false;
+				var texture = material.GetTexture(name);
+				Value = texture == null? "": texture.name;
+				break;
+			case UnityEngine.Rendering.ShaderPropertyType.Int:
+				Value = material.GetInt(name);
+				break;
+			default:
+				break;
+		}
+	}
 
 	public void SetValue(Component target)
 	{
@@ -288,7 +323,7 @@ public class ReflectionInspector
 			}
 
 			//普通属性修改
-			if (Name == FullName)
+			if (Name.Equals(FullName))
 			{
 				SetNormalValue(target);
 			}
@@ -311,10 +346,11 @@ public class ReflectionInspector
 			var nameArgs = FullName.Split('/');
 			string targetMaterilName = nameArgs[0];
 			string materialName = nameArgs[1];
-			string materialRefType = nameArgs[2];
+			string shaderName = nameArgs[2];
 			int materialIndex = int.Parse(nameArgs[3]);
-			string materialRefName = nameArgs[4];
-			
+			string materialTypeName = nameArgs[4];
+			string materialRefName = nameArgs[5];
+
 			var targetType = target.GetType();
 
 			var property = targetType.GetProperty(nameArgs[0]);
@@ -323,37 +359,74 @@ public class ReflectionInspector
 				if (property.PropertyType == typeof(Material))
 				{
 					var materialObject = property.GetValue(target);
-					SetNormalValue(materialObject);
+					SetMaterialValue((Material)materialObject);
 					return;
 				}
 				else if (property.PropertyType == typeof(Material[]))
 				{
 					var materialObjects = property.GetValue(target) as Material[];
-					SetNormalValue(materialObjects[materialIndex]);
+					SetMaterialValue((Material)materialObjects[materialIndex]);
 					return;
 				}
 			}
+
 			var field = targetType.GetField(nameArgs[0]);
 			if (field != null)
 			{
 				if (field.FieldType == typeof(Material))
 				{
 					var materialObject = field.GetValue(target);
-					SetNormalValue(materialObject);
+					SetMaterialValue((Material)materialObject);
 					return;
 				}
 				else if (field.FieldType == typeof(Material[]))
 				{
 					var materialObjects = field.GetValue(target) as Material[];
-					SetNormalValue(materialObjects[materialIndex]);
+					SetMaterialValue((Material)materialObjects[materialIndex]);
 					return;
 				}
 			}
-			
+
 		}
 		catch (System.Exception e)
 		{
 			Debug.LogWarning($"SetValue Exception e:{e}");
+		}
+	}
+
+	private void SetMaterialValue(Material material)
+	{
+		try
+		{
+			if (material == null)
+			{
+				return;
+			}
+			switch (ValueType)
+			{
+				case "Color":
+					material.SetColor(Name,(Color)ConverterTypes.GetConverterShaderValue(ValueType,Value));
+					break;
+				case "Vector":
+					material.SetVector(Name, (Vector4)ConverterTypes.GetConverterShaderValue(ValueType, Value));
+					break;
+				case "Float":
+				case "Range":
+					material.SetFloat(Name, (float)ConverterTypes.GetConverterShaderValue(ValueType, Value));
+					break;
+				case "Int":
+					material.SetInt(Name, (int)ConverterTypes.GetConverterShaderValue(ValueType, Value));
+					break;
+				case "Texture":
+					break;
+				default:
+					SetNormalValue(material);
+					break;
+			}
+		}
+		catch (System.Exception e)
+		{
+			Debug.LogWarning($"SetMaterialValue Exception e:{e}");
 		}
 	}
 
@@ -401,6 +474,15 @@ public class ComponentInspector
 
 	}
 
+	public ComponentInspector SetMissing()
+	{
+		InstanceID = -1;
+		Name = "Missing (Mono Script)";
+		IsMonoBehaviour = false;
+		Enable = false;
+		return this;
+	}
+
 	public ComponentInspector(Component component)
 	{
 		InstanceID = component.GetInstanceID();
@@ -416,7 +498,7 @@ public class ComponentInspector
 		var properties = type.GetProperties();
         foreach (var item in properties)
         {
-			if (ConverterTypes.CheckType(item.PropertyType))
+			if (item.CanRead && ConverterTypes.CheckType(item.PropertyType))
 			{
 				ReflectionValues.Add(new ReflectionInspector(component, item));
 			}
@@ -457,41 +539,68 @@ public class ComponentInspector
 
 	private void SetMaterialValues(Material[] materials,string name)
 	{
-		if (materials == null || materials.Length ==0)
+		try
 		{
-			return;
+			if (materials == null || materials.Length == 0)
+			{
+				return;
+			}
+
+			HashSet<string> ignoreProperties = new HashSet<string>() { "color", "mainTexture", "mainTextureOffset", "mainTextureScale" };
+
+			List<List<string>> materialsNames = new List<List<string>>();
+			MapMaterialValues.Add(name, materialsNames);
+
+			int materialIndex = 0;
+			foreach (var material in materials)
+			{
+				if (material != null)
+				{
+					var matShader = material.shader;
+					var shaderName = matShader == null ? "no shader" : material.shader.name;
+
+					List<string> materialNames = new List<string>();
+					var t = material.GetType();
+
+					var properties = t.GetProperties();
+					if (properties != null)
+					{
+						foreach (var item in properties)
+						{
+							if (ignoreProperties.Contains(item.Name))
+							{
+								continue;
+							}
+
+							if (item.CanRead && ConverterTypes.CheckType(item.PropertyType))
+							{
+								string refName = $"{name}/{material.name}/{shaderName}/{materialIndex}/{typeof(PropertyInfo).Name}/{item.Name}";
+								ReflectionValues.Add(new ReflectionInspector(material, item, refName));
+								materialNames.Add(refName);
+							}
+						}
+					}
+
+					if (matShader != null)
+					{
+						for (int i = 0; i < matShader.GetPropertyCount(); i++)
+						{
+							var propertyName = matShader.GetPropertyName(i);
+							var propertyType = matShader.GetPropertyType(i);
+							string refName = $"{name}/{material.name}/{matShader.name}/{materialIndex}/{propertyType}/{propertyName}";
+							ReflectionValues.Add(new ReflectionInspector(material, propertyName, propertyType, refName));
+							materialNames.Add(refName);
+						}
+					}
+
+					materialsNames.Add(materialNames);
+				}
+				materialIndex++;
+			}
 		}
-
-		List<List<string>> materialsNames = new List<List<string>>();
-		MapMaterialValues.Add(name, materialsNames);
-
-		int materialIndex = 0;
-		foreach (var material in materials)
-        {
-			List<string> materialNames = new List<string>(0);
-			var type = material.GetType();
-			var properties = type.GetProperties();
-			foreach (var item in properties)
-			{
-				if (ConverterTypes.CheckType(item.PropertyType))
-				{
-					string refName = $"{name}/{material.name}/{typeof(PropertyInfo).Name}/{materialIndex}/{item.PropertyType.Name}";
-					ReflectionValues.Add(new ReflectionInspector(material, item, refName));
-					materialNames.Add(refName);
-				}
-			}
-			var fieldInfos = type.GetFields();
-			foreach (var item in fieldInfos)
-			{
-				if (ConverterTypes.CheckType(item.FieldType))
-				{
-					string refName = $"{name}/{material.name}/{typeof(FieldInfo).Name}/{materialIndex}/{item.FieldType.Name}";
-					ReflectionValues.Add(new ReflectionInspector(material, item, refName));
-					materialNames.Add(refName);
-				}
-			}
-			materialIndex++;
-			materialsNames.Add(materialNames);
+		catch (Exception e)
+		{
+			Debug.Log("e:" + e);
 		}
 	}
 

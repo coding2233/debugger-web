@@ -166,4 +166,38 @@ public class ConverterTypes
 		}
 		return value;
 	}
+
+	public static object GetConverterShaderValue(string typeName, object value)
+	{
+		
+		object convertObjectValue = value;
+		Type convertObjectType = null;
+
+		switch (typeName)
+		{
+			case "Color":
+				convertObjectType = typeof(Color);
+				convertObjectValue = JsonConvert.DeserializeObject(value.ToString(), convertObjectType, new VectorConverter());
+				break;
+			case "Vector":
+				convertObjectType = typeof(Vector4);
+				convertObjectValue = JsonConvert.DeserializeObject(value.ToString(), convertObjectType, new VectorConverter());
+				break;
+			case "Float":
+				convertObjectType = typeof(float);
+				convertObjectValue = Convert.ChangeType(value, convertObjectType);
+				break;
+			case "Range":
+				convertObjectType = typeof(float);
+				convertObjectValue = Convert.ChangeType(value, convertObjectType);
+				break;
+			case "Int":
+				convertObjectType = typeof(int);
+				convertObjectValue = Convert.ChangeType(value, convertObjectType);
+				break;
+		}
+		
+		return convertObjectValue;
+	}
+
 }

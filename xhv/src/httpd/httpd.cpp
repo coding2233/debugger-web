@@ -286,6 +286,16 @@ int CreateHttpService(int port,const char* document_root_dir)
 
     g_http_service.document_root = document_root_dir;
     Router::Register(g_http_service);
+    HttpService* service = &g_http_service;
+    service->GET("/",[](const HttpContextPtr& ctx) {
+        ctx->setContentType("application/json");
+        ctx->set("base_url", ctx->service->base_url);
+        ctx->set("document_root", ctx->service->document_root);
+        ctx->set("home_page", ctx->service->home_page);
+        ctx->set("error_page", ctx->service->error_page);
+        ctx->set("index_of", ctx->service->index_of);
+        return 200;
+    });
     g_http_server.registerHttpService(&g_http_service);
 
     return 0;
