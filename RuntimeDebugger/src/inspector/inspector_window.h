@@ -21,12 +21,14 @@ public:
     ~InspectorWindow();
 private:
     std::vector<const HierarchyNode*> hierarchy_root_nodes_;
+    std::vector<const HierarchyNode*> search_hierarchy_root_nodes_;
+    std::string search_hierarchy_text_;
     std::map<int,HierarchyNode> map_hierarchy_nodes_;
     HierarchyNode* hierarchy_node_selected_;
 
     std::map<int,CompoentInspector> map_components_;
 
-    void DrawInspectorNode(const HierarchyNode* hierarchy_node);
+    void DrawInspectorNode(const HierarchyNode* hierarchy_node,bool draw_child);
     void DrawReflectionInspector(ReflectionInspector *reflection_node,int component_id);
 public:
     void OnMessage(const std::string &message) override;

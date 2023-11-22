@@ -17,7 +17,7 @@ namespace fs = std::filesystem;
 
 App::App():ImplApp("",1280,800,0)
 {
-    server_url_ = "ws://100.80.191.48:2233";
+    server_url_ = "ws://127.0.0.1:2233";
 
     windows_.insert({1,new InformationWindow()});
     windows_.insert({2,new LogWindow()});

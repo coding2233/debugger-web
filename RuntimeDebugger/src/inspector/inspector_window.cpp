@@ -144,9 +144,37 @@ void InspectorWindow::OnDraw()
     float log_window_height = node_selected? ImGui::GetWindowWidth()*0.35f:0;
     if(ImGui::BeginChild("Inspector_Child_Hierarchy",ImVec2(log_window_height,0),true))
     {
-        for (int i = 0; i < hierarchy_root_nodes_.size(); i++)
+        //搜索节点
+        if (ImGui::InputText("Search",search_hierarchy_text_.data(),256))
         {
-            DrawInspectorNode(hierarchy_root_nodes_[i]);
+            search_hierarchy_root_nodes_.clear();
+            const char* search_text = search_hierarchy_text_.c_str();
+            int text_size = strlen(search_text);
+            if (text_size > 0)
+            {
+                for (auto iter = map_hierarchy_nodes_.begin(); iter != map_hierarchy_nodes_.end(); iter++)
+                {
+                    const HierarchyNode *search_node = &(iter->second);
+                    if (search_node->Name.find(search_text)!=std::string::npos)
+                    {
+                        search_hierarchy_root_nodes_.push_back(search_node);
+                    }
+                }
+            }
+        }
+        //绘制搜索结果
+        if (search_hierarchy_root_nodes_.size()>0)
+        {
+            ImGui::Separator();
+            for (int i = 0; i < search_hierarchy_root_nodes_.size(); i++)
+            {
+                DrawInspectorNode(search_hierarchy_root_nodes_[i], false);
+            }
+        }
+        ImGui::Separator();
+        //绘制节点树
+        for (int i = 0; i < hierarchy_root_nodes_.size(); i++) {
+            DrawInspectorNode(hierarchy_root_nodes_[i], true);
         }
     }
     ImGui::EndChild();
@@ -255,7 +283,7 @@ void InspectorWindow::OnDraw()
                                             std::string material_child_name = "Inspector_Child_Component_";
                                             material_child_name.append(iter_material->first);
                                             material_child_name.append(std::to_string(i));
-                                            if(ImGui::BeginChild(material_child_name.c_str(),ImVec2(0,220),true))
+                                            if(ImGui::BeginChild(material_child_name.c_str(),ImVec2(0,350),true))
                                             {
                                                 if (material_ref_values.size()>0)
                                                 {
@@ -307,7 +335,7 @@ void InspectorWindow::DrawReflectionInspector(ReflectionInspector *reflection_no
 
 }
 
-void InspectorWindow::DrawInspectorNode(const HierarchyNode* hierarchy_node)
+void InspectorWindow::DrawInspectorNode(const HierarchyNode* hierarchy_node,bool draw_child)
 {
     if (!hierarchy_node)
     {
@@ -316,7 +344,7 @@ void InspectorWindow::DrawInspectorNode(const HierarchyNode* hierarchy_node)
     bool selected = hierarchy_node == hierarchy_node_selected_;
     ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanFullWidth;
     bool hasChild = hierarchy_node->ChildrenNodes.size() > 0;
-    if(!hasChild)
+    if(!hasChild || !draw_child)
     {
         node_flags = node_flags | ImGuiTreeNodeFlags_Leaf;
     }
@@ -354,12 +382,12 @@ void InspectorWindow::DrawInspectorNode(const HierarchyNode* hierarchy_node)
     }
     if(tree_open)
     {
-        if(hasChild)
+        if(hasChild && draw_child)
         {
             for (int i= 0;i<hierarchy_node->ChildrenNodes.size();i++)
             {
                 auto node = hierarchy_node->ChildrenNodes[i];
-                DrawInspectorNode(node);
+                DrawInspectorNode(node,draw_child);
             }
         }
         ImGui::TreePop();
