@@ -112,7 +112,7 @@ jobs:
         echo $ANDROID_NDK_HOME
         xmake --version
         cd xhv
-        xmake f -p android --ndk=$ANDROID_NDK_HOME -a armv7-a -y
+        xmake f -p android --ndk=$ANDROID_NDK_HOME -a armeabi-v7a -y
         xrepo install -y libhv
         xmake -y -v -b xhv
         ls -lah build
