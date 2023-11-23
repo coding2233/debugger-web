@@ -31,6 +31,7 @@ jobs:
         xmake f -y -p wasm --links=websocket.js
         xmake
         cp index.html build/wasm/x64/release/
+        cp favicon.ico build/wasm/x64/release/
         ls -lah build
         cd ..
     

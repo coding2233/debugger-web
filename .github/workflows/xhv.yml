@@ -86,9 +86,54 @@ jobs:
         git remote set-url origin https://coding2233:${{ secrets.PUSH_TOKEN }}@github.com/$GITHUB_REPOSITORY.git
         git push origin xhv-lib:xhv-lib
 
+  build_hv_android_v7:
+    runs-on: ubuntu-latest
+    needs: [build_hv_android_v8]
+    steps:
+    - name: check out
+      uses: actions/checkout@v3
+    
+    - name: xmake setup
+      uses: xmake-io/github-action-setup-xmake@v1
+      with:
+        xmake-version: latest
+    
+    - name: android ndk setup
+      uses: nttld/setup-ndk@v1
+      id: setup-ndk
+      with:
+        ndk-version: r21e
+        add-to-path: false
+
+    - name: build xhv
+      env:
+        ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+      run: |
+        echo $ANDROID_NDK_HOME
+        xmake --version
+        cd xhv
+        xmake f -p android --ndk=$ANDROID_NDK_HOME -a armv7-a -y
+        xrepo install -y libhv
+        xmake -y -v -b xhv
+        ls -lah build
+    
+    - name: push xhvlib
+      run: |
+        git config --global user.name "coding2233"
+        git config --global user.email "dutifulwanderer@gmail.com"
+        export GITHUB_REPO_URL=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git
+        echo $GITHUB_REPO_URL
+        git clone -b xhv-lib $GITHUB_REPO_URL xhvlib
+        cp -r -f xhv/build/android xhvlib/Assets/RuntimeDebugger/Plugins/
+        cd xhvlib
+        git add Assets/RuntimeDebugger/Plugins
+        git commit -m "update xhv lib at $(date "+%Y-%m-%d %T") - by github actions"
+        git remote set-url origin https://coding2233:${{ secrets.PUSH_TOKEN }}@github.com/$GITHUB_REPOSITORY.git
+        git push origin xhv-lib:xhv-lib
+
   build_hv_window:
     runs-on: windows-latest
-    needs: [build_hv_android_v8]
+    needs: [build_hv_android_v7]
     steps:
     - name: check out
       uses: actions/checkout@v3
