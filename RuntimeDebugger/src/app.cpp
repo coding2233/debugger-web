@@ -85,7 +85,6 @@ void App::OnImGuiDraw()
         ImGui::SetNextWindowSize(ImVec2(400,200),ImGuiCond_FirstUseEver);
         if (ImGui::BeginPopupModal("Connect Modal window", &connect_modal_window_open))
         {
-            puts(server_url_.c_str());
             ImGui::InputText("server url",server_url_.data(),128);
             if (ImGui::Button("Connect"))
             {
