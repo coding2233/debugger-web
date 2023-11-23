@@ -6,14 +6,29 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-#include "app.h"
 
+
+#include "app.h"
 
 #include "information/information_window.h"
 #include "log/log_window.h"
 #include "file/file_window.h"
 #include "inspector/inspector_window.h"
 
+std::string server_url_;
+#ifdef __EMSCRIPTEN__
+    #include <emscripten.h>
+    extern "C" 
+    { 
+        EMSCRIPTEN_KEEPALIVE 
+        void set_web_location_host(const char* host)
+        {
+            server_url_ = "ws://";
+            server_url_.append(std::string(host));
+            puts(server_url_.c_str());
+        }
+    }
+#endif
 
 App::App():ImplApp("Debugger",1280,800,0)
 {
@@ -31,6 +46,18 @@ App::App():ImplApp("Debugger",1280,800,0)
     }
 
 #ifdef __EMSCRIPTEN__
+    EM_ASM(
+        var url;
+        url=window.location.host;
+        // alert(url);
+
+        Module.onRuntimeInitialized = function() {
+            // 现在可以安全地调用导出的函数了
+            const url_str = String(url);
+            Module.ccall("set_web_location_host",null,['string'],[url_str]);
+        };
+    );
+
     ImGuiIO &io = ImGui::GetIO();
     io.IniFilename  = "/data/imgui.ini";
     printf("/data/imgui.ini exists %d\n",fs::exists("/data/imgui.ini"));
@@ -58,7 +85,8 @@ void App::OnImGuiDraw()
         ImGui::SetNextWindowSize(ImVec2(400,200),ImGuiCond_FirstUseEver);
         if (ImGui::BeginPopupModal("Connect Modal window", &connect_modal_window_open))
         {
-            ImGui::InputText("server url",(char*)server_url_.c_str(),128);
+            puts(server_url_.c_str());
+            ImGui::InputText("server url",server_url_.data(),128);
             if (ImGui::Button("Connect"))
             {
                 if (ConnectToServer())
