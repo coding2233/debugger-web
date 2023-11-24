@@ -358,12 +358,10 @@ void WebSocketSendBinary(const WebSocketChannelPtr& channel,const uint8_t* data,
 {
     if(channel)
     {
-        if (channel->isConnected()) 
+
+        if (channel->isConnected())
         {
-             const std::string message(data,data+size);
-//            const char* message = (const char*)data;
-            printf("WebSocketSend: %d\n",(int)size);
-            channel->send(message);
+            channel->send((const char*)data,size,WS_OPCODE_BINARY);
         } 
     }
 }
