@@ -17,7 +17,9 @@ namespace
             _EMScriptenWebSocket(const std::string& url);
             EMSCRIPTEN_WEBSOCKET_T websocket_;
         private:
-            std::vector<uint8_t> received_buf_;
+            std::vector<std::vector<uint8_t>> received_buf_;
+            bool received_buf_lock_;
+            bool deal_buf_lock_;
             easywsclient::WebSocket::readyStateValues ready_state_;
         public:
             void poll(int timeout);
@@ -140,22 +142,39 @@ namespace
     }
     void _EMScriptenWebSocket::_dispatchBinary(BytesCallback_Imp& callable) 
     {
-        if(received_buf_.size() > 0)
+         if(received_buf_lock_)
         {
-            callable((const std::vector<uint8_t>) received_buf_);
-            received_buf_.erase(received_buf_.begin(), received_buf_.end());
-
-            std::vector<uint8_t> ().swap(received_buf_);// free memory
+            return;
         }
+
+        deal_buf_lock_ = true;
+        for(int i = 0;i< received_buf_.size();i++)
+        {
+            std::vector<uint8_t> buffer = received_buf_[i];
+            callable((const std::vector<uint8_t>)buffer);
+
+            buffer.erase(buffer.begin(), buffer.end());
+            std::vector<uint8_t>().swap(buffer);// free memory
+        }
+        received_buf_.erase(received_buf_.begin(), received_buf_.end());
+        std::vector<std::vector<uint8_t>>().swap(received_buf_);
+        deal_buf_lock_ = false;
     }
 
     void _EMScriptenWebSocket::AddReceiveBuf(uint8_t *data,uint32_t numBytes)
     {
+        while(deal_buf_lock_)
+        {
+        }
+
+        received_buf_lock_ = true;
         if(numBytes > 0)
         {
-            // int size = received_buf_.size();
-            received_buf_.insert(received_buf_.end(),data,data+numBytes);
+            std::vector<uint8_t> buffer;
+            buffer.insert(buffer.end(),data,data+numBytes);
+            received_buf_.push_back(buffer);
         }
+        received_buf_lock_ = false;
     }
 
     easywsclient::WebSocket::pointer from_url(const std::string& url) 

@@ -36,7 +36,7 @@ void InspectorWindow::OnMessage(const std::string &message)
                 if (map_hierarchy_nodes_.find(find_node.InstanceID) == map_hierarchy_nodes_.end())
                 {
                     map_hierarchy_nodes_.insert({find_node.InstanceID, find_node});
-                    printf("map_hierarchy_nodes_ size: %d\n",(int)map_hierarchy_nodes_.size());
+                    //ntf("map_hierarchy_nodes_ size: %d\n",(int)map_hierarchy_nodes_.size());
                 }
 
                 const HierarchyNode& map_node_iter = map_hierarchy_nodes_.find(find_node.InstanceID)->second;
@@ -52,7 +52,7 @@ void InspectorWindow::OnMessage(const std::string &message)
                     }
                     if (!has_node) {
                         hierarchy_root_nodes_.push_back(&map_node_iter);
-                        printf("hierarchy_root_nodes_ size: %d\n",(int)hierarchy_root_nodes_.size());
+                       // printf("hierarchy_root_nodes_ size: %d\n",(int)hierarchy_root_nodes_.size());
                     }
                 }
                 else
@@ -61,7 +61,7 @@ void InspectorWindow::OnMessage(const std::string &message)
                     if (find_parent_iter != map_hierarchy_nodes_.end())
                     {
                         find_parent_iter->second.AddChild(&map_node_iter);
-                        printf("find_parent_iter %d name:%s find_id: %d size: %d\n",find_parent_iter->first,find_parent_iter->second.Name.c_str(), find_node.InstanceID,(int)find_parent_iter->second.ChildrenNodes.size());
+                       // printf("find_parent_iter %d name:%s find_id: %d size: %d\n",find_parent_iter->first,find_parent_iter->second.Name.c_str(), find_node.InstanceID,(int)find_parent_iter->second.ChildrenNodes.size());
                     }
                 }
 
