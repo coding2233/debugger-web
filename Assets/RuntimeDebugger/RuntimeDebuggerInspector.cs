@@ -343,7 +343,7 @@ public class ReflectionInspector
 	{ 
 		try
 		{
-			var nameArgs = FullName.Split('/');
+			var nameArgs = FullName.Split('|');
 			string targetMaterilName = nameArgs[0];
 			string materialName = nameArgs[1];
 			string shaderName = nameArgs[2];
@@ -573,7 +573,7 @@ public class ComponentInspector
 
 							if (item.CanRead && ConverterTypes.CheckType(item.PropertyType))
 							{
-								string refName = $"{name}/{material.name}/{shaderName}/{materialIndex}/{typeof(PropertyInfo).Name}/{item.Name}";
+								string refName = $"{name}|{material.name}|{shaderName}|{materialIndex}|{typeof(PropertyInfo).Name}|{item.Name}";
 								ReflectionValues.Add(new ReflectionInspector(material, item, refName));
 								materialNames.Add(refName);
 							}
@@ -586,7 +586,7 @@ public class ComponentInspector
 						{
 							var propertyName = matShader.GetPropertyName(i);
 							var propertyType = matShader.GetPropertyType(i);
-							string refName = $"{name}/{material.name}/{matShader.name}/{materialIndex}/{propertyType}/{propertyName}";
+							string refName = $"{name}|{material.name}|{matShader.name}|{materialIndex}|{propertyType}|{propertyName}";
 							ReflectionValues.Add(new ReflectionInspector(material, propertyName, propertyType, refName));
 							materialNames.Add(refName);
 						}

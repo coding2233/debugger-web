@@ -15,13 +15,127 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public unsafe class RuntimeDebugger : MonoBehaviour
+public unsafe class RuntimeDebugger:IDisposable
 {
 	private static Dictionary<byte, RuntimeDebuggerBase> m_runtimeDebugger;
 	private static SynchronizationContext m_mainSynchronizationContext;
 	private static IntPtr m_channel;
-	private string m_showIPAddressList;
 
+	public static int State { get; private set; } = 0;
+
+	public IEnumerator Start(int port)
+	{
+		State = 0;
+
+		m_mainSynchronizationContext = SynchronizationContext.Current;
+		if (m_mainSynchronizationContext == null)
+		{
+			m_mainSynchronizationContext = new SynchronizationContext();
+		}
+
+		m_runtimeDebugger = new Dictionary<byte, RuntimeDebuggerBase>();
+		m_runtimeDebugger.Add(1, new RuntimeDebuggerInformation());
+		m_runtimeDebugger.Add(2, new RuntimeDebuggerLog());
+		m_runtimeDebugger.Add(3, new RuntimeDebuggerInspector());
+
+		foreach (var item in m_runtimeDebugger)
+		{
+			item.Value.BindSend(WebSocketSend, item.Key);
+		}
+
+		string documentPath = Path.Combine(Application.streamingAssetsPath, "debugger");
+		if (Application.platform == RuntimePlatform.Android)
+		{
+			string newDocumentPath = Path.Combine(Application.persistentDataPath, "debugger");
+			if (!Directory.Exists(newDocumentPath))
+			{
+				Directory.CreateDirectory(newDocumentPath);
+				string[] assetNames = new string[] { "index.html", "RuntimeDebugger.data", "RuntimeDebugger.html", "RuntimeDebugger.js", "RuntimeDebugger.wasm" };
+				foreach (var item in assetNames)
+				{
+					string srcPath = Path.Combine(documentPath, item);
+					string targetPath = Path.Combine(newDocumentPath, item);
+					var assetRequest = UnityWebRequest.Get(srcPath);
+					DownloadHandlerBuffer downloadHandler = new DownloadHandlerBuffer();
+					assetRequest.downloadHandler = downloadHandler;
+					yield return assetRequest.SendWebRequest();
+					File.WriteAllBytes(targetPath, downloadHandler.data);
+				}
+			}
+			documentPath = newDocumentPath;
+		}
+
+		RunHttpd(port, documentPath);
+	}
+
+	public void Stop()
+	{
+		Dispose();
+	}
+
+	public void Dispose()
+	{
+		StopHttpService();
+		State = -1;
+		Debug.Log("RuntimeDebugger Dispose.");
+	}
+
+	
+	private void RunHttpd(int port, string documentPath)
+	{
+		try
+		{
+			Task.Run(() => {
+				try
+				{
+					CreateHttpService(port, documentPath);
+					BindWebSocketService(OnOpen, OnMessage, OnClose);
+					RunHttpService(true);
+					State = 1;
+				}
+				catch (Exception ex)
+				{
+					State = -1;
+					Debug.LogWarning(ex);
+				}
+			});
+		}
+		catch (Exception e)
+		{
+			State = -1;
+			Debug.LogWarning(e);
+		}
+	}
+
+
+	private  static void WebSocketSend(byte key, object messageObject)
+	{
+		if (messageObject == null)
+		{
+			return;
+		}
+		var message =  JsonConvert.SerializeObject(messageObject,new VectorConverter());
+		var bytes = System.Text.Encoding.UTF8.GetBytes(message);
+
+		int size = bytes.Length + 4 + 1;
+		List<byte> datas = new List<byte>();
+		datas.AddRange(BitConverter.GetBytes(size));
+		datas.Add(key);
+		datas.AddRange(bytes);
+
+		var dataArrary = datas.ToArray();
+		fixed (byte* aaa = dataArrary)
+		{
+			if (m_channel == IntPtr.Zero)
+			{
+				return;
+			}
+			//int sendCount = dataArrary.Length > maxSize ? maxSize : dataArrary.Length;
+			WebSocketSendBinary(m_channel, aaa, dataArrary.Length);
+		}
+	}
+
+	#region  websocket回调
 	[MonoPInvokeCallback(typeof(OnWebSocketOpenCallback))]
 	private static void OnOpen(IntPtr channel, string req_path)
 	{
@@ -31,8 +145,11 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 			WebSocketClose(m_channel);
 		}
 		m_channel = channel;
-		//发送版本信息
-		WebSocketSend(0,new RuntimeDebuggerVersion());
+		m_mainSynchronizationContext.Post((state) =>
+		{
+			//发送版本信息
+			WebSocketSend(0, new RuntimeDebuggerVersion());
+		}, null);
 	}
 
 	[MonoPInvokeCallback(typeof(OnWebSocketMessageCallback))]
@@ -59,160 +176,7 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 		m_channel = IntPtr.Zero;
 	}
 
-	// Start is called before the first frame update
-	IEnumerator Start()
-    {
-		m_mainSynchronizationContext = SynchronizationContext.Current;
-		if (m_mainSynchronizationContext == null)
-		{
-			m_mainSynchronizationContext = new SynchronizationContext();
-		}
-
-		m_runtimeDebugger = new Dictionary<byte, RuntimeDebuggerBase>();
-		m_runtimeDebugger.Add(1, new RuntimeDebuggerInformation());
-		m_runtimeDebugger.Add(2, new RuntimeDebuggerLog());
-		m_runtimeDebugger.Add(3, new RuntimeDebuggerInspector());
-
-		foreach (var item in m_runtimeDebugger)
-		{
-			item.Value.BindSend(WebSocketSend, item.Key);
-		}
-
-		//StartCoroutine(TestLog());
-
-		string documentPath = Path.Combine(Application.streamingAssetsPath, "debugger");
-		if (Application.platform == RuntimePlatform.Android)
-		{
-			string newDocumentPath = Path.Combine(Application.persistentDataPath, "debugger");
-			if (!Directory.Exists(newDocumentPath))
-			{
-				Directory.CreateDirectory(newDocumentPath);
-				string[] assetNames = new string[] { "index.html", "RuntimeDebugger.data", "RuntimeDebugger.html", "RuntimeDebugger.js", "RuntimeDebugger.wasm" };
-				foreach (var item in assetNames)
-				{
-					string srcPath = Path.Combine(documentPath, item);
-					string targetPath = Path.Combine(newDocumentPath, item);
-					var assetRequest = UnityWebRequest.Get(srcPath);
-					DownloadHandlerBuffer downloadHandler = new DownloadHandlerBuffer();
-					assetRequest.downloadHandler = downloadHandler;
-					yield return assetRequest.SendWebRequest();
-					File.WriteAllBytes(targetPath, downloadHandler.data);
-				}
-			}
-			documentPath = newDocumentPath;
-		}
-
-		RunHttpd(2233,documentPath);
-    }
-
-	private void RunHttpd(int port, string documentPath)
-	{
-		try
-		{
-			Task.Run(async () => {
-				try
-				{
-					CreateHttpService(port, documentPath);
-					BindWebSocketService(OnOpen, OnMessage, OnClose);
-					RunHttpService(true);
-				}
-				catch (Exception ex)
-				{
-					Debug.LogWarning(ex);
-				}
-			});
-
-			StringBuilder showIPAddressBuilder = new StringBuilder();
-			foreach (var item in NetworkInterface.GetAllNetworkInterfaces()) 
-			{
-                foreach (var ip in item.GetIPProperties().UnicastAddresses)
-                {
-					showIPAddressBuilder.Append("http://");
-					showIPAddressBuilder.Append(ip.Address.ToString());
-					showIPAddressBuilder.Append(":");
-					showIPAddressBuilder.Append(port);
-					showIPAddressBuilder.AppendLine("/");
-				}
-            }
-			showIPAddressBuilder.AppendLine("runtime-debugger service startup success.");
-			m_showIPAddressList = showIPAddressBuilder.ToString(); 
-			Debug.Log("RunHttpService.");
-		}
-		catch (Exception e)
-		{
-			m_showIPAddressList = $"runtime-debugger service exception: {e}";
-			Debug.LogWarning(e);
-		}
-	}
-
-	private void OnDestroy()
-	{
-        StopHttpService();
-		Debug.Log("OnDestroy.");
-	}
-
-	private void OnGUI()
-	{
-		if (!string.IsNullOrEmpty(m_showIPAddressList))
-		{
-			GUILayout.Label(m_showIPAddressList);
-		}
-	}
-
-	IEnumerator TestLog()
-	{
-		var wfs = new WaitForSeconds(1);
-		while (true)
-		{
-			yield return wfs;
-			Debug.Log($"TestLog {UnityEngine.Random.Range(0,99999999).ToString("D8")} {DateTime.Now} #");
-			yield return wfs;
-			Debug.LogWarning($"TestLog {UnityEngine.Random.Range(0, 99999999).ToString("D8")} {DateTime.Now} #");
-			//yield return wfs;
-			//Debug.LogError($"TestLog {UnityEngine.Random.Range(0, 99999999).ToString("D8")} {DateTime.Now} #");
-
-		}
-	}
-
-	private  static void WebSocketSend(byte key, object messageObject)
-	{
-		if (messageObject == null)
-		{
-			return;
-		}
-		var message =  JsonConvert.SerializeObject(messageObject,new VectorConverter());
-		var bytes = System.Text.Encoding.UTF8.GetBytes(message);
-
-		int maxSize = 4096; 
-
-		//using (MemoryStream ms = new MemoryStream())
-		//{
-		//	using (BsonWriter writer = new BsonWriter(ms))
-		//	{
-		//		JsonSerializer serializer = new JsonSerializer();
-		//		serializer.Serialize(writer, messageObject);
-		//	}
-		//	int oldSize = bytes.Length;
-		//	bytes = ms.ToArray();
-		//}
-
-		int size = bytes.Length + 4 + 1;
-		List<byte> datas = new List<byte>();
-		datas.AddRange(BitConverter.GetBytes(size));
-		datas.Add(key);
-		datas.AddRange(bytes);
-
-		var dataArrary = datas.ToArray();
-		fixed (byte* aaa = dataArrary)
-		{
-			if (m_channel == IntPtr.Zero)
-			{
-				return;
-			}
-			//int sendCount = dataArrary.Length > maxSize ? maxSize : dataArrary.Length;
-			WebSocketSendBinary(m_channel, aaa, dataArrary.Length);
-		}
-	}
+	#endregion
 
 
 #if UNITY_IOS && !UNITY_EDITOR
@@ -242,6 +206,8 @@ public unsafe class RuntimeDebugger : MonoBehaviour
 	extern static void WebSocketSend(IntPtr channel,string message);
 	[DllImport(DLLXHV)]
 	extern static void WebSocketClose(IntPtr channel);
+
+
 }
 
 
