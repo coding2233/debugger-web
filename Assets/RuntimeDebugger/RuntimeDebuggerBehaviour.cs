@@ -29,6 +29,7 @@ namespace RuntimeDebugger
 
 		private Vector2 m_ipAddressRect;
 
+		private FPSCounter m_fpsCounter;
 
 		private void Awake()
 		{
@@ -39,6 +40,8 @@ namespace RuntimeDebugger
 			m_smallRect = new Rect(10, 10, 100, 60);
 			m_fullRect = new Rect(10, 10, 700, 500);
 			m_dragRect = new Rect(0f, 0f, float.MaxValue, 25f);
+
+			m_fpsCounter = new FPSCounter();
 		}
 
 		private void Start()
@@ -70,6 +73,11 @@ namespace RuntimeDebugger
 			if (m_runtimeDebugger != null)
 			{
 				m_runtimeDebugger.Update();
+			}
+
+			if (m_fpsCounter != null)
+			{
+				m_fpsCounter.OnUpdate();
 			}
 		}
 
@@ -141,10 +149,16 @@ namespace RuntimeDebugger
 		{
 			GUI.DragWindow(m_dragRect);
 
-			if (GUILayout.Button("DEBUGGER", GUILayout.Width(100f), GUILayout.Height(40f)))
+			Color defaultColor = GUI.contentColor;
+			if (m_runtimeDebugger != null)
+			{
+				GUI.contentColor = Color.green;
+			}
+			if (GUILayout.Button(m_fpsCounter.FPS.ToString("f2"), GUILayout.Width(100f), GUILayout.Height(40f)))
 			{
 				m_showFullWindow = true;
 			}
+			GUI.contentColor = defaultColor;
 		}
 
 
@@ -192,4 +206,35 @@ namespace RuntimeDebugger
 		}
 
 	}
+
+
+	internal class FPSCounter
+	{
+		private float _lastTime;
+		private float _fpsCount = 0;
+		private float _fps;
+
+		public float FPS { get { return _fps; } }
+
+
+		public FPSCounter()
+		{
+			_lastTime = Time.realtimeSinceStartup;
+			_fpsCount = 0;
+			_fps = 0;
+		}
+
+		public void OnUpdate()
+		{
+			float intervalTime = Time.realtimeSinceStartup - _lastTime;
+			_fpsCount++;
+			if (intervalTime > 1)
+			{
+				_fps = _fpsCount / intervalTime;
+				_fpsCount = 0;
+				_lastTime = Time.realtimeSinceStartup;
+			}
+		}
+	}
+
 }
