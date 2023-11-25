@@ -14,15 +14,25 @@ InformationWindow::~InformationWindow()
 
 void InformationWindow::OnMessage(const std::string &message)
 {
-        json infor = json::parse(message);
-        information_ = infor;
+        json json_information = json::parse(message);
+        std::map<std::string,std::map<std::string,std::string>> information = json_information;
+        for (auto iter = information.begin();iter != information.end();iter++)
+        {
+            information_[iter->first] = iter->second;
+        }
 }
 
 void InformationWindow::OnShow(bool show)
 {
     if(show)
     {
+        information_.clear();
         Send("show");
+    }
+    else
+    {
+        information_.clear();
+        Send("hide");
     }
 }
 

@@ -24,11 +24,9 @@ namespace RuntimeDebugger
 
 		public static int State { get; private set; } = 0;
 
-		public IEnumerator Start(int port)
+		public void Start(int port)
 		{
 			State = 0;
-			yield return new WaitForEndOfFrame();
-
 			m_mainSynchronizationContext = SynchronizationContext.Current;
 			if (m_mainSynchronizationContext == null)
 			{
@@ -54,6 +52,17 @@ namespace RuntimeDebugger
 			Dispose();
 		}
 
+		public void Update()
+		{
+			if (m_runtimeDebugger != null)
+			{
+                foreach (var item in m_runtimeDebugger.Values)
+                {
+					item.OnUpdate();
+
+				}
+            }
+		}
 
 		public void BindWebData(byte[] data)
 		{
@@ -67,6 +76,7 @@ namespace RuntimeDebugger
 		{
 			StopHttpService();
 			State = -1;
+			m_runtimeDebugger = null;
 			Debug.Log("RuntimeDebugger Dispose.");
 		}
 

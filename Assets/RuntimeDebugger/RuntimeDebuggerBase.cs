@@ -21,6 +21,10 @@ namespace RuntimeDebugger
 
 		}
 
+		public virtual void OnUpdate()
+		{ 
+		}
+
 		public virtual void Dispose()
 		{
 			m_sendAction = null;

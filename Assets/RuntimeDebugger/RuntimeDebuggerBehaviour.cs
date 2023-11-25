@@ -65,6 +65,14 @@ namespace RuntimeDebugger
 			GUI.matrix = lastMatrix;
 		}
 
+		private void Update()
+		{
+			if (m_runtimeDebugger != null)
+			{
+				m_runtimeDebugger.Update();
+			}
+		}
+
 		private void OnDestroy()
 		{
 			if (m_runtimeDebugger != null)
@@ -180,7 +188,7 @@ namespace RuntimeDebugger
 				}
 			}
 			Debug.Log("RunHttpService.");
-			StartCoroutine(m_runtimeDebugger.Start(m_serverPort));
+			m_runtimeDebugger.Start(m_serverPort);
 		}
 
 	}

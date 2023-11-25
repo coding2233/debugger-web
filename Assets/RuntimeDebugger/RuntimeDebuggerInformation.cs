@@ -4,10 +4,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+
 namespace RuntimeDebugger
 {
 	public class RuntimeDebuggerInformation : RuntimeDebuggerBase
 	{
+		bool m_updateInformation;
 		public RuntimeDebuggerInformation()
 		{
 
@@ -15,9 +18,31 @@ namespace RuntimeDebugger
 
 		public override void OnMessage(string message)
 		{
-			//收到消息，直接回包
-			var information = BuildInformation();
-			Send(information);
+			if (string.IsNullOrEmpty(message))
+			{
+				return;
+			}
+
+			if ("show" == message)
+			{
+				//收到消息，直接回包
+				var information = BuildInformation();
+				Send(information);
+				m_updateInformation = true;
+			}
+			else if("hide" == message) 
+			{
+				m_updateInformation = false;
+			}
+		}
+		public override void OnUpdate()
+		{
+			if (m_updateInformation)
+			{
+				var information = new Dictionary<string, Dictionary<string, string>>();
+				information.Add("Time", BuildTimeInformation());
+				Send(information);
+			}
 		}
 
 		private Dictionary<string, Dictionary<string, string>> BuildInformation()
@@ -29,6 +54,7 @@ namespace RuntimeDebugger
 			information.Add("Graphics", BuildGraphicsInformation());
 			information.Add("Path", BuildPathInformation());
 			information.Add("Quality", BuildQualityInformation());
+			information.Add("Scene", BuildSceneInformation());
 			return information;
 		}
 
@@ -173,6 +199,7 @@ namespace RuntimeDebugger
 			return dictionaryBuilder;
 		}
 
+
 		private Dictionary<string, string> BuildQualityInformation()
 		{
 			var dictionaryBuilder = new Dictionary<string, string>();
@@ -219,9 +246,74 @@ namespace RuntimeDebugger
 			return dictionaryBuilder;
 		}
 
+		private Dictionary<string, string> BuildSceneInformation()
+		{
+			var dictionaryBuilder = new Dictionary<string, string>();
+
+			AppendDictionaryBuilder(dictionaryBuilder, "Scene Count", SceneManager.sceneCount.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Scene Count In Build Settings", SceneManager.sceneCountInBuildSettings.ToString());
+			Scene activeScene = SceneManager.GetActiveScene();
+			AppendDictionaryBuilder(dictionaryBuilder, "Active Scene Name", activeScene.name);
+			AppendDictionaryBuilder(dictionaryBuilder, "Active Scene Path", activeScene.path);
+			AppendDictionaryBuilder(dictionaryBuilder, "Active Scene Build Index", activeScene.buildIndex.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Active Scene Is Dirty", activeScene.isDirty.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Active Scene Is Loaded", activeScene.isLoaded.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Active Scene Is Valid", activeScene.IsValid().ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Active Scene Root Count", activeScene.rootCount.ToString());
+
+			return dictionaryBuilder;
+		}
+
+		private Dictionary<string, string> BuildTimeInformation()
+		{
+			var dictionaryBuilder = new Dictionary<string, string>();
+
+			AppendDictionaryBuilder(dictionaryBuilder, "Time Scale", string.Format("{0} [{1}]", Time.timeScale.ToString(), GetTimeScaleDescription(Time.timeScale)));
+			AppendDictionaryBuilder(dictionaryBuilder, "Realtime Since Startup", Time.realtimeSinceStartup.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Time Since Level Load", Time.timeSinceLevelLoad.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Time", Time.time.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Fixed Time", Time.fixedTime.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Unscaled Time", Time.unscaledTime.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Fixed Unscaled Time", Time.fixedUnscaledTime.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Delta Time", Time.deltaTime.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Fixed Delta Time", Time.fixedDeltaTime.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Unscaled Delta Time", Time.unscaledDeltaTime.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Fixed Unscaled Delta Time", Time.fixedUnscaledDeltaTime.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Smooth Delta Time", Time.smoothDeltaTime.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Maximum Delta Time", Time.maximumDeltaTime.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Maximum Particle Delta Time", Time.maximumParticleDeltaTime.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Frame Count", Time.frameCount.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Rendered Frame Count", Time.renderedFrameCount.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Capture Framerate", Time.captureFramerate.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Capture Delta Time", Time.captureDeltaTime.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "In Fixed Time Step", Time.inFixedTimeStep.ToString());
+
+			return dictionaryBuilder;
+		}
+
 		private void AppendDictionaryBuilder(Dictionary<string, string> dictionaryBuilder, string key, object value)
 		{
 			dictionaryBuilder.Add(key, value.ToString());
+		}
+
+		private string GetTimeScaleDescription(float timeScale)
+		{
+			if (timeScale <= 0f)
+			{
+				return "Pause";
+			}
+
+			if (timeScale < 1f)
+			{
+				return "Slower";
+			}
+
+			if (timeScale > 1f)
+			{
+				return "Faster";
+			}
+
+			return "Normal";
 		}
 
 		#region screen
