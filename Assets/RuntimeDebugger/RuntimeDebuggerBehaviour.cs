@@ -81,11 +81,14 @@ public class RuntimeDebuggerBehaviour : MonoBehaviour
 				{
 					foreach (var ip in item.GetIPProperties().UnicastAddresses)
 					{
+						showIPAddressBuilder.Clear();
 						showIPAddressBuilder.Append("http://");
 						string ipAddress = ip.Address.ToString();
 						if (ipAddress.Contains(":"))
 						{
 							showIPAddressBuilder.Append("[");
+							//暂时忽略ipv6
+							continue;
 						}
 						showIPAddressBuilder.Append(ipAddress);
 						if (ipAddress.Contains(":"))
@@ -98,7 +101,7 @@ public class RuntimeDebuggerBehaviour : MonoBehaviour
 						showIPAddressBuilder.Append("debugger/");
 
 						m_showIPAddressList.Add(showIPAddressBuilder.ToString());
-						showIPAddressBuilder.Clear();
+					
 					}
 				}
 				Debug.Log("RunHttpService.");
@@ -135,6 +138,10 @@ public class RuntimeDebuggerBehaviour : MonoBehaviour
 					if (GUILayout.Button("Open", GUILayout.Width(80), GUILayout.Height(30)))
 					{
 						Application.OpenURL(item);
+					}
+					if (GUILayout.Button("Copy", GUILayout.Width(80), GUILayout.Height(30)))
+					{
+						UnityEngine.GUIUtility.systemCopyBuffer = item;
 					}
 					GUILayout.Label(item);
 					GUILayout.EndHorizontal();
