@@ -517,4 +517,9 @@ namespace RuntimeDebugger
 		#endregion
 
 	}
+
+	public class InformationOperation
+	{
+		
+	}
 }

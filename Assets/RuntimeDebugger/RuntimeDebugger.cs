@@ -37,6 +37,7 @@ namespace RuntimeDebugger
 			m_runtimeDebugger.Add(1, new RuntimeDebuggerInformation());
 			m_runtimeDebugger.Add(2, new RuntimeDebuggerLog());
 			m_runtimeDebugger.Add(3, new RuntimeDebuggerInspector());
+			m_runtimeDebugger.Add(4, new RuntimeDebuggerFile());
 
 			foreach (var item in m_runtimeDebugger)
 			{
