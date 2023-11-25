@@ -1,10 +1,10 @@
 add_requires("libhv 1.2.6",{alias="libhv"})
--- add_requires("glew")
+add_requires("libzip")
 -- add_requires("opengl")
 -- add_requires("libcurl",{alias="curl"})
 
 -- vs开发使用
-add_rules("mode.release","mode.debug")
+-- add_rules("mode.release","mode.debug")
 
 target("xhv")
     if is_plat("iphoneos") then
@@ -15,7 +15,7 @@ target("xhv")
     set_languages("cxx17")
     -- set_arch("x64")
     add_files("src/**.cpp")
-    add_packages("libhv")
+    add_packages("libhv","libzip")
     if is_plat("windows") then
         add_defines("TEST")
     end
@@ -25,7 +25,7 @@ target("xhv_test")
     set_languages("cxx17")
     -- set_arch("x64")
     add_files("src/**.cpp")
-    add_packages("libhv")
+    add_packages("libhv","libzip")
     if is_plat("windows") then
         add_defines("TEST")
     end

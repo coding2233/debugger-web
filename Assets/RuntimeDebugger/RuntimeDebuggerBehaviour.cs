@@ -73,7 +73,8 @@ public class RuntimeDebuggerBehaviour : MonoBehaviour
 					m_runtimeDebugger = null;
 				}
 				m_runtimeDebugger = new RuntimeDebugger();
-
+				TextAsset webTextAsset = Resources.Load<TextAsset>("debugger_web");
+				m_runtimeDebugger.BindWebData(webTextAsset.bytes);
 				m_showIPAddressList = new List<string>();
 				StringBuilder showIPAddressBuilder = new StringBuilder();
 				foreach (var item in NetworkInterface.GetAllNetworkInterfaces())
@@ -93,7 +94,8 @@ public class RuntimeDebuggerBehaviour : MonoBehaviour
 						}
 						showIPAddressBuilder.Append(":");
 						showIPAddressBuilder.Append(m_serverPort);
-						showIPAddressBuilder.AppendLine("/");
+						showIPAddressBuilder.Append("/");
+						showIPAddressBuilder.Append("debugger/");
 
 						m_showIPAddressList.Add(showIPAddressBuilder.ToString());
 						showIPAddressBuilder.Clear();
@@ -130,7 +132,7 @@ public class RuntimeDebuggerBehaviour : MonoBehaviour
 					{ continue; }
 					
 					GUILayout.BeginHorizontal();
-					if (GUILayout.Button("Open", GUILayout.Width(80)))
+					if (GUILayout.Button("Open", GUILayout.Width(80), GUILayout.Height(30)))
 					{
 						Application.OpenURL(item);
 					}

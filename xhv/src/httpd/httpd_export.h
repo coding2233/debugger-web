@@ -35,4 +35,6 @@ EXPORT_API void BindWebSocketService(OnWebSocketOpen on_open,OnWebSocketMessage 
 EXPORT_API void WebSocketSendBinary(const WebSocketChannelPtr& channel,const uint8_t* data,int size);
 EXPORT_API void WebSocketSend(const WebSocketChannelPtr& channel,const char* message);
 EXPORT_API void WebSocketClose(const WebSocketChannelPtr& channel);
+
+EXPORT_API void BindRuntimeDebuggerWebData(const uint8_t* data,size_t size);
 #endif

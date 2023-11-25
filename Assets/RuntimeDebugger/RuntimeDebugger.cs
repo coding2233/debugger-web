@@ -26,6 +26,7 @@ public unsafe class RuntimeDebugger:IDisposable
 	public IEnumerator Start(int port)
 	{
 		State = 0;
+		yield return new WaitForEndOfFrame();
 
 		m_mainSynchronizationContext = SynchronizationContext.Current;
 		if (m_mainSynchronizationContext == null)
@@ -43,34 +44,22 @@ public unsafe class RuntimeDebugger:IDisposable
 			item.Value.BindSend(WebSocketSend, item.Key);
 		}
 
-		string documentPath = Path.Combine(Application.streamingAssetsPath, "debugger");
-		if (Application.platform == RuntimePlatform.Android)
-		{
-			string newDocumentPath = Path.Combine(Application.persistentDataPath, "debugger");
-			if (!Directory.Exists(newDocumentPath))
-			{
-				Directory.CreateDirectory(newDocumentPath);
-				string[] assetNames = new string[] { "index.html", "RuntimeDebugger.data", "RuntimeDebugger.html", "RuntimeDebugger.js", "RuntimeDebugger.wasm" };
-				foreach (var item in assetNames)
-				{
-					string srcPath = Path.Combine(documentPath, item);
-					string targetPath = Path.Combine(newDocumentPath, item);
-					var assetRequest = UnityWebRequest.Get(srcPath);
-					DownloadHandlerBuffer downloadHandler = new DownloadHandlerBuffer();
-					assetRequest.downloadHandler = downloadHandler;
-					yield return assetRequest.SendWebRequest();
-					File.WriteAllBytes(targetPath, downloadHandler.data);
-				}
-			}
-			documentPath = newDocumentPath;
-		}
-
+		string documentPath = Application.persistentDataPath;
 		RunHttpd(port, documentPath);
 	}
 
 	public void Stop()
 	{
 		Dispose();
+	}
+
+
+	public void BindWebData(byte[] data)
+	{
+		if (data != null && data.Length > 0)
+		{
+			BindRuntimeDebuggerWebData(data, data.Length);
+		}
 	}
 
 	public void Dispose()
@@ -207,7 +196,8 @@ public unsafe class RuntimeDebugger:IDisposable
 	[DllImport(DLLXHV)]
 	extern static void WebSocketClose(IntPtr channel);
 
-
+	[DllImport(DLLXHV)]
+	extern static void BindRuntimeDebuggerWebData(byte[] data, int size);
 }
 
 

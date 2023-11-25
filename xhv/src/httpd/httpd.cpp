@@ -10,9 +10,11 @@
 
 #include "router.h"
 #include "httpd_export.h"
+#include "runtime_debugger_web_data.h"
 
 hv::HttpServer  g_http_server;
 hv::HttpService g_http_service;
+RuntimeDebuggerWebData g_runtime_debugger_web_data;
 
 static void print_version();
 static void print_help();
@@ -270,6 +272,25 @@ int main002(int argc, char** argv) {
 
 int main(int argc, char** argv)
 {
+//    FILE* file = fopen("debugger.zip","rb");
+//    // 检查文件是否成功打开
+//    if (file == NULL) {
+//        perror("Could not open the file");
+//        return EXIT_FAILURE;
+//    }
+//    const int BUFFER_SIZE = 367001600;
+//    char read_buffer[BUFFER_SIZE];
+//    // 将文件内容读取到缓冲区中
+//    size_t bytes_read = fread(read_buffer, sizeof(unsigned char), BUFFER_SIZE, file);
+//    // 检查是否读取成功
+//    if (ferror(file)) {
+//        perror("Error reading from file");
+//        fclose(file);
+//        return EXIT_FAILURE;
+//    }
+//    BindRuntimeDebuggerWebData((const uint8_t *) read_buffer, bytes_read);
+
+
     int ret = CreateHttpService(2233,".");
     BindWebSocketService(NULL,NULL,NULL);
     RunHttpService(true);
@@ -336,7 +357,7 @@ void BindWebSocketService(OnWebSocketOpen on_open,OnWebSocketMessage on_message,
 //         });
     };
     ws.onmessage = [&](const WebSocketChannelPtr& channel, const std::string& msg) {
-        printf("onmessage: %d\n", msg.size());
+        printf("onmessage: %d\n", (int)msg.size());
         const uint8_t* data = (const uint8_t*)msg.c_str();
         if(on_message_)
         {
@@ -358,7 +379,6 @@ void WebSocketSendBinary(const WebSocketChannelPtr& channel,const uint8_t* data,
 {
     if(channel)
     {
-
         if (channel->isConnected())
         {
             channel->send((const char*)data,size,WS_OPCODE_BINARY);
@@ -383,4 +403,52 @@ void WebSocketClose(const WebSocketChannelPtr& channel)
     {
         channel->close();
     }
+}
+
+void BindRuntimeDebuggerWebData(const uint8_t* data,size_t size)
+{
+    RuntimeDebuggerWebData * web_data = &g_runtime_debugger_web_data;
+    web_data->ExtractToMap((const char*) data,size);
+
+    hv::HttpService& router = g_http_service;
+    router.GET("/debugger*",[web_data,router](const HttpContextPtr& ctx){
+        ctx->writer->Begin();
+
+        std::string request_path = ctx->request->Path();
+        if (request_path=="/debugger/")
+        {
+            request_path = "/debugger/index.html";
+        }
+        std::string file_name = request_path.substr(10);
+        std::string file_data = web_data->GetFileData(file_name);
+        int file_size = file_data.empty() ? 0: file_data.size();
+        if(file_size>0)
+        {
+            http_content_type content_type = CONTENT_TYPE_NONE;
+            const char* suffix = hv_suffixname(file_name.c_str());
+            if (suffix) {
+                content_type = http_content_type_enum_by_suffix(suffix);
+            }
+            if (content_type == CONTENT_TYPE_NONE || content_type == CONTENT_TYPE_UNDEFINED) {
+                content_type = APPLICATION_OCTET_STREAM;
+            }
+
+            ctx->writer->WriteHeader("Content-Type", http_content_type_str(content_type));
+            ctx->writer->WriteHeader("Content-Length", file_size);
+            // ctx->writer->WriteHeader("Transfer-Encoding", "chunked");
+            ctx->writer->EndHeaders();
+
+            int nwrite = ctx->writer->WriteBody(file_data.data(), file_size);
+            ctx->writer->End();
+            return 200;
+        }
+        else
+        {
+            ctx->writer->WriteStatus(HTTP_STATUS_NOT_FOUND);
+            ctx->writer->WriteHeader("Content-Type", "text/html");
+            ctx->writer->WriteBody("<center><h1>404 Not Found</h1></center>");
+            ctx->writer->End();
+            return 404;
+        }
+    });
 }
