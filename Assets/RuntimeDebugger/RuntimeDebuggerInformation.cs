@@ -41,6 +41,12 @@ namespace RuntimeDebugger
 			{
 				var information = new Dictionary<string, Dictionary<string, string>>();
 				information.Add("Time", BuildTimeInformation());
+				information.Add("Input Summary", BuildSummaryInputInformation());
+				information.Add("Input Touch", BuildTouchInputInformation());
+				information.Add("Input Location", BuildLocationInputInformation());
+				information.Add("Input Acceleration", BuildAccelerationInputInformation());
+				information.Add("Input Gyroscope", BuildGyroscopeInputInformation());
+				information.Add("Input Compass", BuildCompassInputInformation());
 				Send(information);
 			}
 		}
@@ -291,6 +297,105 @@ namespace RuntimeDebugger
 			return dictionaryBuilder;
 		}
 
+		#region input
+		private Dictionary<string, string> BuildSummaryInputInformation()
+		{
+			var dictionaryBuilder = new Dictionary<string, string>();
+
+			AppendDictionaryBuilder(dictionaryBuilder, "Back Button Leaves App", Input.backButtonLeavesApp.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Device Orientation", Input.deviceOrientation.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Mouse Present", Input.mousePresent.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Mouse Position", Input.mousePosition.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Mouse Scroll Delta", Input.mouseScrollDelta.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Any Key", Input.anyKey.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Any Key Down", Input.anyKeyDown.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Input String", Input.inputString);
+			AppendDictionaryBuilder(dictionaryBuilder, "IME Is Selected", Input.imeIsSelected.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "IME Composition Mode", Input.imeCompositionMode.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Compensate Sensors", Input.compensateSensors.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Composition Cursor Position", Input.compositionCursorPos.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Composition String", Input.compositionString);
+
+			return dictionaryBuilder;
+		}
+
+		private Dictionary<string, string> BuildTouchInputInformation()
+		{
+			var dictionaryBuilder = new Dictionary<string, string>();
+
+			AppendDictionaryBuilder(dictionaryBuilder, "Touch Supported", Input.touchSupported.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Touch Pressure Supported", Input.touchPressureSupported.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Stylus Touch Supported", Input.stylusTouchSupported.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Simulate Mouse With Touches", Input.simulateMouseWithTouches.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Multi Touch Enabled", Input.multiTouchEnabled.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Touch Count", Input.touchCount.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Touches", GetTouchesString(Input.touches));
+
+			return dictionaryBuilder;
+		}
+
+		private Dictionary<string, string> BuildLocationInputInformation()
+		{
+			var dictionaryBuilder = new Dictionary<string, string>();
+			AppendDictionaryBuilder(dictionaryBuilder, "*", "Need to manually enable Input.localtion.");
+			AppendDictionaryBuilder(dictionaryBuilder, "Is Enabled By User", Input.location.isEnabledByUser.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Status", Input.location.status.ToString());
+			if (Input.location.status == LocationServiceStatus.Running)
+			{
+				AppendDictionaryBuilder(dictionaryBuilder, "Horizontal Accuracy", Input.location.lastData.horizontalAccuracy.ToString());
+				AppendDictionaryBuilder(dictionaryBuilder, "Vertical Accuracy", Input.location.lastData.verticalAccuracy.ToString());
+				AppendDictionaryBuilder(dictionaryBuilder, "Longitude", Input.location.lastData.longitude.ToString());
+				AppendDictionaryBuilder(dictionaryBuilder, "Latitude", Input.location.lastData.latitude.ToString());
+				AppendDictionaryBuilder(dictionaryBuilder, "Altitude", Input.location.lastData.altitude.ToString());
+				AppendDictionaryBuilder(dictionaryBuilder, "Timestamp", Input.location.lastData.timestamp.ToString());
+			}
+
+			return dictionaryBuilder;
+		}
+
+		private Dictionary<string, string> BuildAccelerationInputInformation()
+		{
+			var dictionaryBuilder = new Dictionary<string, string>();
+			AppendDictionaryBuilder(dictionaryBuilder, "Acceleration", Input.acceleration.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Acceleration Event Count", Input.accelerationEventCount.ToString());
+			AppendDictionaryBuilder(dictionaryBuilder, "Acceleration Events", GetAccelerationEventsString(Input.accelerationEvents));
+
+			return dictionaryBuilder;
+		}
+
+		private Dictionary<string, string> BuildGyroscopeInputInformation()
+		{
+			var dictionaryBuilder = new Dictionary<string, string>();
+			AppendDictionaryBuilder(dictionaryBuilder, "*", "Need to manually enable Input.gyro.");
+			AppendDictionaryBuilder(dictionaryBuilder, "Enabled", Input.gyro.enabled.ToString());
+			if (Input.gyro.enabled)
+			{
+				AppendDictionaryBuilder(dictionaryBuilder, "Update Interval", Input.gyro.updateInterval.ToString());
+				AppendDictionaryBuilder(dictionaryBuilder, "Attitude", Input.gyro.attitude.eulerAngles.ToString());
+				AppendDictionaryBuilder(dictionaryBuilder, "Gravity", Input.gyro.gravity.ToString());
+				AppendDictionaryBuilder(dictionaryBuilder, "Rotation Rate", Input.gyro.rotationRate.ToString());
+				AppendDictionaryBuilder(dictionaryBuilder, "Rotation Rate Unbiased", Input.gyro.rotationRateUnbiased.ToString());
+				AppendDictionaryBuilder(dictionaryBuilder, "User Acceleration", Input.gyro.userAcceleration.ToString());
+			}
+			return dictionaryBuilder;
+		}
+
+		private Dictionary<string, string> BuildCompassInputInformation()
+		{
+			var dictionaryBuilder = new Dictionary<string, string>();
+			AppendDictionaryBuilder(dictionaryBuilder, "*", "Need to manually enable Input.compass.");
+			AppendDictionaryBuilder(dictionaryBuilder, "Enabled", Input.compass.enabled.ToString());
+			if (Input.compass.enabled)
+			{
+				AppendDictionaryBuilder(dictionaryBuilder, "Heading Accuracy", Input.compass.headingAccuracy.ToString());
+				AppendDictionaryBuilder(dictionaryBuilder, "Magnetic Heading", Input.compass.magneticHeading.ToString());
+				AppendDictionaryBuilder(dictionaryBuilder, "Raw Vector", Input.compass.rawVector.ToString());
+				AppendDictionaryBuilder(dictionaryBuilder, "Timestamp", Input.compass.timestamp.ToString());
+				AppendDictionaryBuilder(dictionaryBuilder, "True Heading", Input.compass.trueHeading.ToString());
+			}
+			return dictionaryBuilder;
+		}
+
 		private void AppendDictionaryBuilder(Dictionary<string, string> dictionaryBuilder, string key, object value)
 		{
 			dictionaryBuilder.Add(key, value.ToString());
@@ -315,6 +420,36 @@ namespace RuntimeDebugger
 
 			return "Normal";
 		}
+
+		private string GetTouchesString(Touch[] touches)
+		{
+			string[] touchStrings = new string[touches.Length];
+			for (int i = 0; i < touches.Length; i++)
+			{
+				touchStrings[i] = GetTouchString(touches[i]);
+			}
+
+			return string.Join("; ", touchStrings);
+		}
+		private string GetTouchString(Touch touch)
+		{
+			return string.Format("{0}, {1}, {2}, {3}, {4}", touch.position.ToString(), touch.deltaPosition.ToString(), touch.rawPosition.ToString(), touch.pressure.ToString(), touch.phase.ToString());
+		}
+		private string GetAccelerationEventsString(AccelerationEvent[] accelerationEvents)
+		{
+			string[] accelerationEventStrings = new string[accelerationEvents.Length];
+			for (int i = 0; i < accelerationEvents.Length; i++)
+			{
+				accelerationEventStrings[i] = GetAccelerationEventString(accelerationEvents[i]);
+			}
+
+			return string.Join("; ", accelerationEventStrings);
+		}
+		private string GetAccelerationEventString(AccelerationEvent accelerationEvent)
+		{
+			return string.Format("{0}, {1}", accelerationEvent.acceleration.ToString(), accelerationEvent.deltaTime.ToString());
+		}
+		#endregion
 
 		#region screen
 		private string GetSleepTimeoutDescription(int sleepTimeout)
