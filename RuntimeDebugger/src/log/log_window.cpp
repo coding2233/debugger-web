@@ -39,6 +39,13 @@ void LogWindow::OnDraw()
 {
     if (log_node_index_ > 0)
     {
+        if (ImGui::Button("Clear"))
+        {
+            log_nodes_.erase(log_nodes_.begin(),log_nodes_.end());
+            log_node_index_ = 0;
+            log_node_selected_index_ = -1;
+            return;
+        }
         float log_window_height = log_node_selected_index_<0?0: ImGui::GetWindowHeight()*0.55f;
         if(ImGui::BeginChild("LogWindow_log_node",ImVec2(0,log_window_height)))
         {

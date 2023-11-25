@@ -12,7 +12,7 @@
 #include "app_window.h"
 #include "log_node.h"
 
-#define MAX_RUNTIME_DEBUGGER_LOG_NUMBER 1024
+#define MAX_RUNTIME_DEBUGGER_LOG_NUMBER 10240
 
 class LogWindow : public AppWindow
 {

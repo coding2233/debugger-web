@@ -125,6 +125,11 @@ void InspectorWindow::OnShow(bool show)
 {
     if (show)
     {
+        search_hierarchy_root_nodes_.clear();
+        hierarchy_root_nodes_.clear();
+        map_hierarchy_nodes_.clear();
+        hierarchy_node_selected_ = nullptr;
+
         ReqInspector req;
         req.Cmd = Req_Cmd_FindGameObjects;
         req.InstanceID = 0;

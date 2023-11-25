@@ -1,40 +1,42 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-
-public abstract class RuntimeDebuggerBase:IDisposable
+namespace RuntimeDebugger
 {
-	private byte m_sendKey;
-	private Action<byte, object> m_sendAction;
-
-	public void BindSend(Action<byte, object> sendAction, byte key)
+	public abstract class RuntimeDebuggerBase : IDisposable
 	{
-		m_sendKey = key;
-		m_sendAction = sendAction;
-	}
+		private byte m_sendKey;
+		private Action<byte, object> m_sendAction;
 
-	
-
-	public virtual void OnMessage(string message)
-	{
-
-	}
-
-	public virtual void Dispose()
-	{
-		m_sendAction = null;
-	}
-
-	protected virtual void Send(object messageObject)
-	{
-		if (messageObject == null)
+		public void BindSend(Action<byte, object> sendAction, byte key)
 		{
-			return;
+			m_sendKey = key;
+			m_sendAction = sendAction;
 		}
 
-		if (m_sendAction != null)
+
+
+		public virtual void OnMessage(string message)
 		{
-			m_sendAction(m_sendKey, messageObject);
+
+		}
+
+		public virtual void Dispose()
+		{
+			m_sendAction = null;
+		}
+
+		protected virtual void Send(object messageObject)
+		{
+			if (messageObject == null)
+			{
+				return;
+			}
+
+			if (m_sendAction != null)
+			{
+				m_sendAction(m_sendKey, messageObject);
+			}
 		}
 	}
 }
