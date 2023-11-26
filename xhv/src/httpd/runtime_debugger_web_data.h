@@ -9,7 +9,8 @@
 #include <string>
 #include <iostream>
 
-#include "zip.h"
+//#include "zip.h"
+#include "miniz.h"
 
 class RuntimeDebuggerWebData {
 

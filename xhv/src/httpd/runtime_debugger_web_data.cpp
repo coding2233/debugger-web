@@ -15,65 +15,49 @@ int RuntimeDebuggerWebData::ExtractToMap(const char* data,size_t size)
 {
     std::map<std::string,std::string>& out_files = extracted_files_;
     out_files.clear();
-    // 创建一个zip源，从内存中读取数据
-    zip_error_t error;
-    zip_error_init(&error);
-    zip_source_t *source = zip_source_buffer_create(data, size, 0, &error);
-    if (source == NULL) {
-        std::cerr << "Failed to create zip source from buffer: " << zip_error_strerror(&error) << std::endl;
-        zip_error_fini(&error);
+
+    // 创建一个ZIP读取器
+    mz_zip_archive zip_archive;
+    memset(&zip_archive, 0, sizeof(zip_archive));
+
+    mz_bool status = mz_zip_reader_init_mem(&zip_archive, data, size, 0);
+    if (!status) {
+        std::cerr << "Failed to initialize zip reader!" << std::endl;
         return -1;
     }
 
-    // 从zip源创建zip对象
-    zip_t *za = zip_open_from_source(source, 0, &error);
-    if (za == NULL) {
-        std::cerr << "Failed to open zip from source: " << zip_error_strerror(&error) << std::endl;
-        zip_source_free(source);
-        zip_error_fini(&error);
-        return -1;
-    }
-    zip_error_fini(&error);
-
-    // 遍历zip条目
-    zip_int64_t num_entries = zip_get_num_entries(za, 0);
-    for (zip_uint64_t i = 0; i < num_entries; i++) {
-        // 获取当前条目的名称
-        const char *name = zip_get_name(za, i, 0);
-        if (name == NULL) {
-            std::cerr << "Failed to get name for index " << i << std::endl;
-            continue;
+    // 遍历ZIP文件中的所有文件和目录
+    for (int i = 0; i < (int)mz_zip_reader_get_num_files(&zip_archive); i++) {
+        mz_zip_archive_file_stat file_stat;
+        if (!mz_zip_reader_file_stat(&zip_archive, i, &file_stat)) {
+            std::cerr << "Failed to get file stat for file " << i << std::endl;
+            mz_zip_reader_end(&zip_archive);
+            return -1;
         }
 
-        // 打开zip条目
-        zip_file_t *zf = zip_fopen_index(za, i, 0);
-        if (!zf) {
-            std::cerr << "Failed to open entry " << name << std::endl;
-            continue;
+        // 只处理文件，跳过目录
+        if (!file_stat.m_is_directory) {
+            std::cout << "Extracting " << file_stat.m_filename << std::endl;
+
+            // 解压文件到内存
+            size_t uncompressed_size = (size_t)file_stat.m_uncomp_size;
+            void *p = mz_zip_reader_extract_file_to_heap(&zip_archive, file_stat.m_filename, &uncompressed_size, 0);
+            if (!p) {
+                std::cerr << "Failed to extract file " << i << std::endl;
+                mz_zip_reader_end(&zip_archive);
+                return -1;
+            }
+
+            // 将解压缩的数据转换为std::string，并存储在map中
+            out_files[file_stat.m_filename] = std::string((const char*)p, uncompressed_size);
+
+            // 释放提取的文件数据
+            mz_free(p);
         }
-
-        // 读取zip条目数据
-        std::string file_contents;
-        char buffer[4096];
-        zip_int64_t bytes_read;
-        while ((bytes_read = zip_fread(zf, buffer, sizeof(buffer))) > 0) {
-            file_contents.append(buffer, bytes_read);
-        }
-
-        // 关闭zip条目
-        zip_fclose(zf);
-
-        if (bytes_read < 0) {
-            std::cerr << "Failed to read entry " << name << std::endl;
-            continue;
-        }
-
-        // 将文件数据存储到map中
-        out_files[std::string(name)] = file_contents;
     }
 
-    // 关闭zip对象
-    zip_close(za);
+    // 关闭ZIP读取器
+    mz_zip_reader_end(&zip_archive);
 
     return 0;
 }
