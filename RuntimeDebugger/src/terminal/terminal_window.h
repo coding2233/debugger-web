@@ -19,6 +19,7 @@ public:
 
 private:
     std::vector<std::string> log_nodes_;
+    std::string input_text_;
 public:
     void OnMessage(const std::string &message) override;
     void OnDraw() override;
