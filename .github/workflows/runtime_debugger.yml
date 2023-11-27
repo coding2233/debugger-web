@@ -33,23 +33,22 @@ jobs:
         cp index.html build/wasm/x64/release/
         cp favicon.ico build/wasm/x64/release/
         ls -lah build
-        cd ..
+        apt-get install -y zip
+        cd build/wasm/x64/release/
+        zip debugger_web.bytes *.*
+        cd ../../../../../
     
     - name: push xhvlib
       run: |
         git config --global user.name "coding2233"
         git config --global user.email "dutifulwanderer@gmail.com"
-        git clone https://github.com/coding2233/coding2233.github.io.git
-        cp -r -f RuntimeDebugger/build/wasm/x64/release coding2233.github.io/webgl/runtime_debugger
-        cd coding2233.github.io
-        git add webgl/runtime_debugger
-        git commit -m "update runtime-debugger at $(date "+%Y-%m-%d %T") - by github actions"
-        git remote set-url origin https://coding2233:${{ secrets.PUSH_TOKEN }}@github.com/coding2233/coding2233.github.io.git
-        git push
-        cd ..
-
-    - uses: actions/upload-artifact@v3
-      with:
-        name: runtime-debugger-wasm-artifact
-        path: RuntimeDebugger/build/wasm/x64/release/
+        export GITHUB_REPO_URL=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git
+        echo $GITHUB_REPO_URL
+        git clone -b debugger-lib $GITHUB_REPO_URL debugger-lib
+        cp -f RuntimeDebugger/build/wasm/x64/release/debugger_web.bytes debugger-lib/Assets/RuntimeDebugger/Resources/
+        cd debugger-lib
+        git add Assets/RuntimeDebugger/Resources
+        git commit -m "update runtime debugger web at $(date "+%Y-%m-%d %T") - by github actions"
+        git remote set-url origin https://coding2233:${{ secrets.PUSH_TOKEN }}@github.com/$GITHUB_REPOSITORY.git
+        git push origin debugger-lib:debugger-lib
     
