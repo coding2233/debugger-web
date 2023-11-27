@@ -21,9 +21,12 @@ void FileWindow::OnMessage(const std::string & message)
     try
     {
         json json_message = json::parse(message);
-        if (file_nodes_.size() == 0) {
+        if (file_nodes_.size() == 0)
+        {
             file_nodes_ = json_message;
-        } else {
+        }
+        else
+        {
             select_file_ = json_message;
         }
     }
