@@ -72,33 +72,53 @@ namespace RuntimeDebugger
 			fileNode.IsFile = isFile;
             if (isFile)
             {
-                FileInfo fileInfo = new FileInfo(path);
-                fileNode.CreationTime = fileInfo.CreationTime.ToString();
-                fileNode.LastAccessTime = fileInfo.LastAccessTime.ToString();
-                fileNode.LastWriteTime = fileInfo.LastWriteTime.ToString();
-                //Extension
+                try
+                {
+                    FileInfo fileInfo = new FileInfo(path);
+                    fileNode.CreationTime = fileInfo.CreationTime.ToString();
+                    fileNode.LastAccessTime = fileInfo.LastAccessTime.ToString();
+                    fileNode.LastWriteTime = fileInfo.LastWriteTime.ToString();
+                    //Extension
+                }
+                catch(System.Exception e) 
+                {
+                    fileNode.ReadError = e.ToString();
+				}
             }
             else
             {
-                DirectoryInfo directoryInfo = new DirectoryInfo(path);
-				fileNode.CreationTime = directoryInfo.CreationTime.ToString();
-				fileNode.LastAccessTime = directoryInfo.LastAccessTime.ToString();
-				fileNode.LastWriteTime = directoryInfo.LastWriteTime.ToString();
                 if (Directory.Exists(path))
                 {
-                    var dirs = Directory.GetDirectories(path);
-                    foreach (var item in dirs)
+                    try
                     {
-                        fileNode.Children.Add(GetFileNode(item));
+                        DirectoryInfo directoryInfo = new DirectoryInfo(path);
+                        fileNode.CreationTime = directoryInfo.CreationTime.ToString();
+                        fileNode.LastAccessTime = directoryInfo.LastAccessTime.ToString();
+                        fileNode.LastWriteTime = directoryInfo.LastWriteTime.ToString();
+                        if (Directory.Exists(path))
+                        {
+                            var dirs = Directory.GetDirectories(path);
+                            foreach (var item in dirs)
+                            {
+                                fileNode.Children.Add(GetFileNode(item));
+                            }
+                            var files = Directory.GetFiles(path);
+                            foreach (var item in files)
+                            {
+                                fileNode.Children.Add(GetFileNode(item));
+                            }
+                        }
+                    }
+					catch (System.Exception e)
+					{
+						fileNode.ReadError = e.ToString();
 					}
-                    var files = Directory.GetFiles(path);
-                    foreach (var item in files)
-                    {
-						fileNode.Children.Add(GetFileNode(item));
-					}
-                }
+				}
+                else
+                {
+					fileNode.Name += " [folder does not exist]";
+				}
 			}
-
 			return fileNode;
 		}
 	}
@@ -111,6 +131,7 @@ namespace RuntimeDebugger
         public string CreationTime { get; set; }
         public string LastAccessTime { get; set; }
         public string LastWriteTime { get; set; }
+        public string ReadError { get; set; }
         public List<FileNode> Children { get; set; }
 	}
 
