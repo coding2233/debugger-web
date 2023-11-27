@@ -1,5 +1,5 @@
 add_requires("libhv 1.2.6",{alias="libhv"})
-add_requires("libzip")
+add_requires("miniz")
 -- add_requires("opengl")
 -- add_requires("libcurl",{alias="curl"})
 
@@ -15,7 +15,7 @@ target("xhv")
     set_languages("cxx17")
     -- set_arch("x64")
     add_files("src/**.cpp")
-    add_packages("libhv","libzip")
+    add_packages("libhv","miniz")
     if is_plat("windows") then
         add_defines("TEST")
     end
@@ -25,7 +25,7 @@ target("xhv_test")
     set_languages("cxx17")
     -- set_arch("x64")
     add_files("src/**.cpp")
-    add_packages("libhv","libzip")
+    add_packages("libhv","miniz")
     if is_plat("windows") then
         add_defines("TEST")
     end
