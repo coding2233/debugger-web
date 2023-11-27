@@ -13,6 +13,8 @@ target("xhv")
         set_kind("shared")
     end
     set_languages("cxx17")
+    -- 定义了 MINIZ_NO_ARCHIVE_WRITING_APIS 和 MINIZ_NO_STDIO 以减少 miniz 的编译大小
+    add_defines("MINIZ_NO_ARCHIVE_WRITING_APIS", "MINIZ_NO_STDIO")
     -- set_arch("x64")
     add_files("src/**.cpp")
     add_packages("libhv","miniz")
@@ -23,6 +25,8 @@ target("xhv")
 target("xhv_test")
     set_kind("binary")
     set_languages("cxx17")
+    -- 定义了 MINIZ_NO_ARCHIVE_WRITING_APIS 和 MINIZ_NO_STDIO 以减少 miniz 的编译大小
+    add_defines("MINIZ_NO_ARCHIVE_WRITING_APIS", "MINIZ_NO_STDIO")
     -- set_arch("x64")
     add_files("src/**.cpp")
     add_packages("libhv","miniz")
