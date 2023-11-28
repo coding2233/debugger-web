@@ -15,6 +15,7 @@ namespace fs = std::filesystem;
 #include "file/file_window.h"
 #include "inspector/inspector_window.h"
 #include "terminal/terminal_window.h"
+#include "profiler/profiler_window.h"
 
 std::string server_url_;
 #ifdef __EMSCRIPTEN__
@@ -40,6 +41,7 @@ App::App():ImplApp("Debugger",1280,800,0)
     windows_.insert({3,new InspectorWindow()});
     windows_.insert({4,new FileWindow()});
     windows_.insert({5,new TerminalWindow()});
+    windows_.insert({6,new ProfilerWindow()});
 
     //bind websocket send
     for (auto iter = windows_.begin();iter!= windows_.end();iter++)
