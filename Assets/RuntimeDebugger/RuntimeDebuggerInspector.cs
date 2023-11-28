@@ -90,6 +90,7 @@ namespace RuntimeDebugger
 				{
 					try
 					{
+						result = value.name;
 						GameObject.DestroyImmediate(value);
 						//更新节点树
 						FindGameObjectSend(null);

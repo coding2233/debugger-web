@@ -23,7 +23,7 @@ void TerminalWindow::OnMessage(const std::string &message)
 
 void TerminalWindow::OnDraw()
 {
-    ImGui::Text("Type help to query the available commands");
+    ImGui::Text("Type help/? to query the available commands");
     if(termianl_messages_.size() >0 )
     {
         for (int i = 0; i < termianl_messages_.size(); i++)

@@ -80,6 +80,8 @@ public:
                 OnShow(false);
             }
         }
+
+        OnDrawExtend();
     }
 
     virtual void OnMessage(const std::string &message)
@@ -102,6 +104,9 @@ public:
             websocket_send_callback_(key,message);
         }
     }
+
+    virtual void OnDrawExtend()
+    {}
 
     virtual void OnDraw()
     {

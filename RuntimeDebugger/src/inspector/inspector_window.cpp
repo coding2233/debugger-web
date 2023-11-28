@@ -221,6 +221,14 @@ void InspectorWindow::OnDraw()
 //                }
 //                edit_gameobject = true;
             }
+
+            if (ImGui::Button("Destory"))
+            {
+                std::string destory_game_object = "DestroyGameObject ";
+                destory_game_object.append(std::to_string(hierarchy_node_selected_->InstanceID));
+                SendForward(5,destory_game_object);
+            }
+            ImGui::SameLine();
             ImGui::SetNextItemWidth(one_third_width);
             if(ImGui::InputText("Tag", hierarchy_node_selected_->Tag.data(),128,ImGuiInputTextFlags_ReadOnly))
             {
