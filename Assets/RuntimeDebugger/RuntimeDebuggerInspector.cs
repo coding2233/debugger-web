@@ -31,6 +31,7 @@ namespace RuntimeDebugger
 						if (addType != null)
 						{
 							result = addType.name;
+							FindComponentsSend(value);
 						}
 						else
 						{
@@ -49,9 +50,9 @@ namespace RuntimeDebugger
 				return result;
 			});
 
-			RuntimeDebuggerTerminal.BindCommand<int, string>("DestroyComponent", (id, typeName) => {
+			RuntimeDebuggerTerminal.BindCommand<int, int>("DestroyComponent", (gameObjectId, componentId) => {
 				string result = "error";
-				if (m_idFindAllGameObjects.TryGetValue(id, out GameObject value))
+				if (m_idFindAllGameObjects.TryGetValue(gameObjectId, out GameObject value))
 				{
 					result = "Type not found";
 					var components = value.GetComponents<Component>();
@@ -59,10 +60,19 @@ namespace RuntimeDebugger
 					{
                         foreach (var item in components)
                         {
-							if (item.name.Equals(typeName))
+							if (item.GetInstanceID() == componentId)
 							{
-								result = item.name;
-								MonoBehaviour.Destroy(item);
+								try
+								{
+									result = item.name;
+									MonoBehaviour.DestroyImmediate(item);
+									FindComponentsSend(value);
+								}
+								catch (System.Exception e)
+								{
+									result = e.ToString();
+								}
+								break;
 							}
                         }
                     }
@@ -78,11 +88,16 @@ namespace RuntimeDebugger
 				string result = "error";
 				if (m_idFindAllGameObjects.TryGetValue(id, out GameObject value))
 				{
-					GameObject.Destroy(value);
-					m_idFindAllGameObjects.Remove(id);
-
-					//更新节点树
-					FindGameObjectSend(null);
+					try
+					{
+						GameObject.DestroyImmediate(value);
+						//更新节点树
+						FindGameObjectSend(null);
+					}
+					catch (System.Exception e)
+					{
+						result = e.ToString();
+					}
 				}
 				else
 				{

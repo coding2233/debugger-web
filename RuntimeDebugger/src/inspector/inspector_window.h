@@ -27,11 +27,13 @@ private:
     HierarchyNode* hierarchy_node_selected_;
 
     std::map<int,CompoentInspector> map_components_;
+    std::string add_component_type_;
 
     void DrawInspectorNode(const HierarchyNode* hierarchy_node,bool draw_child);
     void DrawReflectionInspector(ReflectionInspector *reflection_node,int component_id);
 
     void Reset();
+    void FindGameObjects();
 public:
     void OnMessage(const std::string &message) override;
     void OnDraw() override;

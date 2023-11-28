@@ -126,16 +126,21 @@ void InspectorWindow::OnShow(bool show)
 {
     if (show)
     {
-        Reset();
-
-        ReqInspector req;
-        req.Cmd = Req_Cmd_FindGameObjects;
-        req.InstanceID = 0;
-        json json_req = req;
-        std::string message = json_req.dump();
-        printf("req %s\n",message.c_str());
-        Send(message);
+        FindGameObjects();
     }
+}
+
+void InspectorWindow::FindGameObjects()
+{
+    Reset();
+
+    ReqInspector req;
+    req.Cmd = Req_Cmd_FindGameObjects;
+    req.InstanceID = 0;
+    json json_req = req;
+    std::string message = json_req.dump();
+    printf("req %s\n",message.c_str());
+    Send(message);
 }
 
 void InspectorWindow::Reset()
@@ -171,6 +176,12 @@ void InspectorWindow::OnDraw()
                     }
                 }
             }
+        }
+        //刷新所有的物体
+        ImGui::SameLine();
+        if(ImGui::Button("Refresh"))
+        {
+            FindGameObjects();
         }
         //绘制搜索结果
         if (search_hierarchy_root_nodes_.size()>0)
@@ -245,6 +256,16 @@ void InspectorWindow::OnDraw()
                     ImGui::Separator();
                     if (ImGui::TreeNode(iter->second.Name.c_str()))
                     {
+                        if(ImGui::Button("Destory"))
+                        {
+                            std::string destory_compoent = "DestroyComponent ";
+                            destory_compoent.append(std::to_string(hierarchy_node_selected_->InstanceID));
+                            destory_compoent.append(" ");
+                            destory_compoent.append(std::to_string(iter->second.InstanceID));
+
+                            SendForward(5,destory_compoent);
+                        }
+
                         auto ref_values = iter->second.ReflectionValues;
                         if(ref_values.size()>0)
                         {
@@ -302,6 +323,21 @@ void InspectorWindow::OnDraw()
                         ImGui::TreePop();
                     }
                 }
+            }
+
+            //Add Component
+            if (ImGui::InputText("##Add Component Input",add_component_type_.data(),128, ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_EnterReturnsTrue))
+            {
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Add Component"))
+            {
+                std::string add_compoent = "AddComponent ";
+                add_compoent.append(std::to_string(hierarchy_node_selected_->InstanceID));
+                add_compoent.append(" ");
+                add_compoent.append(add_component_type_.c_str());
+
+                SendForward(5,add_compoent);
             }
         }
         ImGui::EndChild();
@@ -390,5 +426,6 @@ void InspectorWindow::DrawInspectorNode(const HierarchyNode* hierarchy_node,bool
         ImGui::TreePop();
 //        ImGui::Spacing();
     }
+
 
 }
