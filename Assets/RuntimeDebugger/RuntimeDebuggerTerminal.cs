@@ -169,6 +169,17 @@ namespace RuntimeDebugger
 			}
 			return terminalCommand;
 		}
+
+		public static void BindCommandAlias(string originName, string newName)
+		{
+			if (s_terminalCommands.TryGetValue(originName, out TerminalCommand terminalCommand))
+			{
+				if (!s_terminalCommands.ContainsKey(newName))
+				{
+					s_terminalCommands.Add(newName, terminalCommand);
+				}
+			}
+		}
 		#endregion
 	}
 
