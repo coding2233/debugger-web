@@ -14,16 +14,33 @@ TerminalWindow::~TerminalWindow()
 {}
 
 void TerminalWindow::OnMessage(const std::string &message)
-{}
+{
+    json json_message = json::parse(message);
+    TerminalMessage terminal_msg = json_message;
+    termianl_messages_.push_back(terminal_msg);
+}
 
 
 void TerminalWindow::OnDraw()
 {
-
-
-    for (int i= 0;i<log_nodes_.size();i++)
+    if(termianl_messages_.size() >0 )
     {
-        ImGui::Text(log_nodes_[i].c_str());
+        for (int i = 0; i < termianl_messages_.size(); i++)
+        {
+            TerminalMessage &terminal_msg = termianl_messages_[i];
+            ImGui::TextColored(ImVec4(0.6431, 0.7490, 0, 1), terminal_msg.Command.c_str());
+            if (terminal_msg.ResultCode == 0)
+            {
+                ImGui::TextWrapped(terminal_msg.Result.c_str());
+            } else
+            {
+                ImGui::TextColored(ImVec4(1, 0, 0, 1), terminal_msg.Result.c_str());
+            }
+        }
+    }
+    else
+    {
+        ImGui::Text("Type help to query the available commands");
     }
 
     ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
@@ -31,19 +48,19 @@ void TerminalWindow::OnDraw()
     ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, 0);
 
     ImVec2 keySize = ImGui::CalcTextSize("$$");
-    if (!ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
+    if (ImGui::IsWindowFocused() && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
     {
         ImGui::SetKeyboardFocusHere(0);
     }
     ImGui::SetCursorPosX(keySize.x);
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - keySize.x);
 
-    if (ImGui::InputText("##command", input_text_.data(), 512, ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_EnterReturnsTrue))
+    if (ImGui::InputText("##command_terminal", input_text_.data(), 512, ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_EnterReturnsTrue))
     {
         int str_size = strlen(input_text_.c_str());
         if (str_size > 0)
         {
-            log_nodes_.push_back(input_text_.c_str());
+            Send(input_text_.c_str());
             printf("%s \n",input_text_.c_str());
             //RunCommand(m_inputCommand, m_gitRepo != null ? m_gitRepo.RootPath : "");
             input_text_.clear();

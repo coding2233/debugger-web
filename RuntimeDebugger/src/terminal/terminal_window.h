@@ -10,6 +10,7 @@
 
 #include "imgui.h"
 #include "app_window.h"
+#include "terminal_message.h"
 
 class TerminalWindow : public AppWindow
 {
@@ -18,7 +19,7 @@ public:
     ~TerminalWindow();
 
 private:
-    std::vector<std::string> log_nodes_;
+    std::vector<TerminalMessage> termianl_messages_;
     std::string input_text_;
 public:
     void OnMessage(const std::string &message) override;
