@@ -95,6 +95,14 @@ public:
         }
     }
 
+    virtual void SendForward(uint8_t key,const std::string & message)
+    {
+        if (websocket_send_callback_)
+        {
+            websocket_send_callback_(key,message);
+        }
+    }
+
     virtual void OnDraw()
     {
 

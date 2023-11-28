@@ -34,11 +34,11 @@ namespace RuntimeDebugger
 			}
 
 			m_runtimeDebugger = new Dictionary<byte, RuntimeDebuggerBase>();
+			m_runtimeDebugger.Add(5, new RuntimeDebuggerTerminal());
 			m_runtimeDebugger.Add(1, new RuntimeDebuggerInformation());
 			m_runtimeDebugger.Add(2, new RuntimeDebuggerLog());
 			m_runtimeDebugger.Add(3, new RuntimeDebuggerInspector());
 			m_runtimeDebugger.Add(4, new RuntimeDebuggerFile());
-			m_runtimeDebugger.Add(5, new RuntimeDebuggerTerminal());
 
 			foreach (var item in m_runtimeDebugger)
 			{
@@ -219,7 +219,7 @@ namespace RuntimeDebugger
 	public class RuntimeDebuggerVersion
 	{
 		public int Major { get; set; } = 0;
-		public int Minor { get; set; } = 1;
+		public int Minor { get; set; } = 2;
 		public int Patch { get; set; } = 0;
 	}
 

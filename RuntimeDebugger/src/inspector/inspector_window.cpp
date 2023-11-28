@@ -28,6 +28,7 @@ void InspectorWindow::OnMessage(const std::string &message)
         }
         else
         {
+            Reset();
 //            auto rsp = json_rsp.template get<RspInspector>();
             auto find_nodes = json_rsp["FindNodes"].template get<std::vector<HierarchyNode>>();
             for (int i = 0; i < find_nodes.size(); ++i)
@@ -125,10 +126,7 @@ void InspectorWindow::OnShow(bool show)
 {
     if (show)
     {
-        search_hierarchy_root_nodes_.clear();
-        hierarchy_root_nodes_.clear();
-        map_hierarchy_nodes_.clear();
-        hierarchy_node_selected_ = nullptr;
+        Reset();
 
         ReqInspector req;
         req.Cmd = Req_Cmd_FindGameObjects;
@@ -140,6 +138,13 @@ void InspectorWindow::OnShow(bool show)
     }
 }
 
+void InspectorWindow::Reset()
+{
+    search_hierarchy_root_nodes_.clear();
+    hierarchy_root_nodes_.clear();
+    map_hierarchy_nodes_.clear();
+    hierarchy_node_selected_ = nullptr;
+}
 
 void InspectorWindow::OnDraw()
 {

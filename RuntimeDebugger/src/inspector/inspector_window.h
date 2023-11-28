@@ -30,6 +30,8 @@ private:
 
     void DrawInspectorNode(const HierarchyNode* hierarchy_node,bool draw_child);
     void DrawReflectionInspector(ReflectionInspector *reflection_node,int component_id);
+
+    void Reset();
 public:
     void OnMessage(const std::string &message) override;
     void OnDraw() override;

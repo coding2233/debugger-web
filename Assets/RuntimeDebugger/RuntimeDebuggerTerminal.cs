@@ -9,13 +9,12 @@ namespace RuntimeDebugger
 {
 	public class RuntimeDebuggerTerminal : RuntimeDebuggerBase
 	{
-		private static Dictionary<string, TerminalCommand> s_terminalCommands;
+		private static Dictionary<string, TerminalCommand> s_terminalCommands = new Dictionary<string, TerminalCommand>();
 
 		public RuntimeDebuggerTerminal()
 		{
-			s_terminalCommands = new Dictionary<string, TerminalCommand>();
-
 			BindSystemCommands();
+			BindGameObjectCommands();
 			BindQualityCommands();
 			BindInputCommands();
 		}
@@ -64,21 +63,38 @@ namespace RuntimeDebugger
 		#region commands
 		private void BindSystemCommands()
 		{
-			BindCommand("help", () => {
+			Func<string> helpFunc = () => {
 				StringBuilder helpText = new StringBuilder();
 				foreach (var item in s_terminalCommands)
 				{
 					helpText.Append(item.Key);
 					helpText.AppendLine(item.Value.Help);
 				}
-				return helpText.ToString() ;
+				return helpText.ToString();
+			};
+
+			BindCommand("?", helpFunc);
+			BindCommand("help", helpFunc);
+		}
+
+		private void BindGameObjectCommands()
+		{
+			BindCommand<string>("GameObject.Find", (value) => {
+				string reult = "Not found";
+				var findGameObject = GameObject.Find(value);
+				if (findGameObject != null)
+				{
+					reult = $"id:{findGameObject.GetInstanceID()} name:{findGameObject.name}";
+				}
+				return reult;
 			});
 		}
+
 		private void BindQualityCommands()
 		{
 			BindCommand<int>("Quality.SetLevel", (level) => {
 				QualitySettings.SetQualityLevel(level);
-				string result = $"QualitySettings.GetQualityLevel() {QualitySettings.GetQualityLevel()}";
+				string result = $"QualitySettings.GetQualityLevel {QualitySettings.GetQualityLevel()}";
 				return result;
 			});
 		}

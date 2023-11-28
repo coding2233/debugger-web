@@ -240,7 +240,7 @@ void App::DispatchMessage(uint8_t key,const std::string & message)
             server_version_.BuildVersion();
             AppVersion &client_version = client_version_;
             client_version.Major = 0;
-            client_version.Minor = 1;
+            client_version.Minor = 2;
             client_version.Patch = 0;
             client_version.BuildVersion();
         }

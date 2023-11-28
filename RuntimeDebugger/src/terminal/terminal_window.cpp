@@ -23,24 +23,22 @@ void TerminalWindow::OnMessage(const std::string &message)
 
 void TerminalWindow::OnDraw()
 {
+    ImGui::Text("Type help to query the available commands");
     if(termianl_messages_.size() >0 )
     {
         for (int i = 0; i < termianl_messages_.size(); i++)
         {
             TerminalMessage &terminal_msg = termianl_messages_[i];
-            ImGui::TextColored(ImVec4(0.6431, 0.7490, 0, 1), terminal_msg.Command.c_str());
+            //0.6431
+            ImGui::TextColored(ImVec4(0, 0.7490, 0, 1), terminal_msg.Command.c_str());
             if (terminal_msg.ResultCode == 0)
             {
                 ImGui::TextWrapped(terminal_msg.Result.c_str());
             } else
             {
-                ImGui::TextColored(ImVec4(1, 0, 0, 1), terminal_msg.Result.c_str());
+                ImGui::TextColored(ImVec4(0.7490, 0, 0, 1), terminal_msg.Result.c_str());
             }
         }
-    }
-    else
-    {
-        ImGui::Text("Type help to query the available commands");
     }
 
     ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
@@ -55,14 +53,13 @@ void TerminalWindow::OnDraw()
     ImGui::SetCursorPosX(keySize.x);
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - keySize.x);
 
-    if (ImGui::InputText("##command_terminal", input_text_.data(), 512, ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_EnterReturnsTrue))
+    if (ImGui::InputText("##command_terminal", input_text_.data(), 256, ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_EnterReturnsTrue))
     {
         int str_size = strlen(input_text_.c_str());
         if (str_size > 0)
         {
             Send(input_text_.c_str());
-            printf("%s \n",input_text_.c_str());
-            //RunCommand(m_inputCommand, m_gitRepo != null ? m_gitRepo.RootPath : "");
+            input_text_.resize(256);
             input_text_.clear();
         }
     }

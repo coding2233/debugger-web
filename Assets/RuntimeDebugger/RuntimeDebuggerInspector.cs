@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Assertions.Must;
 using UnityEngine.SceneManagement;
 namespace RuntimeDebugger
 {
@@ -19,6 +20,76 @@ namespace RuntimeDebugger
 
 		public RuntimeDebuggerInspector()
 		{
+			RuntimeDebuggerTerminal.BindCommand<int, string>("AddComponent", (id, typeName) => {
+				string result = "error";
+				if (m_idFindAllGameObjects.TryGetValue(id, out GameObject value))
+				{
+					var findType = Type.GetType(typeName);
+					if (findType != null)
+					{
+						var addType = value.gameObject.AddComponent(findType);
+						if (addType != null)
+						{
+							result = addType.name;
+						}
+						else
+						{
+							result = "AddComponent fail";
+						}
+					}
+					else
+					{
+						result = "Type not found";
+					}
+				}
+				else
+				{
+					result = "GameObject not found";
+				}
+				return result;
+			});
+
+			RuntimeDebuggerTerminal.BindCommand<int, string>("DestroyComponent", (id, typeName) => {
+				string result = "error";
+				if (m_idFindAllGameObjects.TryGetValue(id, out GameObject value))
+				{
+					result = "Type not found";
+					var components = value.GetComponents<Component>();
+					if (components != null)
+					{
+                        foreach (var item in components)
+                        {
+							if (item.name.Equals(typeName))
+							{
+								result = item.name;
+								MonoBehaviour.Destroy(item);
+							}
+                        }
+                    }
+				}
+				else
+				{
+					result = "GameObject not found";
+				}
+				return result;
+			});
+
+			RuntimeDebuggerTerminal.BindCommand<int>("DestroyGameObject", (id) => {
+				string result = "error";
+				if (m_idFindAllGameObjects.TryGetValue(id, out GameObject value))
+				{
+					GameObject.Destroy(value);
+					m_idFindAllGameObjects.Remove(id);
+
+					//更新节点树
+					FindGameObjectSend(null);
+				}
+				else
+				{
+					result = "GameObject not found";
+				}
+				return result;
+			});
 		}
 
 
@@ -73,13 +144,6 @@ namespace RuntimeDebugger
 				Debug.LogWarning(e.ToString());
 			}
 		}
-
-		//public override void OnClose()
-		//{
-		//	base.OnClose();
-		//}
-
-
 
 		private void FindGameObjectSend(Transform parent)
 		{
