@@ -19,6 +19,8 @@ void TerminalWindow::OnMessage(const std::string &message)
 
 void TerminalWindow::OnDraw()
 {
+
+
     for (int i= 0;i<log_nodes_.size();i++)
     {
         ImGui::Text(log_nodes_[i].c_str());
@@ -35,16 +37,21 @@ void TerminalWindow::OnDraw()
     }
     ImGui::SetCursorPosX(keySize.x);
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - keySize.x);
-//    if (ImGui.InputText("", ref m_inputCommand, 200, ImGuiInputTextFlags.NoHorizontalScroll | ImGuiInputTextFlags.EnterReturnsTrue))
-//    {
-//        if (!string.IsNullOrEmpty(m_inputCommand))
-//        {
-//            RunCommand(m_inputCommand, m_gitRepo != null ? m_gitRepo.RootPath : "");
-//            m_inputCommand = "";
-//        }
-//    }
+
+    if (ImGui::InputText("##command", input_text_.data(), 512, ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_EnterReturnsTrue))
+    {
+        int str_size = strlen(input_text_.c_str());
+        if (str_size > 0)
+        {
+            log_nodes_.push_back(input_text_.c_str());
+            printf("%s \n",input_text_.c_str());
+            //RunCommand(m_inputCommand, m_gitRepo != null ? m_gitRepo.RootPath : "");
+            input_text_.clear();
+        }
+    }
 //
-   // ImGui::GetWindowDrawList().AddText(ImGui.GetItemRectMin()-new Vector2(keySize.X*0.5f,-3f), ImGui.ColorConvertFloat4ToU32(Vector4.One), "$");
+    ImVec2 text_pos = ImVec2(ImGui::GetItemRectMin().x - keySize.x*0.5,ImGui::GetItemRectMin().y+2);
+    ImGui::GetWindowDrawList()->AddText(text_pos,ImGui::ColorConvertFloat4ToU32(ImVec4(1,1,1,1)), "$");
 
     ImGui::PopStyleColor();
     ImGui::PopStyleColor();
