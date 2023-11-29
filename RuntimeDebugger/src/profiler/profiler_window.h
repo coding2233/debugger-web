@@ -11,6 +11,7 @@
 #include "imgui.h"
 #include "app_window.h"
 #include "implot.h"
+#include "implot_internal.h"
 
 class ProfilerWindow : public AppWindow
 {
@@ -22,6 +23,7 @@ public:
 public:
     void OnMessage(const std::string &message) override;
     void OnDraw() override;
+    void OnDrawExtend() override;
 };
 
 

@@ -34,6 +34,8 @@ std::string server_url_;
 
 App::App():ImplApp("Debugger",1280,800,0)
 {
+    ImPlot::CreateContext();
+
     server_url_ = "ws://127.0.0.1:2233";
 
     windows_.insert({1,new InformationWindow()});
@@ -151,6 +153,19 @@ void App::OnImGuiDraw()
                 ImGui::EndMenu();
             }
 
+            if (ImGui::BeginMenu("Demo"))
+            {
+               if(ImGui::MenuItem("ImGui",NULL,&show_demo_window_))
+               {
+//                   show_demo_window_ = !show_demo_window_;
+               }
+                if(ImGui::MenuItem("Implot",NULL,&show_implot_demo_window_))
+                {
+//                    show_implot_demo_window_ = !show_implot_demo_window_;
+                }
+                ImGui::EndMenu();
+            }
+
             if (ImGui::BeginMenu("Version"))
             {
                 if (ImGui::BeginMenu("Server"))
@@ -179,6 +194,15 @@ void App::OnImGuiDraw()
     for (auto iter = windows_.begin(); iter != windows_.end(); iter++)
     {
         iter->second->DrawWindow();
+    }
+
+    if(show_demo_window_)
+    {
+        ImGui::ShowDemoWindow(&show_demo_window_);
+    }
+    if(show_implot_demo_window_)
+    {
+        ImPlot::ShowDemoWindow();
     }
 }
 
@@ -270,4 +294,9 @@ void App::OnWebSocketSend(uint8_t key,const std::string & message)
     {
         ws_->sendBinary(data);
     }
+}
+
+void App::RunAfter()
+{
+    ImPlot::DestroyContext();
 }

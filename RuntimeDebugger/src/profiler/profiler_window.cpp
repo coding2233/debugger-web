@@ -16,3 +16,7 @@ ProfilerWindow::~ProfilerWindow()
 void ProfilerWindow::OnMessage(const std::string &message) {}
 
 void ProfilerWindow::OnDraw() {}
+
+void ProfilerWindow::OnDrawExtend()
+{
+}
