@@ -19,12 +19,12 @@ public:
     {}
 public:
     int FrameCount;
-    double Realtime;
-    double FPS;
+    float Realtime;
+    float FPS;
     int FrameTime;
-    double AvgFPS;
-    double AvgFPSMin;
-    double AvgFPSMax;
+    float AvgFPS;
+    float AvgFPSMin;
+    float AvgFPSMax;
 
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(FPSNode,FrameCount,Realtime,FPS,FrameTime,AvgFPS,AvgFPSMin,AvgFPSMax);
 };

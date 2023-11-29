@@ -22,6 +22,10 @@ public:
 
 private:
     std::vector<FPSNode> fps_nodes_;
+    float axis_time_limit_ ;
+    int data_node_max_;
+    void Reset();
+
 public:
     void OnMessage(const std::string &message) override;
     void OnDraw() override;

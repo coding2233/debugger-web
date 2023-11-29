@@ -152,7 +152,7 @@ void App::OnImGuiDraw()
 
                 ImGui::EndMenu();
             }
-
+//#ifndef __EMSCRIPTEN__
             if (ImGui::BeginMenu("Demo"))
             {
                if(ImGui::MenuItem("ImGui",NULL,&show_demo_window_))
@@ -163,7 +163,7 @@ void App::OnImGuiDraw()
                 }
                 ImGui::EndMenu();
             }
-
+//#endif
             if (ImGui::BeginMenu("Version"))
             {
                 if (ImGui::BeginMenu("Server"))

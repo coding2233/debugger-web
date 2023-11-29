@@ -158,6 +158,7 @@ int ImplApp::CreateRender(SDL_Window* window)
 
 //    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_ViewportsEnable ;
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    ImGui::GetIO().BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
 
     //  // Setup Platform/Renderer backends
     ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
