@@ -35,6 +35,16 @@ void ProfilerWindow::OnMessage(const std::string &message)
                 }
                 fps_nodes_.push_back(fps_node);
             }
+            auto json_memory = json_message["Memory"];
+            if (!json_memory.empty())
+            {
+                MemoryNode memory_node = json_memory;
+                if(memory_nodes_.size() > data_node_max_)
+                {
+                    memory_nodes_.erase(memory_nodes_.begin());
+                }
+                memory_nodes_.push_back(memory_node);
+            }
         }
             //请求回包
         else
@@ -48,6 +58,12 @@ void ProfilerWindow::OnMessage(const std::string &message)
 }
 
 void ProfilerWindow::OnDraw()
+{
+    DrawFPS();
+//    DrawMemory();
+}
+
+void ProfilerWindow::DrawFPS()
 {
     if (fps_nodes_.size()>0)
     {
@@ -86,16 +102,19 @@ void ProfilerWindow::OnDraw()
                 fps_overview.append(" min:");
                 fps_overview.append(std::to_string((int)fps_node.AvgFPSMin));
             }
+
             if(fps_node.AvgFPSMax > max_value)
             {
                 max_value = fps_node.AvgFPSMax;
             }
         }
 
-        if(max_value<30)
-        {
-            max_value = 30;
-        }
+//        if(max_value < 30)
+//        {
+//            max_value = 30;
+//        }
+
+        max_value = 100;
 
         bool show_fills = true;
         bool show_lines = true;
@@ -110,7 +129,7 @@ void ProfilerWindow::OnDraw()
                 ImPlot::PlotShaded("time(ms)", real_time_data.data(), frame_time_data.data(), data_size);
                 ImPlot::PlotShaded("avg", real_time_data.data(), fps_avg_data.data(), data_size);
                 //ImPlot::PlotShaded("min", real_time_data.data(), fps_avg_min_data.data(), data_size);
-               // ImPlot::PlotShaded("max", real_time_data.data(), fps_avg_max_data.data(), data_size);
+                // ImPlot::PlotShaded("max", real_time_data.data(), fps_avg_max_data.data(), data_size);
                 ImPlot::PopStyleVar();
             }
             if (show_lines) {
@@ -125,6 +144,72 @@ void ProfilerWindow::OnDraw()
 
         ImVec2 text_pos = ImGui::GetItemRectMin();
         ImGui::GetWindowDrawList()->AddText(text_pos,ImGui::ColorConvertFloat4ToU32(ImVec4(1,1,1,1)), fps_overview.c_str());
+    }
+}
+
+void ProfilerWindow::DrawMemory()
+{
+    if (memory_nodes_.size() > 0)
+    {
+        int data_size = memory_nodes_.size();
+        std::vector<float> real_time_data;
+        std::vector<float> total_reserved_data;
+        std::vector<float> total_allocated_data;
+        std::vector<float> mono_used_size_data;
+        float max_time ,min_time;
+        float max_value = 1000;
+        std::string memory_overview;
+        for (int i=0;i<memory_nodes_.size();i++)
+        {
+            MemoryNode &memory_node = memory_nodes_[i];
+            real_time_data.push_back(memory_node.Realtime);
+            total_reserved_data.push_back(memory_node.TotalReservedMemory/1024.0f);
+            float allocated_memory = memory_node.TotalAllocatedMemory/1024.0f;
+            total_allocated_data.push_back(allocated_memory);
+            mono_used_size_data.push_back(memory_node.MonoUsedSize/1024.0f);
+//            if(allocated_memory > max_value)
+//            {
+//                max_value = allocated_memory;
+//            }
+
+            if (i == memory_nodes_.size()-1)
+            {
+                max_time = memory_node.Realtime;
+                min_time = max_time - axis_time_limit_;
+
+                memory_overview="Total Reserved Memory:";
+                memory_overview.append(std::to_string((memory_node.TotalReservedMemory)));
+                memory_overview.append(" Total Allocated Memory:");
+                memory_overview.append(std::to_string(memory_node.TotalAllocatedMemory));
+                memory_overview.append(" Mono Used Size:");
+                memory_overview.append(std::to_string(memory_node.MonoUsedSize));
+            }
+        }
+
+        bool show_fills = true;
+        bool show_lines = true;
+
+        if (ImPlot::BeginPlot("Memory")) {
+            ImPlot::SetupAxes("time","memory");
+            ImPlot::SetupAxisLimits(ImAxis_X1,min_time, max_time, ImGuiCond_Always);
+            ImPlot::SetupAxisLimits(ImAxis_Y1,0, max_value, ImGuiCond_Always);
+//            if (show_fills) {
+//                ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.25f);
+//                ImPlot::PlotShaded("TotalReservedMemory", real_time_data.data(), total_reserved_data.data(), data_size);
+//                ImPlot::PlotShaded("TotalAllocatedMemory", real_time_data.data(), total_allocated_data.data(), data_size);
+//                ImPlot::PlotShaded("MonoUsedSize", real_time_data.data(), mono_used_size_data.data(), data_size);
+//                ImPlot::PopStyleVar();
+//            }
+            if (show_lines) {
+                ImPlot::PlotLine("TotalReservedMemory", real_time_data.data(), total_reserved_data.data(), data_size);
+                ImPlot::PlotLine("TotalAllocatedMemory", real_time_data.data(), total_allocated_data.data(), data_size);
+                ImPlot::PlotLine("MonoUsedSize", real_time_data.data(), mono_used_size_data.data(), data_size);
+            }
+            ImPlot::EndPlot();
+        }
+
+        ImVec2 text_pos = ImGui::GetItemRectMin();
+        ImGui::GetWindowDrawList()->AddText(text_pos,ImGui::ColorConvertFloat4ToU32(ImVec4(1,1,1,1)), memory_overview.c_str());
     }
 }
 
@@ -150,4 +235,5 @@ void ProfilerWindow::OnShow(bool show)
 void ProfilerWindow::Reset()
 {
     fps_nodes_.clear();
+    memory_nodes_.clear();
 }

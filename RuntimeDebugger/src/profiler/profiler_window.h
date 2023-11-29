@@ -12,7 +12,8 @@
 #include "app_window.h"
 #include "implot.h"
 #include "implot_internal.h"
-#include "profiler_node.h"
+#include "fps_node.h"
+#include "memory_node.h"
 
 class ProfilerWindow : public AppWindow
 {
@@ -22,10 +23,13 @@ public:
 
 private:
     std::vector<FPSNode> fps_nodes_;
+    std::vector<MemoryNode> memory_nodes_;
+
     float axis_time_limit_ ;
     int data_node_max_;
     void Reset();
-
+    void DrawFPS();
+    void DrawMemory();
 public:
     void OnMessage(const std::string &message) override;
     void OnDraw() override;
