@@ -10,6 +10,7 @@
 
 #include "imgui.h"
 #include "app_window.h"
+#include "implot.h"
 
 class ProfilerWindow : public AppWindow
 {
