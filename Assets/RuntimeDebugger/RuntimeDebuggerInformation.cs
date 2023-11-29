@@ -15,6 +15,11 @@ namespace RuntimeDebugger
 		{
 
 		}
+		
+		public override void OnReset()
+		{
+			m_updateInformation = false;
+		}
 
 		public override void OnMessage(string message)
 		{

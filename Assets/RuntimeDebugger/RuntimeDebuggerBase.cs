@@ -14,7 +14,8 @@ namespace RuntimeDebugger
 			m_sendAction = sendAction;
 		}
 
-
+		public virtual void OnReset()
+		{ }
 
 		public virtual void OnMessage(string message)
 		{

@@ -39,6 +39,7 @@ namespace RuntimeDebugger
 			m_runtimeDebugger.Add(2, new RuntimeDebuggerLog());
 			m_runtimeDebugger.Add(3, new RuntimeDebuggerInspector());
 			m_runtimeDebugger.Add(4, new RuntimeDebuggerFile());
+			m_runtimeDebugger.Add(6, new RuntimeDebuggerProfiler());
 
 			foreach (var item in m_runtimeDebugger)
 			{
@@ -150,6 +151,14 @@ namespace RuntimeDebugger
 			m_channel = channel;
 			m_mainSynchronizationContext.Post((state) =>
 			{
+				if (m_runtimeDebugger != null)
+				{
+                    foreach (var item in m_runtimeDebugger.Values)
+                    {
+						item.OnReset();
+					}
+                }
+
 				//发送版本信息
 				WebSocketSend(0, new RuntimeDebuggerVersion());
 			}, null);
