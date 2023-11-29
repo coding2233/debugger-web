@@ -15,6 +15,8 @@ namespace RuntimeDebugger
 		FPSProfiler m_fpsProfiler;
 		MemoryProfiler m_memoryProfiler;
 		private bool m_show;
+		private float m_deltaTime;
+		private const float FixedDeltaTime = 0.0166667f;
 
 		Dictionary<string, Type> m_memorySampleTypes;
 
@@ -44,6 +46,7 @@ namespace RuntimeDebugger
 				{
 					m_fpsProfiler.Reset();
 				}
+				m_deltaTime = 0;
 				m_show = true;
 			}
 			else if ("hide".Equals(message))
@@ -111,15 +114,21 @@ namespace RuntimeDebugger
 				{
 					m_fpsProfiler.Update();
 				}
-				if (m_memoryProfiler != null)
-				{
-					m_memoryProfiler.Update();
-				}
 
-				RuntimeProfilerMessage messgae = new RuntimeProfilerMessage();
-				messgae.FPS = m_fpsProfiler;
-				messgae.Memory = m_memoryProfiler;
-				Send(messgae);
+				m_deltaTime += Time.deltaTime;
+				if (m_deltaTime > FixedDeltaTime)
+				{
+					m_deltaTime = 0;
+					if (m_memoryProfiler != null)
+					{
+						m_memoryProfiler.Update();
+					}
+
+					RuntimeProfilerMessage messgae = new RuntimeProfilerMessage();
+					messgae.FPS = m_fpsProfiler;
+					messgae.Memory = m_memoryProfiler;
+					Send(messgae);
+				}
 			}
 		}
 
@@ -225,29 +234,30 @@ namespace RuntimeDebugger
 	{
 		public int FrameCount { get; private set; }
 		public double Realtime { get; private set; }
-		public int MaxUsedMemory { get;private set; }
-		public long MonoUsedSize { get; private set; }
-		public long MonoHeapSize { get; private set; }
-		public long UsedHeapSize { get; private set; }
-		public long TotalAllocatedMemory { get; private set; }
-		public long TotalReservedMemory { get; private set; }
-		public long TotalUnusedReserved { get; private set; }
-		public long AllocatedMemoryForGraphicsDriver { get; private set; }
-		public uint TempAllocatorSize { get; private set; }
+		public float MaxUsedMemory { get;private set; }
+		public float MonoUsedSize { get; private set; }
+		public float MonoHeapSize { get; private set; }
+		public float UsedHeapSize { get; private set; }
+		public float TotalAllocatedMemory { get; private set; }
+		public float TotalReservedMemory { get; private set; }
+		public float TotalUnusedReserved { get; private set; }
+		public float AllocatedMemoryForGraphicsDriver { get; private set; }
+		public float TempAllocatorSize { get; private set; }
 
 		public void Update()
 		{
+			float toMBSize = 1024 * 1024;
 			FrameCount = Time.frameCount;
 			Realtime = Time.realtimeSinceStartupAsDouble;
-			MaxUsedMemory = Profiler.maxUsedMemory;
-			MonoUsedSize = Profiler.GetMonoUsedSizeLong();
-			MonoHeapSize = Profiler.GetMonoHeapSizeLong();
-			UsedHeapSize = Profiler.usedHeapSizeLong;
-			TotalAllocatedMemory = Profiler.GetTotalAllocatedMemoryLong();
-			TotalReservedMemory = Profiler.GetTotalReservedMemoryLong();
-			TotalUnusedReserved = Profiler.GetTotalUnusedReservedMemoryLong();
-			AllocatedMemoryForGraphicsDriver = Profiler.GetAllocatedMemoryForGraphicsDriver();
-			TempAllocatorSize = Profiler.GetTempAllocatorSize();
+			MaxUsedMemory = Profiler.maxUsedMemory / toMBSize;
+			MonoUsedSize = Profiler.GetMonoUsedSizeLong() / toMBSize;
+			MonoHeapSize = Profiler.GetMonoHeapSizeLong() / toMBSize;
+			UsedHeapSize = Profiler.usedHeapSizeLong / toMBSize;
+			TotalAllocatedMemory = Profiler.GetTotalAllocatedMemoryLong() / toMBSize;
+			TotalReservedMemory = Profiler.GetTotalReservedMemoryLong() / toMBSize;
+			TotalUnusedReserved = Profiler.GetTotalUnusedReservedMemoryLong() / toMBSize;
+			AllocatedMemoryForGraphicsDriver = Profiler.GetAllocatedMemoryForGraphicsDriver() / toMBSize;
+			TempAllocatorSize = Profiler.GetTempAllocatorSize() / toMBSize;
 		}
 	}
 

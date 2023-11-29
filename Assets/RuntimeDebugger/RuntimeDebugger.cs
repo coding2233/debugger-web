@@ -59,10 +59,9 @@ namespace RuntimeDebugger
 		{
 			if (m_runtimeDebugger != null)
 			{
-                foreach (var item in m_runtimeDebugger.Values)
-                {
+				foreach (var item in m_runtimeDebugger.Values)
+				{
 					item.OnUpdate();
-
 				}
             }
 		}

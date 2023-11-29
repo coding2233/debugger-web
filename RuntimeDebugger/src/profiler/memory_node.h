@@ -21,15 +21,15 @@ public:
 public:
     int FrameCount;
     float Realtime;
-    int MaxUsedMemory;
-    long MonoUsedSize;
-    long MonoHeapSize ;
-    long UsedHeapSize;
-    long TotalAllocatedMemory ;
-    long TotalReservedMemory;
-    long TotalUnusedReserved;
-    long AllocatedMemoryForGraphicsDriver ;
-    unsigned int TempAllocatorSize ;
+    float MaxUsedMemory;
+    float MonoUsedSize;
+    float MonoHeapSize ;
+    float UsedHeapSize;
+    float TotalAllocatedMemory;
+    float TotalReservedMemory;
+    float TotalUnusedReserved;
+    float AllocatedMemoryForGraphicsDriver;
+    float TempAllocatorSize ;
 
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(MemoryNode,FrameCount,Realtime,MaxUsedMemory,MonoUsedSize,MonoHeapSize,UsedHeapSize,TotalAllocatedMemory,TotalReservedMemory,TotalUnusedReserved,AllocatedMemoryForGraphicsDriver,TempAllocatorSize);
 };

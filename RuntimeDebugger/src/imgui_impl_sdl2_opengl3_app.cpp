@@ -241,7 +241,7 @@ void ImplApp::Run()
                         clock_start_ = clock();
                         frame_ = 0;
                         //frame_rate_time = 1000;
-                        frame_rate_time_ = (1 / 10.0f) * 1000;
+                        frame_rate_time_ = (1 / 30.0f) * 1000;
                         break;
                 }
             }
