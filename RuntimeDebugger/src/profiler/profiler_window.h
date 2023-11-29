@@ -12,6 +12,7 @@
 #include "app_window.h"
 #include "implot.h"
 #include "implot_internal.h"
+#include "profiler_node.h"
 
 class ProfilerWindow : public AppWindow
 {
@@ -19,11 +20,14 @@ public:
     ProfilerWindow();
     ~ProfilerWindow();
 
-
+private:
+    std::vector<FPSNode> fps_nodes_;
 public:
     void OnMessage(const std::string &message) override;
     void OnDraw() override;
     void OnDrawExtend() override;
+
+    void OnShow(bool show) override;
 };
 
 

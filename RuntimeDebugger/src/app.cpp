@@ -157,11 +157,9 @@ void App::OnImGuiDraw()
             {
                if(ImGui::MenuItem("ImGui",NULL,&show_demo_window_))
                {
-//                   show_demo_window_ = !show_demo_window_;
                }
                 if(ImGui::MenuItem("Implot",NULL,&show_implot_demo_window_))
                 {
-//                    show_implot_demo_window_ = !show_implot_demo_window_;
                 }
                 ImGui::EndMenu();
             }

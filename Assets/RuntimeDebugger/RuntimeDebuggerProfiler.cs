@@ -40,6 +40,10 @@ namespace RuntimeDebugger
 
 			if ("show".Equals(message))
 			{
+				if (m_fpsProfiler != null)
+				{
+					m_fpsProfiler.Reset();
+				}
 				m_show = true;
 			}
 			else if ("hide".Equals(message))
@@ -163,18 +167,29 @@ namespace RuntimeDebugger
 		public double Realtime { get; private set; }
 		public double FPS { get; private set; }
 		public int FrameTime { get; private set; }
-		public double AVGFPS { get; private set; }
-		public double AVGFPSMIN { get; private set; }
-		public double AVGFPSMAX { get; private set; }
+		public double AvgFPS { get; private set; }
+		public double AvgFPSMin { get; private set; }
+		public double AvgFPSMax { get; private set; }
 
 		public FPSProfiler()
+		{
+			Reset();
+		}
+
+		public void Reset()
 		{
 			m_lastAvgTime = Time.realtimeSinceStartupAsDouble;
 			m_lastFrameTime = Time.realtimeSinceStartupAsDouble;
 			m_avgFPSCount = 0;
 
-			AVGFPSMIN = -1.0;
-			AVGFPSMAX = -1.0;
+			AvgFPSMin = -1.0;
+			AvgFPSMax = -1.0;
+
+			FrameCount = 0;
+			Realtime = 0;
+			FPS = 0;
+			FrameTime = 0;
+			AvgFPS = 0;
 		}
 
 		public void Update()
@@ -192,15 +207,15 @@ namespace RuntimeDebugger
 
 			m_avgFPSCount++;
 			double avgTime = realtimeNow - m_lastAvgTime;
-			AVGFPSMIN = AVGFPSMIN < 0 ? FPS : Math.Min(AVGFPSMIN, FPS);
-			AVGFPSMAX = AVGFPSMAX < 0 ? FPS : Math.Max(AVGFPSMAX, FPS);
+			AvgFPSMin = AvgFPSMin < 0 ? FPS : Math.Min(AvgFPSMin, FPS);
+			AvgFPSMax = AvgFPSMax < 0 ? FPS : Math.Max(AvgFPSMax, FPS);
 			if (avgTime > AVGCountTime)
 			{
-				AVGFPS = m_avgFPSCount / avgTime;
+				AvgFPS = m_avgFPSCount / avgTime;
 
 				m_avgFPSCount = 0;
-				AVGFPSMIN = -1.0;
-				AVGFPSMAX = -1.0;
+				AvgFPSMin = -1.0;
+				AvgFPSMax = -1.0;
 				m_lastAvgTime = realtimeNow;
 			}
 		}
