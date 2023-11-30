@@ -2,6 +2,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Unity.Profiling;
@@ -82,7 +83,7 @@ namespace RuntimeDebugger
 					memorySample.DateTime = DateTime.Now.ToString();
 					memorySample.FrameCount = Time.frameCount;
 					memorySample.Realtime = Time.realtimeSinceStartupAsDouble;
-					memorySample.Nodes = new List<MemorySampleNode>();
+					List <MemorySampleNode> nodes = new List<MemorySampleNode>();
 					rsp.Sample = memorySample;
 					if (m_memorySampleTypes != null)
 					{
@@ -91,17 +92,19 @@ namespace RuntimeDebugger
 							UnityEngine.Object[] samples = Resources.FindObjectsOfTypeAll(sampleType);
 							if (samples != null)
 							{
+								double toMBSize = 1024 * 1024;
 								foreach (var item in samples) 
 								{
 									MemorySampleNode node = new MemorySampleNode();
 									node.Name = item.name;
 									node.Type = item.GetType().Name;
-									node.Size = Profiler.GetRuntimeMemorySizeLong(item);
-									memorySample.Nodes.Add(node);
+									node.Size = (float)(Profiler.GetRuntimeMemorySizeLong(item) / toMBSize);
+									nodes.Add(node);
 								}
 							}
 						}
 					}
+					memorySample.Nodes = nodes.OrderByDescending(x => x.Size).ToList();
 				}
 				Send(rsp);
 			}
@@ -274,7 +277,7 @@ namespace RuntimeDebugger
 	{
 		public string Name { get; set; }
 		public string Type { get; set; }
-		public long Size { get; set; }
+		public float Size { get; set; }
 	}
 }
 

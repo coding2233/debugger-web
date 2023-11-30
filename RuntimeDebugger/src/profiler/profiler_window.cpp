@@ -48,7 +48,30 @@ void ProfilerWindow::OnMessage(const std::string &message)
         }
             //请求回包
         else
-        {}
+        {
+            ReqProfilerCmd cmd = json_message["CmdId"];
+            if (cmd == ReqProfilerCmd_GetMemorySampleTypes)
+            {
+                memory_sample_types_ = json_message["SmapleTypes"];
+            }
+            else if (cmd == ReqProfilerCmd_TaskMemorySample)
+            {
+                std::string sample_type = json_message["SmapleType"];
+                MemorySampleProfiler sample =  json_message["Sample"];
+                auto sample_iter = memory_sample_nodes_.find(sample_type);
+                if (sample_iter==memory_sample_nodes_.end())
+                {
+                    std::vector<MemorySampleProfiler> sample_nodes;
+                    sample_nodes.push_back(sample);
+                    memory_sample_nodes_.insert({sample_type,sample_nodes});
+                }
+                else
+                {
+                    std::vector<MemorySampleProfiler> &sample_nodes = sample_iter->second;
+                    sample_nodes.push_back(sample);
+                }
+            }
+        }
     }
     catch (std::exception &e)
     {
@@ -59,8 +82,118 @@ void ProfilerWindow::OnMessage(const std::string &message)
 
 void ProfilerWindow::OnDraw()
 {
+    if (ImGui::BeginTabBar("ProfilerTabBar", ImGuiTabBarFlags_None))
+    {
+        if (ImGui::BeginTabItem("Summary"))
+        {
+            DrawSummary();
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Memory"))
+        {
+            DrawMemorySample();
+            ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
+    }
+}
+
+void ProfilerWindow::DrawSummary()
+{
     DrawFPS();
     DrawMemory();
+}
+
+void ProfilerWindow::DrawMemorySample()
+{
+    if (memory_sample_types_.size()>0)
+    {
+        if (ImGui::BeginTabBar("ProfilerMemorySampleBar", ImGuiTabBarFlags_None))
+        {
+            for (int i =0 ;i<memory_sample_types_.size();i++)
+            {
+                std::string sample_type = memory_sample_types_[i];
+                if (ImGui::BeginTabItem(sample_type.c_str()))
+                {
+                    if (ImGui::Button("Take Sample"))
+                    {
+                        //获取内存的sample
+                        ReqProfilerMessage req;
+                        req.CmdId = ReqProfilerCmd_TaskMemorySample;
+                        req.SmapleType = sample_type;
+                        json json_req = req;
+                        Send(json_req.dump());
+                    }
+
+                    //draw memory_sample_nodes_
+                    auto sample_iter = memory_sample_nodes_.find(sample_type);
+                    if (sample_iter != memory_sample_nodes_.end())
+                    {
+                        std::vector<MemorySampleProfiler> &sample_nodes = sample_iter->second;
+                        //清理数据
+                        ImGui::SameLine();
+                        if (ImGui::Button("Clear"))
+                        {
+                            sample_nodes.clear();
+                        }
+
+                        if (sample_nodes.size()>0)
+                        {
+                            for (int i=0;i<sample_nodes.size();i++)
+                            {
+                                MemorySampleProfiler &sample_profile = sample_nodes[i];
+                                DrawMemorySampleProfiler(sample_profile);
+                            }
+                        }
+                    }
+
+                    ImGui::EndTabItem();
+                }
+            }
+            ImGui::EndTabBar();
+        }
+    }
+}
+
+void ProfilerWindow::DrawMemorySampleProfiler(MemorySampleProfiler &sample_profile)
+{
+    int node_size = sample_profile.Nodes.size();
+    std::string title_name = sample_profile.DateTime;
+    title_name.append(" [");
+    title_name.append(std::to_string(node_size));
+    title_name.append("] frameCount:");
+    title_name.append(std::to_string(sample_profile.FrameCount));
+    title_name.append("  realtime:");
+    title_name.append(std::to_string(sample_profile.Realtime));
+    if(ImGui::TreeNode(title_name.c_str()))
+    {
+        if (node_size > 0)
+        {
+            ImGuiTableFlags table_flags =
+                    ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable;
+            if(ImGui::BeginTable("Profiler_Memory_Sample_Table", 3, table_flags))
+            {
+                ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed);
+                ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch);
+                ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthStretch);
+//                    ImGui::TableHeadersRow();
+                for (int i = 0; i < node_size; ++i)
+                {
+                    MemorySampleNode &node = sample_profile.Nodes[i];
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::Text(node.Name.c_str());
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text(node.Type.c_str());
+                    ImGui::TableSetColumnIndex(2);
+                    ImGui::Text("%f",node.Size);
+                }
+
+            }
+            ImGui::EndTable();
+        }
+        ImGui::TreePop();
+    }
 }
 
 void ProfilerWindow::DrawFPS()
@@ -235,7 +368,13 @@ void ProfilerWindow::OnShow(bool show)
     if (show)
     {
         Reset();
+        //通知界面开启
         Send("show");
+        //查询类型
+        ReqProfilerMessage req;
+        req.CmdId = ReqProfilerCmd_GetMemorySampleTypes;
+        json json_req = req;
+        Send(json_req.dump());
     }
     else
     {
@@ -249,4 +388,6 @@ void ProfilerWindow::Reset()
 {
     fps_nodes_.clear();
     memory_nodes_.clear();
+    memory_sample_types_.clear();
+//    memory_sample_nodes_.clear();
 }
