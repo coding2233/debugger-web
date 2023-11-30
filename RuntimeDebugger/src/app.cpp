@@ -20,7 +20,7 @@ namespace stdfs = std::filesystem;
 std::string server_url_;
 #ifdef __EMSCRIPTEN__
     #include <emscripten.h>
-
+  static bool wait_idb_fs = false;
     // 将虚拟文件系统与持久化存储同步
     void syncFileSystem() {
         EM_ASM(
@@ -34,31 +34,42 @@ std::string server_url_;
         );
     }
 
+    void resetFileSystem(bool reset) 
+    {
+        std::string config_ini = "/config/imgui.ini";
+        std::string default_ini = "/data/imgui.ini";
+
+        if(reset)
+        {
+            if(stdfs::exists(config_ini.c_str()))
+            {
+                stdfs::remove(config_ini.c_str());
+            }
+        }
+
+        if(!stdfs::exists(config_ini.c_str()))
+        {
+            if(stdfs::exists(default_ini.c_str()))
+            {
+                stdfs::copy(default_ini.c_str(), config_ini.c_str());
+               
+            }
+        }
+
+        ImGuiIO &io = ImGui::GetIO();
+        io.IniFilename = default_ini.c_str();
+        wait_idb_fs = true;
+        syncFileSystem();
+        printf("%s exists %d\n%s exists %d\n",config_ini.c_str(),stdfs::exists(config_ini.c_str()),default_ini.c_str(),stdfs::exists(default_ini.c_str()));
+    }
+
+
     extern "C" 
     { 
         EMSCRIPTEN_KEEPALIVE 
         void set_web_file_system()
         {
-            std::string config_ini = "/config/imgui.ini";
-            std::string default_ini = "/data/imgui.ini";
-
-            printf("%s exists %d\n%s exists %d\n",config_ini.c_str(),stdfs::exists(config_ini.c_str()),default_ini.c_str(),stdfs::exists(default_ini.c_str()));
-            if(!stdfs::exists(config_ini.c_str()))
-            {
-                if(stdfs::exists(default_ini.c_str()))
-                {
-                    stdfs::copy(default_ini.c_str(), config_ini.c_str());
-                    syncFileSystem();
-                }
-            }
-
-            if(stdfs::exists(default_ini.c_str()))
-            {
-                ImGuiIO &io = ImGui::GetIO();
-                io.IniFilename  = config_ini.c_str(); 
-            }
-
-            printf("%s exists %d\n%s exists %d\n",config_ini.c_str(),stdfs::exists(config_ini.c_str()),default_ini.c_str(),stdfs::exists(default_ini.c_str()));
+            resetFileSystem(false);
         }
 
         EMSCRIPTEN_KEEPALIVE 
@@ -66,7 +77,7 @@ std::string server_url_;
         {
             server_url_ = "ws://";
             server_url_.append(std::string(host));
-            // server_url_ = "ws://100.80.191.48:2233";
+            //server_url_ = "ws://100.80.191.48:2233";
             puts(server_url_.c_str());
         }
     }
@@ -129,7 +140,7 @@ App::App():ImplApp("Debugger",1280,800,0)
         };
     );
 
-   // io.IniFilename  = "/data/imgui.ini";
+    io.IniFilename  = "/data/imgui.ini";
     //printf("/data/imgui.ini exists %d\n",fs::exists("/data/imgui.ini"));
     //io.Fonts->AddFontFromFileTTF("/data/wqy-microhei.ttc", 14.0f,NULL,io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
     io.Fonts->AddFontFromFileTTF("/data/SourceCodePro-Medium.ttf", size_pixels);
@@ -144,8 +155,6 @@ App::~App()
     {
         delete iter->second;
     }
-    // app_web_socket_->Close();
-    // delete app_web_socket_;
 }
 
 
@@ -240,6 +249,12 @@ void App::OnImGuiDraw()
                 {
                     syncFileSystem();
                 }
+
+                if(ImGui::MenuItem("Reset"))
+                {
+                    resetFileSystem(true);
+                }
+
 #endif
                 ImGui::EndMenu();
             }
