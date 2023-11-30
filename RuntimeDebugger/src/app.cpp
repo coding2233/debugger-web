@@ -20,7 +20,6 @@ namespace stdfs = std::filesystem;
 std::string server_url_;
 #ifdef __EMSCRIPTEN__
     #include <emscripten.h>
-  static bool wait_idb_fs = false;
     // 将虚拟文件系统与持久化存储同步
     void syncFileSystem() {
         EM_ASM(
@@ -39,6 +38,8 @@ std::string server_url_;
         std::string config_ini = "/config/imgui.ini";
         std::string default_ini = "/data/imgui.ini";
 
+        printf("%s exists %d\n","/config",stdfs::exists("/config"));
+
         if(reset)
         {
             if(stdfs::exists(config_ini.c_str()))
@@ -52,14 +53,17 @@ std::string server_url_;
             if(stdfs::exists(default_ini.c_str()))
             {
                 stdfs::copy(default_ini.c_str(), config_ini.c_str());
-               
             }
         }
 
-        ImGuiIO &io = ImGui::GetIO();
-        io.IniFilename = default_ini.c_str();
-        wait_idb_fs = true;
-        syncFileSystem();
+        if(stdfs::exists(config_ini.c_str()))
+        {
+            ImGuiIO &io = ImGui::GetIO();
+            io.IniFilename = config_ini.c_str();
+            ImGui::LoadIniSettingsFromDisk(config_ini.c_str());
+            printf("%s\n",io.IniFilename);
+        }
+       
         printf("%s exists %d\n%s exists %d\n",config_ini.c_str(),stdfs::exists(config_ini.c_str()),default_ini.c_str(),stdfs::exists(default_ini.c_str()));
     }
 
@@ -77,7 +81,7 @@ std::string server_url_;
         {
             server_url_ = "ws://";
             server_url_.append(std::string(host));
-            //server_url_ = "ws://100.80.191.48:2233";
+            // server_url_ = "ws://100.80.191.48:2233";
             puts(server_url_.c_str());
         }
     }
@@ -112,7 +116,6 @@ App::App():ImplApp("Debugger",1280,800,0)
         var url;
         url=window.location.host;
         // alert(url);
-
         Module.onRuntimeInitialized = function() {
                
             if (!FS.analyzePath('/config').exists) {
@@ -140,7 +143,7 @@ App::App():ImplApp("Debugger",1280,800,0)
         };
     );
 
-    io.IniFilename  = "/data/imgui.ini";
+    // io.IniFilename  = "/data/imgui.ini";
     //printf("/data/imgui.ini exists %d\n",fs::exists("/data/imgui.ini"));
     //io.Fonts->AddFontFromFileTTF("/data/wqy-microhei.ttc", 14.0f,NULL,io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
     io.Fonts->AddFontFromFileTTF("/data/SourceCodePro-Medium.ttf", size_pixels);
@@ -247,6 +250,13 @@ void App::OnImGuiDraw()
 #ifdef __EMSCRIPTEN__
                 if(ImGui::MenuItem("Save"))
                 {
+                    std::string config_ini = "/config/imgui.ini";
+                    if(stdfs::exists(config_ini.c_str()))
+                    {
+                        printf("SaveIniSettingsToDisk: %s \n",config_ini.c_str());
+                        ImGui::SaveIniSettingsToDisk(config_ini.c_str());
+                    }
+
                     syncFileSystem();
                 }
 
