@@ -102,8 +102,8 @@ SDL_Window* ImplApp::CreateWindow(const char* title, int window_width, int windo
 
     //添加ImGui的版本号
     std::string full_title = std::string(title);
-    full_title.append(" - ImGui docking ");
-    full_title.append(IMGUI_VERSION);
+//    full_title.append(" - ImGui docking ");
+//    full_title.append(IMGUI_VERSION);
 
 // #ifndef __EMSCRIPTEN__
 //     window_flags |= SDL_WINDOW_BORDERLESS;

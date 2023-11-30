@@ -37,6 +37,10 @@ else
         add_files("easywsclient/easywsclient.cpp")
         add_includedirs("easywsclient")
         add_packages("sdl","glew","opengl")
+
+        --after_build(function (target))
+        --    os.cp("ldid -S %s", target:targetfile())
+        --end
 end
 
 -- 生成clion可识别的 compile_commands

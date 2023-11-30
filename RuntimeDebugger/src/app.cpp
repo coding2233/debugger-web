@@ -51,6 +51,9 @@ App::App():ImplApp("Debugger",1280,800,0)
         iter->second->BindSend(std::bind(&App::OnWebSocketSend,this,std::placeholders::_1,std::placeholders::_2),iter->first);
     }
 
+    ImGuiIO &io = ImGui::GetIO();
+    float size_pixels = 15.0f;
+
 #ifdef __EMSCRIPTEN__
     EM_ASM(
         var url;
@@ -64,10 +67,12 @@ App::App():ImplApp("Debugger",1280,800,0)
         };
     );
 
-    ImGuiIO &io = ImGui::GetIO();
     io.IniFilename  = "/data/imgui.ini";
     printf("/data/imgui.ini exists %d\n",fs::exists("/data/imgui.ini"));
-    io.Fonts->AddFontFromFileTTF("/data/wqy-microhei.ttc", 14.0f,NULL,io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+    //io.Fonts->AddFontFromFileTTF("/data/wqy-microhei.ttc", 14.0f,NULL,io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+    io.Fonts->AddFontFromFileTTF("/data/SourceCodePro-Medium.ttf", size_pixels);
+#else
+    io.Fonts->AddFontFromFileTTF("SourceCodePro-Medium.ttf", size_pixels);
 #endif
 }
 
