@@ -92,15 +92,19 @@ namespace RuntimeDebugger
 							UnityEngine.Object[] samples = Resources.FindObjectsOfTypeAll(sampleType);
 							if (samples != null)
 							{
+								long totalSize = 0;
 								double toMBSize = 1024 * 1024;
 								foreach (var item in samples) 
 								{
 									MemorySampleNode node = new MemorySampleNode();
 									node.Name = item.name;
 									node.Type = item.GetType().Name;
-									node.Size = (float)(Profiler.GetRuntimeMemorySizeLong(item) / toMBSize);
+									long size = Profiler.GetRuntimeMemorySizeLong(item);
+									node.Size = (float)(size / toMBSize);
 									nodes.Add(node);
+									totalSize += size;
 								}
+								memorySample.Size = (float)(totalSize / toMBSize);
 							}
 						}
 					}
@@ -270,6 +274,7 @@ namespace RuntimeDebugger
 		public string DateTime { get; set; }
 		public int FrameCount { get; set; }
 		public double Realtime { get; set; }
+		public float Size { get; set; }
 		public List<MemorySampleNode> Nodes { get; set; }
 	}
 

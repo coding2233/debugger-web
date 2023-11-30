@@ -161,9 +161,11 @@ void ProfilerWindow::DrawMemorySampleProfiler(MemorySampleProfiler &sample_profi
     std::string title_name = sample_profile.DateTime;
     title_name.append(" [");
     title_name.append(std::to_string(node_size));
-    title_name.append("] frameCount:");
+    title_name.append("] size:");
+    title_name.append(std::to_string(sample_profile.Size));
+    title_name.append("MB frameCount:");
     title_name.append(std::to_string(sample_profile.FrameCount));
-    title_name.append("  realtime:");
+    title_name.append(" realtime:");
     title_name.append(std::to_string(sample_profile.Realtime));
     if(ImGui::TreeNode(title_name.c_str()))
     {

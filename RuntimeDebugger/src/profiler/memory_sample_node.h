@@ -38,9 +38,10 @@ public:
     std::string DateTime;
     int FrameCount;
     float Realtime;
+    float Size;
     std::vector<MemorySampleNode> Nodes;
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(MemorySampleProfiler,DateTime,FrameCount,Realtime,Nodes);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(MemorySampleProfiler,DateTime,FrameCount,Realtime,Size,Nodes);
 };
 
 #endif //RUNTIMEDEBUGGER_MEMORY_SAMPLE_NODE_H
