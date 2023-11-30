@@ -60,7 +60,7 @@ namespace
     }
     EM_BOOL onmessage(int eventType, const EmscriptenWebSocketMessageEvent* websocketEvent, void* userData)
     {
-        puts("onmessage");
+        // puts("onmessage");
         if(userData)
         {
             _EMScriptenWebSocket* ems_websocket = (_EMScriptenWebSocket*)userData;

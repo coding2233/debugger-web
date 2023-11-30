@@ -4,7 +4,7 @@
 #include <map>
 #include <exception>
 #include <filesystem>
-namespace fs = std::filesystem;
+namespace stdfs = std::filesystem;
 
 
 
@@ -20,16 +20,58 @@ namespace fs = std::filesystem;
 std::string server_url_;
 #ifdef __EMSCRIPTEN__
     #include <emscripten.h>
+
+    // 将虚拟文件系统与持久化存储同步
+    void syncFileSystem() {
+        EM_ASM(
+            FS.syncfs(false, function(err) {
+                if (err) {
+                    console.error('Failed to sync filesystem', err);
+                } else {
+                    console.log('Filesystem synced');
+                }
+            });
+        );
+    }
+
     extern "C" 
     { 
+        EMSCRIPTEN_KEEPALIVE 
+        void set_web_file_system()
+        {
+            std::string config_ini = "/config/imgui.ini";
+            std::string default_ini = "/data/imgui.ini";
+
+            printf("%s exists %d\n%s exists %d\n",config_ini.c_str(),stdfs::exists(config_ini.c_str()),default_ini.c_str(),stdfs::exists(default_ini.c_str()));
+            if(!stdfs::exists(config_ini.c_str()))
+            {
+                if(stdfs::exists(default_ini.c_str()))
+                {
+                    stdfs::copy(default_ini.c_str(), config_ini.c_str());
+                    syncFileSystem();
+                }
+            }
+
+            if(stdfs::exists(default_ini.c_str()))
+            {
+                ImGuiIO &io = ImGui::GetIO();
+                io.IniFilename  = config_ini.c_str(); 
+            }
+
+            printf("%s exists %d\n%s exists %d\n",config_ini.c_str(),stdfs::exists(config_ini.c_str()),default_ini.c_str(),stdfs::exists(default_ini.c_str()));
+        }
+
         EMSCRIPTEN_KEEPALIVE 
         void set_web_location_host(const char* host)
         {
             server_url_ = "ws://";
             server_url_.append(std::string(host));
+            // server_url_ = "ws://100.80.191.48:2233";
             puts(server_url_.c_str());
         }
     }
+
+    
 #endif
 
 App::App():ImplApp("Debugger",1280,800,0)
@@ -61,14 +103,34 @@ App::App():ImplApp("Debugger",1280,800,0)
         // alert(url);
 
         Module.onRuntimeInitialized = function() {
+               
+            if (!FS.analyzePath('/config').exists) {
+                FS.mkdir('/config');
+            }
+            else
+            {
+                console.log("config --xxxxx--")
+            }
+            FS.mount(IDBFS, {}, '/config');
+             // 同步从 IndexedDB 读取到内存
+            FS.syncfs(true, function (err) {
+                if (err) {
+                    console.error('Error loading from IndexedDB', err);
+                } else {
+                    // 文件系统准备就绪，可以读取文件了
+                    Module.ccall("set_web_file_system",null);
+                    console.log("set_web_file_system")
+                }
+            });
+
             // 现在可以安全地调用导出的函数了
             const url_str = String(url);
             Module.ccall("set_web_location_host",null,['string'],[url_str]);
         };
     );
 
-    io.IniFilename  = "/data/imgui.ini";
-    printf("/data/imgui.ini exists %d\n",fs::exists("/data/imgui.ini"));
+   // io.IniFilename  = "/data/imgui.ini";
+    //printf("/data/imgui.ini exists %d\n",fs::exists("/data/imgui.ini"));
     //io.Fonts->AddFontFromFileTTF("/data/wqy-microhei.ttc", 14.0f,NULL,io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
     io.Fonts->AddFontFromFileTTF("/data/SourceCodePro-Medium.ttf", size_pixels);
 #else
@@ -169,6 +231,19 @@ void App::OnImGuiDraw()
                 ImGui::EndMenu();
             }
 #endif
+
+
+            if (ImGui::BeginMenu("Settings"))
+            {
+#ifdef __EMSCRIPTEN__
+                if(ImGui::MenuItem("Save"))
+                {
+                    syncFileSystem();
+                }
+#endif
+                ImGui::EndMenu();
+            }
+
             if (ImGui::BeginMenu("Version"))
             {
                 if (ImGui::BeginMenu("Server"))
