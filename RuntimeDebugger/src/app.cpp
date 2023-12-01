@@ -7,8 +7,6 @@
 #include <unistd.h>
 namespace stdfs = std::filesystem;
 
-
-
 #include "app.h"
 
 #include "information/information_window.h"
@@ -17,22 +15,23 @@ namespace stdfs = std::filesystem;
 #include "inspector/inspector_window.h"
 #include "terminal/terminal_window.h"
 #include "profiler/profiler_window.h"
+#include "app_settings.h"
 
 std::string server_url_;
 #ifdef __EMSCRIPTEN__
     #include <emscripten.h>
-    // 将虚拟文件系统与持久化存储同步
-    void syncFileSystem() {
-        EM_ASM(
-            FS.syncfs(false, function(err) {
-                if (err) {
-                    console.error('Failed to sync filesystem', err);
-                } else {
-                    console.log('Filesystem synced');
-                }
-            });
-        );
-    }
+    // // 将虚拟文件系统与持久化存储同步
+    // void syncFileSystem() {
+    //     EM_ASM(
+    //         FS.syncfs(false, function(err) {
+    //             if (err) {
+    //                 console.error('Failed to sync filesystem', err);
+    //             } else {
+    //                 console.log('Filesystem synced');
+    //             }
+    //         });
+    //     );
+    // }
 
     void resetFileSystem(bool reset) 
     {
@@ -77,6 +76,11 @@ std::string server_url_;
         void set_web_file_system()
         {
             resetFileSystem(false);
+            LoadAppSettings();
+
+            // float size_pixels = GetFloatConfig("FontSize",20);
+            // ImGuiIO &io = ImGui::GetIO();
+            // io.Fonts->AddFontFromFileTTF("/data/SourceCodePro-Medium.ttf", size_pixels);
         }
 
         EMSCRIPTEN_KEEPALIVE 
@@ -112,7 +116,7 @@ App::App():ImplApp("Debugger",1280,800,0)
     }
 
     ImGuiIO &io = ImGui::GetIO();
-    float size_pixels = 15.0f;
+    float size_pixels = 16.0f;
 
 #ifdef __EMSCRIPTEN__
     EM_ASM(
