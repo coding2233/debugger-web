@@ -5,9 +5,6 @@ using System.IO;
 using UnityEngine;
 namespace RuntimeDebugger
 {
-	/// <summary>
-	/// 使Json.Net可以正确序列化或反序列化Unity中的Vector数据
-	/// </summary>
 	public class VectorConverter : JsonConverter
 	{
 		public override bool CanRead => true;

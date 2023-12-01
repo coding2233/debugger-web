@@ -4,7 +4,6 @@
 #include <map>
 #include <exception>
 #include <filesystem>
-#include <unistd.h>
 namespace stdfs = std::filesystem;
 
 #include "app.h"
@@ -18,7 +17,9 @@ namespace stdfs = std::filesystem;
 #include "app_settings.h"
 
 std::string server_url_;
+
 #ifdef __EMSCRIPTEN__
+#include <unistd.h>
     #include <emscripten.h>
     // // 将虚拟文件系统与持久化存储同步
     // void syncFileSystem() {
