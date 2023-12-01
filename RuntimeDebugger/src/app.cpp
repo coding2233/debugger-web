@@ -4,6 +4,7 @@
 #include <map>
 #include <exception>
 #include <filesystem>
+#include <unistd.h>
 namespace stdfs = std::filesystem;
 
 
@@ -40,30 +41,32 @@ std::string server_url_;
 
         printf("%s exists %d\n","/config",stdfs::exists("/config"));
 
+        std::string load_config = default_ini;     
         if(reset)
         {
             if(stdfs::exists(config_ini.c_str()))
             {
-                stdfs::remove(config_ini.c_str());
+                int status = unlink(config_ini.c_str());
+                if (status == 0) {
+                    printf("File deleted successfully\n");
+                } else {
+                    perror("unlink");
+                }
             }
-        }
-
-        if(!stdfs::exists(config_ini.c_str()))
-        {
             if(stdfs::exists(default_ini.c_str()))
             {
-                stdfs::copy(default_ini.c_str(), config_ini.c_str());
+                load_config = default_ini;
+            }
+        }
+        else
+        {
+            if(stdfs::exists(config_ini.c_str()))
+            {
+                load_config = config_ini;
             }
         }
 
-        if(stdfs::exists(config_ini.c_str()))
-        {
-            ImGuiIO &io = ImGui::GetIO();
-            io.IniFilename = config_ini.c_str();
-            ImGui::LoadIniSettingsFromDisk(config_ini.c_str());
-            printf("%s\n",io.IniFilename);
-        }
-       
+        ImGui::LoadIniSettingsFromDisk(load_config.c_str());
         printf("%s exists %d\n%s exists %d\n",config_ini.c_str(),stdfs::exists(config_ini.c_str()),default_ini.c_str(),stdfs::exists(default_ini.c_str()));
     }
 
@@ -117,7 +120,6 @@ App::App():ImplApp("Debugger",1280,800,0)
         url=window.location.host;
         // alert(url);
         Module.onRuntimeInitialized = function() {
-               
             if (!FS.analyzePath('/config').exists) {
                 FS.mkdir('/config');
             }
@@ -143,7 +145,7 @@ App::App():ImplApp("Debugger",1280,800,0)
         };
     );
 
-    // io.IniFilename  = "/data/imgui.ini";
+    //io.IniFilename  = "/data/imgui.ini";
     //printf("/data/imgui.ini exists %d\n",fs::exists("/data/imgui.ini"));
     //io.Fonts->AddFontFromFileTTF("/data/wqy-microhei.ttc", 14.0f,NULL,io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
     io.Fonts->AddFontFromFileTTF("/data/SourceCodePro-Medium.ttf", size_pixels);
@@ -250,14 +252,14 @@ void App::OnImGuiDraw()
 #ifdef __EMSCRIPTEN__
                 if(ImGui::MenuItem("Save"))
                 {
-                    std::string config_ini = "/config/imgui.ini";
-                    if(stdfs::exists(config_ini.c_str()))
+                    if(stdfs::exists("/config"))
                     {
+                        std::string config_ini = "/config/imgui.ini";
                         printf("SaveIniSettingsToDisk: %s \n",config_ini.c_str());
                         ImGui::SaveIniSettingsToDisk(config_ini.c_str());
-                    }
 
-                    syncFileSystem();
+                        syncFileSystem();
+                    }
                 }
 
                 if(ImGui::MenuItem("Reset"))
