@@ -163,7 +163,7 @@ jobs:
         git push origin xhv-lib:xhv-lib
 
   build_hv_mac:
-    runs-on: macos-latest
+    runs-on: macos-11.0
     needs: [build_hv_window]
     steps:
     - name: check out
@@ -196,7 +196,7 @@ jobs:
         git push origin xhv-lib:xhv-lib
   
   build_hv_ios_arm64:
-    runs-on: macos-latest
+    runs-on: macos-11.0
     needs: [build_hv_mac]
     steps:
     - name: check out
