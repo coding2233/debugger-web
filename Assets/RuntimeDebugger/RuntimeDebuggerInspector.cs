@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Assertions.Must;
 using UnityEngine.SceneManagement;
@@ -381,9 +380,11 @@ namespace RuntimeDebugger
 					var texture = material.GetTexture(name);
 					Value = texture == null ? "" : texture.name;
 					break;
+#if UNITY_2021_1_OR_NEWER
 				case UnityEngine.Rendering.ShaderPropertyType.Int:
 					Value = material.GetInt(name);
 					break;
+#endif
 				default:
 					break;
 			}

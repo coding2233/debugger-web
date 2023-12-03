@@ -7,7 +7,6 @@ using System.Security.Cryptography;
 using System.Text;
 using Unity.Profiling;
 using UnityEngine;
-using UnityEngine.Pool;
 using UnityEngine.Profiling;
 
 namespace RuntimeDebugger
@@ -82,7 +81,7 @@ namespace RuntimeDebugger
 					MemorySampleProfiler memorySample = new MemorySampleProfiler();
 					memorySample.DateTime = DateTime.Now.ToString();
 					memorySample.FrameCount = Time.frameCount;
-					memorySample.Realtime = Time.realtimeSinceStartupAsDouble;
+					memorySample.Realtime = Time.realtimeSinceStartup;
 					List <MemorySampleNode> nodes = new List<MemorySampleNode>();
 					rsp.Sample = memorySample;
 					if (m_memorySampleTypes != null)
@@ -195,8 +194,8 @@ namespace RuntimeDebugger
 
 		public void Reset()
 		{
-			m_lastAvgTime = Time.realtimeSinceStartupAsDouble;
-			m_lastFrameTime = Time.realtimeSinceStartupAsDouble;
+			m_lastAvgTime = Time.realtimeSinceStartup;
+			m_lastFrameTime = Time.realtimeSinceStartup;
 			m_avgFPSCount = 0;
 
 			AvgFPSMin = -1.0;
@@ -212,7 +211,7 @@ namespace RuntimeDebugger
 		public void Update()
 		{
 			FrameCount = Time.frameCount;
-			Realtime = Time.realtimeSinceStartupAsDouble;
+			Realtime = Time.realtimeSinceStartup;
 			double realtimeNow = Realtime;
 			double frameTime = realtimeNow - m_lastFrameTime;
 			if (frameTime > 0)
@@ -256,7 +255,7 @@ namespace RuntimeDebugger
 		{
 			float toMBSize = 1024 * 1024;
 			FrameCount = Time.frameCount;
-			Realtime = Time.realtimeSinceStartupAsDouble;
+			Realtime = Time.realtimeSinceStartup;
 			MaxUsedMemory = Profiler.maxUsedMemory / toMBSize;
 			MonoUsedSize = Profiler.GetMonoUsedSizeLong() / toMBSize;
 			MonoHeapSize = Profiler.GetMonoHeapSizeLong() / toMBSize;

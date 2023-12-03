@@ -171,7 +171,9 @@ namespace RuntimeDebugger
 			AppendDictionaryBuilder(dictionaryBuilder, "Uses Reversed ZBuffer", SystemInfo.usesReversedZBuffer.ToString());
 			AppendDictionaryBuilder(dictionaryBuilder, "Max Cubemap Size", SystemInfo.maxCubemapSize.ToString());
 			AppendDictionaryBuilder(dictionaryBuilder, "Graphics UV Starts At Top", SystemInfo.graphicsUVStartsAtTop.ToString());
+#if UNITY_2021_1_OR_NEWER
 			AppendDictionaryBuilder(dictionaryBuilder, "Min Constant Buffer Offset Alignment", SystemInfo.constantBufferOffsetAlignment.ToString());
+#endif
 			AppendDictionaryBuilder(dictionaryBuilder, "Has Hidden Surface Removal On GPU", SystemInfo.hasHiddenSurfaceRemovalOnGPU.ToString());
 			AppendDictionaryBuilder(dictionaryBuilder, "Has Dynamic Uniform Array Indexing In Fragment Shaders", SystemInfo.hasDynamicUniformArrayIndexingInFragmentShaders.ToString());
 			AppendDictionaryBuilder(dictionaryBuilder, "Has Mip Max Level", SystemInfo.hasMipMaxLevel.ToString());

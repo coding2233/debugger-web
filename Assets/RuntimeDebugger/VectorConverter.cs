@@ -22,18 +22,52 @@ namespace RuntimeDebugger
 		}
 		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
 		{
-			return objectType switch
+			if (objectType == typeof(Vector2))
 			{
-				var t when t == typeof(Vector2) => JsonConvert.DeserializeObject<Vector2>(serializer.Deserialize(reader).ToString()),
-				var t when t == typeof(Vector2Int) => JsonConvert.DeserializeObject<Vector2Int>(serializer.Deserialize(reader).ToString()),
-				var t when t == typeof(Vector3) => JsonConvert.DeserializeObject<Vector3>(serializer.Deserialize(reader).ToString()),
-				var t when t == typeof(Vector3Int) => JsonConvert.DeserializeObject<Vector3Int>(serializer.Deserialize(reader).ToString()),
-				var t when t == typeof(Vector4) => JsonConvert.DeserializeObject<Vector4>(serializer.Deserialize(reader).ToString()),
-				var t when t == typeof(Color) => JsonConvert.DeserializeObject<Color>(serializer.Deserialize(reader).ToString()),
-				var t when t == typeof(Color32) => JsonConvert.DeserializeObject<Color32>(serializer.Deserialize(reader).ToString()),
-				var t when t == typeof(Quaternion) => JsonConvert.DeserializeObject<Quaternion>(serializer.Deserialize(reader).ToString()),
-				_ => throw new Exception("Unexpected Error Occurred"),
-			};
+				return JsonConvert.DeserializeObject<Vector2>(serializer.Deserialize(reader).ToString());
+			}
+			if (objectType == typeof(Vector2Int))
+			{
+				return JsonConvert.DeserializeObject<Vector2Int>(serializer.Deserialize(reader).ToString());
+			}
+			if (objectType == typeof(Vector3))
+			{
+				return JsonConvert.DeserializeObject<Vector3>(serializer.Deserialize(reader).ToString());
+			}
+			if (objectType == typeof(Vector3Int))
+			{
+				return JsonConvert.DeserializeObject<Vector3Int>(serializer.Deserialize(reader).ToString());
+			}
+			if (objectType == typeof(Vector4))
+			{
+				return JsonConvert.DeserializeObject<Vector4>(serializer.Deserialize(reader).ToString());
+			}
+			if (objectType == typeof(Color))
+			{
+				return JsonConvert.DeserializeObject<Color>(serializer.Deserialize(reader).ToString());
+			}
+			if (objectType == typeof(Color32))
+			{
+				return JsonConvert.DeserializeObject<Color32>(serializer.Deserialize(reader).ToString());
+			}
+			if (objectType == typeof(Quaternion))
+			{
+				return JsonConvert.DeserializeObject<Quaternion>(serializer.Deserialize(reader).ToString());
+			}
+
+			throw new Exception("Unexpected Error Occurred");
+			//return objectType switch
+			//{
+			//	var t when t == typeof(Vector2) => ,
+			//	var t when t == typeof() => JsonConvert.DeserializeObject<Vector2Int>(serializer.Deserialize(reader).ToString()),
+			//	var t when t == typeof() => JsonConvert.DeserializeObject<Vector3>(serializer.Deserialize(reader).ToString()),
+			//	var t when t == typeof() => JsonConvert.DeserializeObject<Vector3Int>(serializer.Deserialize(reader).ToString()),
+			//	var t when t == typeof() => JsonConvert.DeserializeObject<Vector4>(serializer.Deserialize(reader).ToString()),
+			//	var t when t == typeof(Color) => JsonConvert.DeserializeObject<Color>(serializer.Deserialize(reader).ToString()),
+			//	var t when t == typeof() => JsonConvert.DeserializeObject<Color32>(serializer.Deserialize(reader).ToString()),
+			//	var t when t == typeof() => JsonConvert.DeserializeObject<Quaternion>(serializer.Deserialize(reader).ToString()),
+			//	_ => throw new Exception("Unexpected Error Occurred"),
+			//};
 		}
 		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
 		{
