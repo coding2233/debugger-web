@@ -24,6 +24,8 @@ namespace RuntimeDebugger
 		private int m_serverPort = 2233;
 		[SerializeField]
 		private bool m_autoStart = true;
+		[SerializeField]
+		private bool m_runInBackground = true;
 		private RuntimeDebugger m_runtimeDebugger;
 		private List<string> m_showIPAddressList;
 
@@ -39,6 +41,7 @@ namespace RuntimeDebugger
 			m_fullRect = new Rect(10, 10, 700, 500);
 			m_dragRect = new Rect(0f, 0f, float.MaxValue, 25f);
 
+			Application.runInBackground = m_runInBackground;
 		}
 
 		private void Start()
