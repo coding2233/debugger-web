@@ -89,7 +89,7 @@ std::string server_url_;
         {
             server_url_ = "ws://";
             server_url_.append(std::string(host));
-            server_url_ = "ws://100.80.191.48:2233";
+            // server_url_ = "ws://100.80.191.48:2233";
             puts(server_url_.c_str());
         }
     }
