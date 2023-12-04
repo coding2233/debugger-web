@@ -510,82 +510,100 @@ int GenerateSignedCertificate(int key_size,int exponent,const char *cert_filenam
     ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, (const unsigned char *)pers, strlen(pers));
     if (ret != 0) {
         printf("mbedtls_ctr_drbg_seed returned %d\n", ret);
-        goto exit;
     }
 
-    // Generate a keypair
-    ret = mbedtls_pk_setup(&key, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
-    if (ret != 0) {
-        printf("mbedtls_pk_setup returned %d\n", ret);
-        goto exit;
+    if(ret == 0)
+    {
+        // Generate a keypair
+        ret = mbedtls_pk_setup(&key, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
+        if (ret != 0)
+        {
+            printf("mbedtls_pk_setup returned %d\n", ret);
+        }
     }
 
-    ret = mbedtls_rsa_gen_key(mbedtls_pk_rsa(key), mbedtls_ctr_drbg_random, &ctr_drbg, key_size, exponent);
-    if (ret != 0) {
-        printf("mbedtls_rsa_gen_key returned %d\n", ret);
-        goto exit;
+    if (ret == 0)
+    {
+        ret = mbedtls_rsa_gen_key(mbedtls_pk_rsa(key), mbedtls_ctr_drbg_random, &ctr_drbg, key_size, exponent);
+        if (ret != 0)
+        {
+            printf("mbedtls_rsa_gen_key returned %d\n", ret);
+        }
     }
 
-    // Write the key to a PEM string
-    ret = mbedtls_pk_write_key_pem(&key, (unsigned char *)buf, sizeof(buf));
-    if (ret != 0) {
-        printf("mbedtls_pk_write_key_pem returned %d\n", ret);
-        goto exit;
+    if (ret == 0)
+    {
+        // Write the key to a PEM string
+        ret = mbedtls_pk_write_key_pem(&key, (unsigned char *) buf, sizeof(buf));
+        if (ret != 0)
+        {
+            printf("mbedtls_pk_write_key_pem returned %d\n", ret);
+        }
     }
 
-    // Save the key to a file
-    FILE *f = fopen(key_filename, "w");
-    if (f == NULL) {
-        ret = 1;
-        goto exit;
-    }
-    fputs(buf, f);
-    fclose(f);
-
-    // Set up the certificate issuer and subject
-    ret = mbedtls_x509write_crt_set_subject_name(&cert, "CN=Self-signed certificate,O=libhv,C=US");
-    if (ret != 0) {
-        printf("mbedtls_x509write_crt_set_subject_name returned %d\n", ret);
-        goto exit;
+    if (ret == 0)
+    {
+        // Save the key to a file
+        FILE *f = fopen(key_filename, "w");
+        if (f == NULL)
+        {
+            ret = 1;
+        }
+        fputs(buf, f);
+        fclose(f);
     }
 
-    mbedtls_x509write_crt_set_issuer_name(&cert, "CN=Self-signed certificate,O=libhv,C=US");
-
-    mbedtls_x509write_crt_set_version(&cert, MBEDTLS_X509_CRT_VERSION_3);
-    mbedtls_x509write_crt_set_md_alg(&cert, MBEDTLS_MD_SHA256);
-
-    // Set the validity period
-    mbedtls_x509write_crt_set_validity(&cert, "20230101000000", "20331231235959");
-
-    // Set the key
-    mbedtls_x509write_crt_set_subject_key(&cert, &key);
-    mbedtls_x509write_crt_set_issuer_key(&cert, &key);
-
-    // Write the certificate to a PEM string
-    ret = mbedtls_x509write_crt_pem(&cert, (unsigned char *)buf, sizeof(buf), mbedtls_ctr_drbg_random, &ctr_drbg);
-    if (ret != 0) {
-        printf("mbedtls_x509write_crt_pem returned %d\n", ret);
-        goto exit;
+    if (ret == 0)
+    {
+        // Set up the certificate issuer and subject
+        ret = mbedtls_x509write_crt_set_subject_name(&cert, "CN=Self-signed certificate,O=libhv,C=US");
+        if (ret != 0)
+        {
+            printf("mbedtls_x509write_crt_set_subject_name returned %d\n", ret);
+        }
     }
 
-    // Save the certificate to a file
-    f = fopen(cert_filename, "w");
-    if (f == NULL) {
-        ret = 1;
-        goto exit;
+    if (ret == 0)
+    {
+        mbedtls_x509write_crt_set_issuer_name(&cert, "CN=Self-signed certificate,O=libhv,C=US");
+
+        mbedtls_x509write_crt_set_version(&cert, MBEDTLS_X509_CRT_VERSION_3);
+        mbedtls_x509write_crt_set_md_alg(&cert, MBEDTLS_MD_SHA256);
+
+        // Set the validity period
+        mbedtls_x509write_crt_set_validity(&cert, "20230101000000", "20331231235959");
+
+        // Set the key
+        mbedtls_x509write_crt_set_subject_key(&cert, &key);
+        mbedtls_x509write_crt_set_issuer_key(&cert, &key);
+
+        // Write the certificate to a PEM string
+        ret = mbedtls_x509write_crt_pem(&cert, (unsigned char *) buf, sizeof(buf), mbedtls_ctr_drbg_random, &ctr_drbg);
+        if (ret != 0)
+        {
+            printf("mbedtls_x509write_crt_pem returned %d\n", ret);
+        }
     }
-    fputs(buf, f);
-    fclose(f);
+
+    if (ret == 0)
+    {
+        // Save the certificate to a file
+        FILE* f = fopen(cert_filename, "w");
+        if (f == NULL)
+        {
+            ret = 1;
+        }
+        fputs(buf, f);
+        fclose(f);
+    }
 
     printf("Self-signed certificate and private key generated successfully!\n");
-    ret = 0;
+//    ret = 0;
 
-    exit:
     mbedtls_x509write_crt_free(&cert);
     mbedtls_pk_free(&key);
     mbedtls_ctr_drbg_free(&ctr_drbg);
     mbedtls_entropy_free(&entropy);
 
     return ret;
-    return 0;
 }
