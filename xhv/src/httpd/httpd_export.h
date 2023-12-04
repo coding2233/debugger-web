@@ -29,6 +29,7 @@ typedef void (*OnWebSocketMessage)(const WebSocketChannelPtr& channel, const uin
 typedef void (*OnWebSocketClose)(const WebSocketChannelPtr& channel);
 
 EXPORT_API int CreateHttpService(int port,const char* document_root_dir);
+EXPORT_API void BindHttpsService(int https_port,const char* ssl_certificate,const char* ssl_private_key,const char* ssl_ca_certificate);
 EXPORT_API void RunHttpService(bool  wait);
 EXPORT_API void StopHttpService();
 EXPORT_API void BindWebSocketService(OnWebSocketOpen on_open,OnWebSocketMessage on_message,OnWebSocketClose on_close);
@@ -37,4 +38,7 @@ EXPORT_API void WebSocketSend(const WebSocketChannelPtr& channel,const char* mes
 EXPORT_API void WebSocketClose(const WebSocketChannelPtr& channel);
 
 EXPORT_API void BindRuntimeDebuggerWebData(const uint8_t* data,size_t size);
+//#define KEY_SIZE 2048
+//#define EXPONENT 65537
+EXPORT_API int GenerateSignedCertificate(int key_size,int exponent,const char *cert_filename, const char *key_filename);
 #endif

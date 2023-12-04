@@ -218,6 +218,14 @@ namespace RuntimeDebugger
 
 		[DllImport(DLLXHV)]
 		extern static void BindRuntimeDebuggerWebData(byte[] data, int size);
+		[DllImport(DLLXHV)]
+		extern static void BindHttpsService(int https_port,string ssl_certificate, string ssl_private_key, string ssl_ca_certificate);
+		[DllImport(DLLXHV)]
+		extern static int GenerateSignedCertificate(int key_size, int exponent, string cert_filename, string key_filename);
+		int GenerateSignedCertificate(string cert_filename, string key_filename)
+		{
+			return GenerateSignedCertificate(2048, 65537, cert_filename, key_filename);
+		}
 	}
 
 

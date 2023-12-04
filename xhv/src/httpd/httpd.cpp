@@ -12,6 +12,18 @@
 #include "httpd_export.h"
 #include "runtime_debugger_web_data.h"
 
+#include <mbedtls/entropy.h>
+#include <mbedtls/ctr_drbg.h>
+#include <mbedtls/bignum.h>
+#include <mbedtls/x509_crt.h>
+#include <mbedtls/rsa.h>
+#include <mbedtls/error.h>
+#include <mbedtls/pk.h>
+#include <mbedtls/x509_csr.h>
+
+#include <stdio.h>
+#include <string.h>
+
 hv::HttpServer  g_http_server;
 hv::HttpService g_http_service;
 RuntimeDebuggerWebData g_runtime_debugger_web_data;
@@ -310,6 +322,32 @@ int CreateHttpService(int port,const char* document_root_dir)
     g_http_server.registerHttpService(&g_http_service);
     return 0;
 }
+
+void BindHttpsService(int https_port,const char* ssl_certificate,const char* ssl_private_key,const char* ssl_ca_certificate)
+{
+    hv::HttpServer &server = g_http_server;
+    // 配置和启动 HTTPS 服务
+    server.https_port = https_port;
+
+    hlogi("SSL backend is %s", hssl_backend());
+    hssl_ctx_init_param_t param;
+    memset(&param, 0, sizeof(param));
+    param.crt_file = ssl_certificate;
+    param.key_file = ssl_private_key;
+    if (ssl_ca_certificate)
+    {
+        param.ca_file = ssl_ca_certificate;
+    }
+    param.endpoint = HSSL_SERVER;
+    if (hssl_ctx_init(&param) == NULL) {
+        hloge("SSL certificate verify failed!");
+        exit(0);
+    }
+    else {
+        hlogi("SSL certificate verify ok!");
+    }
+}
+
 void RunHttpService(bool  wait)
 {
    if(wait)
@@ -451,4 +489,103 @@ void BindRuntimeDebuggerWebData(const uint8_t* data,size_t size)
             return 404;
         }
     });
+}
+
+int GenerateSignedCertificate(int key_size,int exponent,const char *cert_filename, const char *key_filename)
+{
+    int ret;
+    mbedtls_pk_context key;
+    mbedtls_x509write_cert cert;
+    mbedtls_entropy_context entropy;
+    mbedtls_ctr_drbg_context ctr_drbg;
+    char buf[4096];
+    const char *pers = "cert_gen";
+
+    mbedtls_entropy_init(&entropy);
+    mbedtls_ctr_drbg_init(&ctr_drbg);
+    mbedtls_pk_init(&key);
+    mbedtls_x509write_crt_init(&cert);
+
+    // Seed the random number generator
+    ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, (const unsigned char *)pers, strlen(pers));
+    if (ret != 0) {
+        printf("mbedtls_ctr_drbg_seed returned %d\n", ret);
+        goto exit;
+    }
+
+    // Generate a keypair
+    ret = mbedtls_pk_setup(&key, mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
+    if (ret != 0) {
+        printf("mbedtls_pk_setup returned %d\n", ret);
+        goto exit;
+    }
+
+    ret = mbedtls_rsa_gen_key(mbedtls_pk_rsa(key), mbedtls_ctr_drbg_random, &ctr_drbg, key_size, exponent);
+    if (ret != 0) {
+        printf("mbedtls_rsa_gen_key returned %d\n", ret);
+        goto exit;
+    }
+
+    // Write the key to a PEM string
+    ret = mbedtls_pk_write_key_pem(&key, (unsigned char *)buf, sizeof(buf));
+    if (ret != 0) {
+        printf("mbedtls_pk_write_key_pem returned %d\n", ret);
+        goto exit;
+    }
+
+    // Save the key to a file
+    FILE *f = fopen(key_filename, "w");
+    if (f == NULL) {
+        ret = 1;
+        goto exit;
+    }
+    fputs(buf, f);
+    fclose(f);
+
+    // Set up the certificate issuer and subject
+    ret = mbedtls_x509write_crt_set_subject_name(&cert, "CN=Self-signed certificate,O=libhv,C=US");
+    if (ret != 0) {
+        printf("mbedtls_x509write_crt_set_subject_name returned %d\n", ret);
+        goto exit;
+    }
+
+    mbedtls_x509write_crt_set_issuer_name(&cert, "CN=Self-signed certificate,O=libhv,C=US");
+
+    mbedtls_x509write_crt_set_version(&cert, MBEDTLS_X509_CRT_VERSION_3);
+    mbedtls_x509write_crt_set_md_alg(&cert, MBEDTLS_MD_SHA256);
+
+    // Set the validity period
+    mbedtls_x509write_crt_set_validity(&cert, "20230101000000", "20331231235959");
+
+    // Set the key
+    mbedtls_x509write_crt_set_subject_key(&cert, &key);
+    mbedtls_x509write_crt_set_issuer_key(&cert, &key);
+
+    // Write the certificate to a PEM string
+    ret = mbedtls_x509write_crt_pem(&cert, (unsigned char *)buf, sizeof(buf), mbedtls_ctr_drbg_random, &ctr_drbg);
+    if (ret != 0) {
+        printf("mbedtls_x509write_crt_pem returned %d\n", ret);
+        goto exit;
+    }
+
+    // Save the certificate to a file
+    f = fopen(cert_filename, "w");
+    if (f == NULL) {
+        ret = 1;
+        goto exit;
+    }
+    fputs(buf, f);
+    fclose(f);
+
+    printf("Self-signed certificate and private key generated successfully!\n");
+    ret = 0;
+
+    exit:
+    mbedtls_x509write_crt_free(&cert);
+    mbedtls_pk_free(&key);
+    mbedtls_ctr_drbg_free(&ctr_drbg);
+    mbedtls_entropy_free(&entropy);
+
+    return ret;
+    return 0;
 }
