@@ -2,6 +2,8 @@
 // Created by wanderer on 2023/11/13.
 //
 
+#include <stdio.h>
+#include <time.h>
 #include "log_window.h"
 
 LogWindow::LogWindow()
@@ -45,6 +47,38 @@ void LogWindow::OnDraw()
             log_node_index_ = 0;
             log_node_selected_index_ = -1;
             return;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Save"))
+        {
+            if(log_nodes_.size()>0)
+            {
+                std::string save_data;
+                for(int i=0;i< log_nodes_.size();i++)
+                {
+                    save_data.append(log_nodes_[i].SortLog);
+                    save_data.append("\n");
+                    save_data.append(log_nodes_[i].LogTime);
+                    save_data.append("\n");
+                    save_data.append(log_nodes_[i].StackTrack);
+                    save_data.append("\n");
+                }
+
+                // 创建一个time_t类型变量来存储当前时间
+                time_t now;
+                // 获取当前时间
+                time(&now);
+                // 创建一个tm结构体来存储转换后的本地时间
+                struct tm *local = localtime(&now);
+                // 创建一个足够大的字符数组来存储日期和时间字符串
+                char time_str[80];
+                // 使用strftime函数格式化时间
+                strftime(time_str, sizeof(time_str), "%Y_%m_%d_%H_%M_%S", local);
+                std::string log_file_name(time_str);
+                log_file_name.append(".log");
+
+                AppSettings::SaveFile(save_data.c_str(),save_data.size(),log_file_name.c_str());
+            }
         }
         float log_window_height = log_node_selected_index_<0?0: ImGui::GetWindowHeight()*0.55f;
         if(ImGui::BeginChild("LogWindow_log_node",ImVec2(0,log_window_height)))
