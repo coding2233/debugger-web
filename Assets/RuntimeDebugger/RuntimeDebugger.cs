@@ -226,7 +226,7 @@ namespace RuntimeDebugger
 	{
 		public int Major { get; set; } = 0;
 		public int Minor { get; set; } = 2;
-		public int Patch { get; set; } = 0;
+		public int Patch { get; set; } = 1;
 	}
 
 }
