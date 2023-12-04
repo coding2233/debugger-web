@@ -4,8 +4,9 @@
 
 #include <iostream>
 #include <exception>
+#include <filesystem>
+namespace stdfs = std::filesystem;
 #include "file_window.h"
-
 
 FileWindow::FileWindow()
 {
@@ -78,7 +79,16 @@ void FileWindow::OnDraw()
             {
                 for (auto iter = select_file_.begin(); iter!= select_file_.end();iter++)
                 {
+                    if(ImGui::Button("Save"))
+                    {
+                        stdfs::path filepath(iter->first.c_str());
+                        std::string filename = filepath.filename().string();
+                        std::string& read_data = iter->second;
+                        AppSettings::SaveFile(read_data.c_str(),read_data.size(),filename.c_str());
+                    }
+                    ImGui::SameLine();
                     ImGui::Text(iter->first.c_str());
+                    
                     ImGui::Separator();
                     ImGui::TextWrapped(iter->second.c_str());
                     break;

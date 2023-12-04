@@ -15,6 +15,7 @@ using easywsclient::WebSocket;
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
 
+#include "app_settings.h"
 
 class AppWindow
 {

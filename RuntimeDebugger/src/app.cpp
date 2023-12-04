@@ -77,7 +77,7 @@ std::string server_url_;
         void set_web_file_system()
         {
             resetFileSystem(false);
-            LoadAppSettings();
+            // LoadAppSettings();
 
             // float size_pixels = GetFloatConfig("FontSize",20);
             // ImGuiIO &io = ImGui::GetIO();
@@ -89,7 +89,7 @@ std::string server_url_;
         {
             server_url_ = "ws://";
             server_url_.append(std::string(host));
-            // server_url_ = "ws://100.80.191.48:2233";
+            server_url_ = "ws://100.80.191.48:2233";
             puts(server_url_.c_str());
         }
     }
@@ -263,7 +263,7 @@ void App::OnImGuiDraw()
                         printf("SaveIniSettingsToDisk: %s \n",config_ini.c_str());
                         ImGui::SaveIniSettingsToDisk(config_ini.c_str());
 
-                        syncFileSystem();
+                        AppSettings::SyncFileSystem();
                     }
                 }
 
