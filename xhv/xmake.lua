@@ -1,4 +1,4 @@
-add_requires("libhv 1.2.6",{alias="libhv"})
+add_requires("libhv 1.2.6",{alias="libhv"},{configs = {ipv6 = true,openssl = true}})
 add_requires("miniz")
 -- add_requires("opengl")
 -- add_requires("libcurl",{alias="curl"})
