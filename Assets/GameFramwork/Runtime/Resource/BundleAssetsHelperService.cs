@@ -27,15 +27,39 @@ namespace Wanderer
         //是否正在更新中
         private bool m_update;
 
-        public BundleAssetsHelperService()
+		private Dictionary<string, DynamicBundleVersion> m_allBundleVersions ;
+
+        private string m_remotePath;
+        private string m_localPath;
+
+		public BundleAssetsHelperService()
         {
             m_resourceVersion = UnityEngine.Resources.Load<ResourceVersion>("BundleVersion");
-        }
+			m_allBundleVersions = new Dictionary<string, DynamicBundleVersion>();
 
-        public void CheckUpdate(string name,Action<bool,string,HashSet<AssetHashInfo>> needUpdateCallback)
+			m_remotePath = m_resourceVersion.GetRemoteURL();
+            m_localPath = m_resourceVersion.GetLocalPath();
+		}
+
+        public void CheckUpdate(string name,Action<bool,string> needUpdateCallback)
         {
             Toast.Info("检查资源中...");
-            m_resourceVersion.CheckUpdate(needUpdateCallback,name);
+			if (name == null)
+			{
+                name = "";
+			}
+
+			DynamicBundleVersion bundleVersion;
+			if (!m_allBundleVersions.TryGetValue(name, out bundleVersion))
+			{
+				bundleVersion = new DynamicBundleVersion(name, m_remotePath, m_localPath, m_resourceVersion.AssetVersionName);
+				m_allBundleVersions.Add(name, bundleVersion);
+			}
+
+			if (bundleVersion != null)
+			{
+				bundleVersion.CheckUpdate(needUpdateCallback, webRequest);
+			}
         }
 
         /// <summary>
@@ -48,7 +72,7 @@ namespace Wanderer
         {
             assetPath = assetPath.ToLower();
 
-            m_resourceVersion.LoadAssetBundle(assetPath, (ab) => {
+            LoadAssetBundle(assetPath, (ab) => {
                 if (ab != null)
                 {
                     ab.LoadAssetAsync<T>(assetPath).completed += (asyncHandle) =>
@@ -74,7 +98,7 @@ namespace Wanderer
         public T LoadAsset<T>(string assetPath) where T : UnityEngine.Object
         {
             assetPath = assetPath.ToLower();
-            var ab = m_resourceVersion.LoadAssetBundle(assetPath);
+            var ab = LoadAssetBundle(assetPath);
             if (ab != null)
             {
                 var loadAsset = ab.LoadAsset<T>(assetPath);
@@ -91,7 +115,7 @@ namespace Wanderer
 		public UnityEngine.Object[] LoadAllAsset(string assetPath)
 		{
 			assetPath = assetPath.ToLower();
-			var ab = m_resourceVersion.LoadAssetBundle(assetPath);
+			var ab = LoadAssetBundle(assetPath);
 			if (ab != null)
 			{
 				var loadAsset = ab.LoadAllAssets();
@@ -150,13 +174,34 @@ namespace Wanderer
         /// <param name="assetName"></param>
         public void UnloadAsset(string assetPath)
         {
-            m_resourceVersion.UnloadAsset(assetPath);
-        }
+            if (m_allBundleVersions != null)
+            {
+                foreach (var item in m_allBundleVersions.Values)
+                {
+                    if (item.HasAssetAddress(assetPath))
+                    {
+                        var bundleProvider = item.LoadBundleProviderFromAssetPath(assetPath);
+                        if (bundleProvider != null)
+                        {
+                            bundleProvider.SetRefCount(-1);
+                        }
+                        return;
+                    }
+                }
+            }
+		}
 
 
         public void UnloadBundle(string name)
         {
-            m_resourceVersion.UnloadDynamicBundle(name);
+            if (m_allBundleVersions != null)
+            {
+                if (m_allBundleVersions.TryGetValue(name, out DynamicBundleVersion dynamicBundle))
+                {
+                    dynamicBundle.Dispose();
+                    m_allBundleVersions.Remove(name);
+                }
+            }
         }
 
         /// <summary>
@@ -168,7 +213,7 @@ namespace Wanderer
             AsyncOperation asyncOperation = null;
             try
             {
-                m_resourceVersion.LoadAssetBundle(scenePath, (ab) => {
+                LoadAssetBundle(scenePath, (ab) => {
                     if (ab != null)
                     {
                         asyncOperation = SceneManager.LoadSceneAsync(scenePath, mode);
@@ -188,23 +233,38 @@ namespace Wanderer
             }
         }
 
-        /// <summary>
-        /// 卸载场景
-        /// </summary>
-        /// <param name="sceneName"></param>
-        public AsyncOperation UnloadSceneAsync(string scenePath)
+		
+		/// <summary>
+		/// 卸载场景
+		/// </summary>
+		/// <param name="sceneName"></param>
+		public AsyncOperation UnloadSceneAsync(string scenePath)
         {
             var asyncHandle = UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(scenePath);
             asyncHandle.completed += (handle) =>
             {
-                m_resourceVersion.UnloadScene(scenePath);
-            };
+				foreach (var item in m_allBundleVersions.Values)
+				{
+					if (item.HasAssetAddress(scenePath))
+					{
+						var bundleProvider = item.LoadBundleProviderFromAssetPath(scenePath);
+						if (bundleProvider != null)
+						{
+							item.UnloadBundleProvider(bundleProvider);
+						}
+						return;
+					}
+				}
+			};
             return asyncHandle;
         }
-     
-        public void UpdateAssets(string name,HashSet<AssetHashInfo> assets,Action<float, double, double, float> callback, Action downloadComplete, Action<string, string> errorCallback)
+
+        public void UpdateAssets(string name, Action<float, double, double, float> callback, Action downloadComplete, Action<string, string> errorCallback)
         {
-            DownloadAssets(name,assets, callback, downloadComplete, errorCallback);
+            if (m_allBundleVersions.TryGetValue(name, out DynamicBundleVersion bundleVersion))
+            {
+                bundleVersion.UpdateAsset(callback,downloadComplete, errorCallback);
+			}
         }
 
         /// <summary>
@@ -212,124 +272,67 @@ namespace Wanderer
         /// </summary>
         public void Clear()
         {
-            m_resourceVersion.Clear();
-            //m_mainfest = null;
-            //foreach (var item in m_assetBundlePathForBundleProviderMap.Values)
-            //{
-            //    item.Dispose();
-            //}
-            //m_assetBundlePathForBundleProviderMap.Clear();
-            //m_assetBundlePathForBundleProviderMap = null;
-
-        }
-
-       
+			foreach (var item in m_allBundleVersions.Values)
+			{
+				item.Dispose();
+			}
+			m_allBundleVersions.Clear();
+		}
 
 
-        #region 内部函数
 
-        private void DownloadAssets(string name,HashSet<AssetHashInfo> needDownloadAssets, Action<float, double, double, float> callback, Action downloadComplete, Action<string, string> errorCallback)
-        {
-            if (m_update)
-            {
-                Log.Warn("资源正在更新中， 不应该再调用下载");
-                return;
-            }
 
-            m_update = true;
+		#region 内部函数
 
-            if (needDownloadAssets != null && needDownloadAssets.Count > 0)
-            {
-                string remoteURLRoot = Path.Combine(m_resourceVersion.GetRemoteURL(),name);
-                string localPathRoot = Path.Combine(m_resourceVersion.GetLocalPath(),name);
-                if (Directory.Exists(localPathRoot))
-                {
-                    Directory.CreateDirectory(localPathRoot);
-                }
+		private AssetBundle LoadAssetBundle(string assetPath)
+		{
+			foreach (var item in m_allBundleVersions.Values)
+			{
+				if (item.HasAssetAddress(assetPath))
+				{
+					var bundleProvider = item.LoadBundleProviderFromAssetPath(assetPath);
+					if (bundleProvider != null)
+					{
+						bundleProvider.SetRefCount(1);
+						return bundleProvider.GetBundle();
+					}
+					return null;
+				}
+			}
+			return null;
+		}
 
-                var fileDownloader = webRequest.GetFileDownloader();
+		private void LoadAssetBundle(string assetPath, Action<AssetBundle> onGetBundleCallback)
+		{
+			bool findAsset = false;
+			foreach (var item in m_allBundleVersions.Values)
+			{
+				if (item.HasAssetAddress(assetPath))
+				{
+					item.LoadBundleProviderFromAssetPath(assetPath, (bundleProvider) => {
+						if (bundleProvider != null)
+						{
+							bundleProvider.SetRefCount(1);
+							onGetBundleCallback?.Invoke(bundleProvider.GetBundle());
+						}
+						else
+						{
+							onGetBundleCallback?.Invoke(null);
+						}
+					});
+					findAsset = true;
+					return;
+				}
+			}
 
-                int downloadFileCount = 0;
-                double totleFileSize = 0;
-                Dictionary<string, AssetHashInfo> downloadFiles = new Dictionary<string, AssetHashInfo>();
-                foreach (var item in needDownloadAssets)
-                {
-                    string remoteUrl = Path.Combine(remoteURLRoot, item.Name);
-                    string localPath = Path.Combine(localPathRoot, $"{item.Name}.download");
+			if (!findAsset)
+			{
+				onGetBundleCallback?.Invoke(null);
+			}
+		}
 
-                    fileDownloader.AddDownloadFile(remoteUrl, localPath);
-                    //整理文件大小
-                    totleFileSize += item.Size;
-                    downloadFiles.Add(localPath, item);
-                }
-                //下载文件
-                fileDownloader.StartDownload((localPath, size, time, speed) =>
-                {
-                    float progress = Mathf.Clamp01((float)(size / totleFileSize));
-                    float remainingTime = (float)((totleFileSize - size) / speed);
-                    callback?.Invoke(progress, totleFileSize, speed, remainingTime);
-                }, async (localPath) =>
-                {
-                    //验证文件的完整性
-                    string md5 = FileUtility.GetFileMD5(localPath);
-                    var assetHashInfo = downloadFiles[localPath];
-                    if (assetHashInfo.MD5.Equals(md5))
-                    {
-                        int index = localPath.LastIndexOf('.');
-                        string targetPath = localPath.Substring(0, index);
-                        if (File.Exists(targetPath))
-                        {
-                            File.Delete(targetPath);
-                        }
-                        File.Move(localPath, targetPath);
-                        downloadFiles.Remove(localPath);
-                        downloadFileCount++;
-                        //更新本地版本信息
-                        m_resourceVersion.UpdateLocalVersion(name,assetHashInfo);
-                        //下载完成
-                        if (downloadFiles.Count == 0)
-                        {
-                            //更新本地资源
-                            if (downloadFileCount == needDownloadAssets.Count)
-                            {
-                                //if (CheckResource())
-                                //{
-                                //    UpdateLocalVersion();
-                                //}
-                            }
-                            else
-                            {
-                                Log.Error("资源下载失败...");
-                            }
-                            needDownloadAssets = null;
-                            m_update = false;
-                            fileDownloader.StopDownload();
-                            downloadComplete?.Invoke();
-                        }
-                    }
-                    else
-                    {
-                        File.Delete(localPath);
-                        fileDownloader.StopDownload();
-                        m_update = false;
-                        //throw new GameException($"File integrity verification failed. {localPath}");
-                        errorCallback?.Invoke(localPath, "File integrity verification failed.");
 
-                    }
-                }, (localPath, error) =>
-                {
-                    fileDownloader.StopDownload();
-                    m_update = false;
-                    errorCallback?.Invoke(localPath, error);
-                });
-            }
-            else
-            {
-                //下载完成
-                downloadComplete?.Invoke();
-                m_update = false;
-            }
-        }
+		
 
         #endregion
 

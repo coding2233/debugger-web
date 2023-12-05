@@ -44,8 +44,11 @@ namespace Wanderer
         private AssetBundleManifest m_manifest;
 
         private HashSet<string> m_allAssetPaths = new HashSet<string>();
+        private IWebRequest m_WebRequest;
+        private HashSet<AssetHashInfo> m_needUpdateAssetHashInfo ;
+        private bool m_update;
 
-        internal DynamicBundleVersion(string name,string remoteURL,string localPath,string assetVersionName)
+		internal DynamicBundleVersion(string name,string remoteURL,string localPath,string assetVersionName)
         {
             m_name = name;
             m_remoteURL = remoteURL;
@@ -62,19 +65,19 @@ namespace Wanderer
             m_assetVersionName = assetVersionName;
         }
 
-
-        internal void CheckUpdate(Action<bool, string, HashSet<AssetHashInfo>> updateCallback)
+        internal void CheckUpdate(Action<bool, string> updateCallback, IWebRequest webRequest)
         {
             LocalVersion = null;
             StreamingAssetsVersion = null;
             RemoteVersion = null;
+            m_WebRequest = webRequest;
 
-            m_allAssetPaths = new HashSet<string>();
+			m_allAssetPaths = new HashSet<string>();
 
             HashSet<UnityWebRequestAsyncOperation> asyncOperations = new HashSet<UnityWebRequestAsyncOperation>();
 
-            //本地版本
-            string localPath = Path.Combine(m_localPath, m_assetVersionName);
+			//本地版本
+			string localPath = AbNameToFullPath(m_localPath, m_assetVersionName);
             if (File.Exists(localPath))
             {
                 string content = File.ReadAllText(localPath);
@@ -83,14 +86,14 @@ namespace Wanderer
             }
 
             //StreamingAsset版本
-            string streamingAssetPath = Path.Combine(Application.streamingAssetsPath, m_assetVersionName);
-            var webRequest = UnityWebRequest.Get(streamingAssetPath);
-            webRequest.downloadHandler = new DownloadHandlerBuffer();
-            var localRequestHandler = webRequest.SendWebRequest();
+            string streamingAssetPath = AbNameToFullPath(Application.streamingAssetsPath, m_assetVersionName);
+            var streamingAseetsWebRequest = UnityWebRequest.Get(streamingAssetPath);
+            streamingAseetsWebRequest.downloadHandler = new DownloadHandlerBuffer();
+            var localRequestHandler = streamingAseetsWebRequest.SendWebRequest();
             localRequestHandler.completed += (handle) =>
             {
                 //本地可能不存在， 不抛出错误
-                string downloadText = webRequest.downloadHandler.text;
+                string downloadText = streamingAseetsWebRequest.downloadHandler.text;
                 if (!string.IsNullOrEmpty(downloadText))
                 {
                     StreamingAssetsVersion = JsonUtility.FromJson<AssetVersion>(downloadText);
@@ -104,7 +107,7 @@ namespace Wanderer
             string remoteURL = m_remoteURL;
             if (!string.IsNullOrEmpty(remoteURL))
             {
-                string remoteAssetPath = $"{remoteURL}/{m_assetVersionName}";
+                string remoteAssetPath = AbNameToFullPath(remoteURL, m_assetVersionName);
                 var remoteWebRequest = UnityWebRequest.Get(remoteAssetPath);
                 remoteWebRequest.downloadHandler = new DownloadHandlerBuffer();
                 var remoteWebRequestHandle = remoteWebRequest.SendWebRequest();
@@ -113,7 +116,7 @@ namespace Wanderer
                     //有错误
                     if (!string.IsNullOrEmpty(remoteWebRequest.error))
                     {
-                        updateCallback?.Invoke(false, remoteWebRequest.error,null);
+                        updateCallback?.Invoke(false, remoteWebRequest.error);
                         return;
                     }
                     else
@@ -131,11 +134,143 @@ namespace Wanderer
             }
         }
 
-        internal void UpdateLocalVersion(AssetHashInfo assetHashInfo)
+        internal void UpdateAsset(Action<float, double, double, float> callback, Action downloadComplete, Action<string, string> errorCallback)
         {
-            if (assetHashInfo != null && RemoteVersion != null)
+            if (m_update)
             {
-                string localVersionPath = Path.Combine(m_localPath, m_assetVersionName);
+                Log.Warn("资源正在更新中， 不应该再调用下载");
+                return;
+            }
+
+            if (m_needUpdateAssetHashInfo != null && m_needUpdateAssetHashInfo.Count > 0)
+            {
+                m_update = true;
+                var fileDownloader = m_WebRequest.GetFileDownloader(m_name);
+                if (fileDownloader.State == FileDownloader.FileDownloadState.Ready)
+                {
+                 
+                    int downloadFileCount = 0;
+                    double totleFileSize = 0;
+                    Dictionary<string, AssetHashInfo> downloadFiles = new Dictionary<string, AssetHashInfo>();
+                    foreach (var item in m_needUpdateAssetHashInfo)
+                    {
+                        string remoteUrl = AbNameToFullPath(m_remoteURL, item.Name);
+                        string localPath =AbNameToFullPath(m_localPath, $"{item.Name}.download");
+
+                        fileDownloader.AddDownloadFile(remoteUrl, localPath);
+                        //整理文件大小
+                        totleFileSize += item.Size;
+                        downloadFiles.Add(localPath, item);
+                    }
+                    //下载文件
+                    fileDownloader.StartDownload((localPath, size, time, speed) =>
+                    {
+                        float progress = Mathf.Clamp01((float)(size / totleFileSize));
+                        float remainingTime = (float)((totleFileSize - size) / speed);
+                        callback?.Invoke(progress, totleFileSize, speed, remainingTime);
+                    }, async (localPath) =>
+                    {
+                        //验证文件的完整性
+                        string md5 = FileUtility.GetFileMD5(localPath);
+                        var assetHashInfo = downloadFiles[localPath];
+                        if (assetHashInfo.MD5.Equals(md5))
+                        {
+                            int index = localPath.LastIndexOf('.');
+                            string targetPath = localPath.Substring(0, index);
+                            if (File.Exists(targetPath))
+                            {
+                                File.Delete(targetPath);
+                            }
+                            File.Move(localPath, targetPath);
+                            downloadFiles.Remove(localPath);
+                            downloadFileCount++;
+                            //更新本地版本信息
+                            UpdateLocalVersion(assetHashInfo.Name);
+                            //下载完成
+                            if (downloadFiles.Count == 0)
+                            {
+                                //更新本地资源
+                                if (downloadFileCount == m_needUpdateAssetHashInfo.Count)
+                                {
+                                    //if (CheckResource())
+                                    //{
+                                    //    UpdateLocalVersion();
+                                    //}
+                                }
+                                else
+                                {
+                                    Log.Error("资源下载失败...");
+                                }
+								m_needUpdateAssetHashInfo = null;
+                                m_update = false;
+                                fileDownloader.StopDownload();
+                                downloadComplete?.Invoke();
+                            }
+                        }
+                        else
+                        {
+                            File.Delete(localPath);
+                            fileDownloader.StopDownload();
+                            m_update = false;
+                            //throw new GameException($"File integrity verification failed. {localPath}");
+                            errorCallback?.Invoke(localPath, "File integrity verification failed.");
+
+                        }
+                    }, (localPath, error) =>
+                    {
+                        fileDownloader.StopDownload();
+                        m_update = false;
+                        errorCallback?.Invoke(localPath, error);
+                    });
+                }
+            }
+            else
+            {
+				//下载完成
+				downloadComplete?.Invoke();
+				m_update = false;
+			}
+        }
+
+        //单文件下载
+        private void DownloadAsset(string url,Action<bool, string> callback)
+        {
+			string localPathRoot = ToBundleFullPath(m_localPath);
+			if (Directory.Exists(localPathRoot))
+			{
+				Directory.CreateDirectory(localPathRoot);
+			}
+
+			var fileDownloader = m_WebRequest.GetFileDownloader(url);
+            string fileName = Path.GetFileName(url);
+			string localDownloadPath = Path.Combine(localPathRoot, $"{fileName}.download");
+            fileDownloader.AddDownloadFile(url, localDownloadPath);
+            //下载文件
+            fileDownloader.StartDownload((localDownloadPath, size, time, speed) =>{ }, (localDownloadPath) => {
+				fileDownloader.StopDownload();
+				string localPath = Path.Combine(localPathRoot, fileName);
+                if(File.Exists(localPath))
+                { File.Delete(localPath); }
+                File.Move(localDownloadPath, localPath);
+                UpdateLocalVersion(fileName);
+				callback?.Invoke(true, url);
+			},(localPath, error) => {
+				fileDownloader.StopDownload();
+				callback?.Invoke(false, localPath); 
+            });
+		}
+
+        private void UpdateLocalVersion(string name)
+        {
+			if (RemoteVersion != null)
+            {
+				AssetHashInfo assetHashInfo = RemoteVersion.AssetHashInfos.Find(x => x.Name.Equals(name));
+                if (assetHashInfo == null)
+                {
+                    return;
+                }
+
+				string localVersionPath = AbNameToFullPath(m_localPath, m_assetVersionName);
                 if (LocalVersion == null)
                 {
                     string jsonContent = JsonUtility.ToJson(RemoteVersion);
@@ -143,7 +278,7 @@ namespace Wanderer
                     LocalVersion.AssetHashInfos.Clear();
                 }
 
-                var oldAssetHashInfo = LocalVersion.AssetHashInfos.Find(x => x.Name.Equals(assetHashInfo.Name));
+				var oldAssetHashInfo = LocalVersion.AssetHashInfos.Find(x => x.Name.Equals(name));
                 if (oldAssetHashInfo != null)
                 {
                     LocalVersion.AssetHashInfos.Remove(oldAssetHashInfo);
@@ -221,65 +356,79 @@ namespace Wanderer
 
             if (remoteAssetHash != null)
             {
-                //找到本地对应的assetBundle
-                if (StreamingAssetsVersion != null)
-                {
-                    localAssetHash = StreamingAssetsVersion.AssetHashInfos.Find(x => x.Equals(remoteAssetHash));
-                    if (localAssetHash != null)
-                    {
-                        assetBundlePath = Path.Combine(Application.streamingAssetsPath, m_name, localAssetHash.Name);
-                    }
-                }
+				//找到本地对应的assetBundle
+				if (LocalVersion != null)
+				{
+					localAssetHash = LocalVersion.AssetHashInfos.Find(x => x.Equals(remoteAssetHash));
+					if (localAssetHash != null)
+					{
+						assetBundlePath = AbNameToFullPath(m_localPath, localAssetHash.Name);
+					}
+				}
 
                 if (localAssetHash == null)
                 {
-                    if (LocalVersion != null)
-                    {
-                        localAssetHash = LocalVersion.AssetHashInfos.Find(x => x.Equals(remoteAssetHash));
-                        if (localAssetHash != null)
-                        {
-                            assetBundlePath = Path.Combine(m_localPath,  localAssetHash.Name);
-                        }
-                    }
-                }
+					if (StreamingAssetsVersion != null)
+					{
+						localAssetHash = StreamingAssetsVersion.AssetHashInfos.Find(x => x.Equals(remoteAssetHash));
+						if (localAssetHash != null)
+						{
+							assetBundlePath = AbNameToFullPath(Application.streamingAssetsPath, localAssetHash.Name);
+						}
+					}
+				}
 
                 //本地没有下载返回整个url
                 if (localAssetHash == null)
                 {
-                    assetBundlePath = Path.Combine(m_remoteURL, m_name, remoteAssetHash.Name);
+                    assetBundlePath = AbNameToFullPath(m_remoteURL, localAssetHash.Name);
                 }
             }
             else
             {
-                if (StreamingAssetsVersion != null)
+                if (LocalVersion != null)
                 {
-                    localAssetHash = StreamingAssetsVersion.AssetHashInfos.Find(x => x.Addressables.Contains(assetPath));
-                    if (localAssetHash == null)
+                    localAssetHash = LocalVersion.AssetHashInfos.Find(x => x.Addressables.Contains(assetPath));
+                    if (localAssetHash != null)
                     {
-                        if (LocalVersion != null)
-                        {
-                            localAssetHash = LocalVersion.AssetHashInfos.Find(x => x.Addressables.Contains(assetPath));
-                        }
-                        else
-                        {
-                            assetBundlePath = Path.Combine(m_localPath, localAssetHash.Name);
-                        }
-                    }
-                    else
-                    {
-                        assetBundlePath = Path.Combine(Application.streamingAssetsPath, m_name, localAssetHash.Name);
+                        assetBundlePath = AbNameToFullPath(m_localPath, localAssetHash.Name);
                     }
                 }
-            }
 
-            if (!string.IsNullOrEmpty(assetBundlePath))
-            {
-                assetBundlePath = assetBundlePath.Replace("\\", "/");
+				if (localAssetHash==null && StreamingAssetsVersion != null)
+                {
+                    localAssetHash = StreamingAssetsVersion.AssetHashInfos.Find(x => x.Addressables.Contains(assetPath));
+                    if (localAssetHash != null)
+                    {
+						assetBundlePath = AbNameToFullPath(Application.streamingAssetsPath, localAssetHash.Name);
+					}
+                }
             }
 
             return assetBundlePath;
         }
 
+        private string AbNameToFullPath(string prefixPath,string abName)
+		{
+            string fullPath = Path.Combine(ToBundleFullPath(prefixPath),abName);
+			fullPath = fullPath.Replace("\\", "/");
+			return fullPath;
+		}
+
+        private string ToBundleFullPath(string prefixPath)
+        {
+			string fullPath = prefixPath;
+			if (!string.IsNullOrEmpty(m_name))
+			{
+				fullPath = Path.Combine(prefixPath, m_name);
+			}
+			fullPath = fullPath.Replace("\\", "/");
+            if (!Directory.Exists(fullPath))
+            {
+                Directory.CreateDirectory(fullPath);
+            }
+			return fullPath;
+		}
 
         private async void LoadBundleProviderFromPath(string abPath, Action<BundleProvider> getAssetBundleACallback)
         {
@@ -291,6 +440,22 @@ namespace Wanderer
             }
 
             Log.Info("LoadBundleProviderFromPath. {0}", abPath);
+
+            //需要远程下载
+            if(abPath.StartsWith("http:"))
+            {
+                DownloadAsset(abPath, (result, path) => {
+                    if (result)
+                    {
+                        LoadBundleProviderFromPath(path, getAssetBundleACallback);
+                    }
+                    else
+                    {
+                        getAssetBundleACallback?.Invoke(null);
+					}
+                });
+                return;
+			}
 
             BundleProvider bundleProvider = null;
             if (!m_assetBundlePathForBundleProviderMap.TryGetValue(abPath, out bundleProvider))
@@ -311,7 +476,7 @@ namespace Wanderer
                     foreach (var bundleName in allDependencies)
                     {
                         var getBundleTask = new TaskCompletionSource<BundleProvider>();
-                        LoadBundleProviderFromPath(Path.Combine(m_localPath, bundleName), (bp) =>
+                        LoadBundleProviderFromPath(AbNameToFullPath(m_localPath, bundleName), (bp) =>
                         {
                             getBundleTask.SetResult(bp);
                         });
@@ -359,7 +524,7 @@ namespace Wanderer
                 {
                     foreach (var bundleName in allDependencies)
                     {
-                        var depAb = LoadBundleProviderFromPath(Path.Combine(m_localPath,bundleName));
+                        var depAb = LoadBundleProviderFromPath(AbNameToFullPath(m_localPath,bundleName));
                         if (depAb == null)
                         {
                             Log.Error("同步加载错误");
@@ -399,13 +564,13 @@ namespace Wanderer
             }
         }
 
-        private void OnAssetVersionRequestComplete(HashSet<UnityWebRequestAsyncOperation> asyncOperations, Action<bool, string, HashSet<AssetHashInfo>> updateCallback)
+        private void OnAssetVersionRequestComplete(HashSet<UnityWebRequestAsyncOperation> asyncOperations, Action<bool, string> updateCallback)
         {
             if (asyncOperations != null)
             {
                 if (string.IsNullOrEmpty(m_remoteURL))
                 {
-                    updateCallback?.Invoke(false, m_name, null);
+                    updateCallback?.Invoke(false, m_name);
                 }
                 else
                 {
@@ -432,12 +597,13 @@ namespace Wanderer
                                 }
                             }
 
-                            //返回更新结果
-                            updateCallback?.Invoke(updateAssets.Count > 0, m_name, updateAssets);
+                            m_needUpdateAssetHashInfo = updateAssets;
+							//返回更新结果
+							updateCallback?.Invoke(updateAssets.Count > 0, m_name);
                         }
                         else
                         {
-                            updateCallback?.Invoke(false, m_name, null);
+                            updateCallback?.Invoke(false, m_name);
                         }
 
                     }

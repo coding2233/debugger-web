@@ -80,12 +80,12 @@ namespace Wanderer
             progressCallback?.Invoke(1.0f);
         }
 
-        public void CheckUpdate(string name, Action<bool, string, HashSet<AssetHashInfo>> needUpdateCallback)
+        public void CheckUpdate(string name, Action<bool, string> needUpdateCallback)
         {
-            needUpdateCallback?.Invoke(false,name,null);
+            needUpdateCallback?.Invoke(false,name);
         }
 
-        public void UpdateAssets(string name, HashSet<AssetHashInfo> assets, Action<float, double, double, float> callback, Action downloadComplete, Action<string, string> errorCallback)
+        public void UpdateAssets(string name, Action<float, double, double, float> callback, Action downloadComplete, Action<string, string> errorCallback)
         {
             downloadComplete?.Invoke();
         }

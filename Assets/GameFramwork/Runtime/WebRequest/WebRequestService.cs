@@ -9,21 +9,30 @@ namespace Wanderer
 {
     public interface IWebRequest
     {
-        FileDownloader GetFileDownloader();
+        FileDownloader GetFileDownloader(string key);
     }
 
     public class WebRequestService : MonoService, IWebRequest, IFileDownloader
     {
-        private FileDownloader m_fileDwonloader;
+        private Dictionary<string, FileDownloader> m_fileDwonloader;
 
         public WebRequestService()
         {
-            m_fileDwonloader = new FileDownloader(this);
         }
 
-        public FileDownloader GetFileDownloader()
+        public FileDownloader GetFileDownloader(string key)
         {
-            return m_fileDwonloader;
+            if (m_fileDwonloader == null)
+            {
+                m_fileDwonloader = new Dictionary<string, FileDownloader>();
+			}
+            FileDownloader fileDownloader = null;
+            if (!m_fileDwonloader.TryGetValue(key, out fileDownloader))
+            {
+                fileDownloader = new FileDownloader(this);
+                m_fileDwonloader.Add(key,fileDownloader);
+			}
+            return fileDownloader;
         }
 
 
@@ -43,7 +52,32 @@ namespace Wanderer
         public override void OnUpdate()
         {
             base.OnUpdate();
-            m_fileDwonloader?.OnUpdate();
+
+            if (m_fileDwonloader != null && m_fileDwonloader.Count > 0)
+            {
+                foreach (var item in m_fileDwonloader)
+                {
+                    FileDownloader fileDownloader = item.Value;
+                    if (fileDownloader != null)
+                    {
+                        if (fileDownloader.State == FileDownloader.FileDownloadState.Ready)
+                            continue;
+                        fileDownloader.OnUpdate();
+                        if (fileDownloader.State == FileDownloader.FileDownloadState.Stopped
+                            || fileDownloader.State == FileDownloader.FileDownloadState.Error
+                            || fileDownloader.State == FileDownloader.FileDownloadState.Done)
+                        {
+							m_fileDwonloader.Remove(item.Key);
+                            break;
+						}
+                    }
+                    else
+                    {
+						m_fileDwonloader.Remove(item.Key);
+						break;
+					}
+                }
+            }
         }
 
         /// <summary>

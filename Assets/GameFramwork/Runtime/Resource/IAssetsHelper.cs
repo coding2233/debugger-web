@@ -13,7 +13,7 @@ namespace Wanderer
         /// 检查资源更新
         /// </summary>
         /// <param name="needUpdateCallback"></param>
-        void CheckUpdate(string name, Action<bool, string, HashSet<AssetHashInfo>> needUpdateCallback);
+        void CheckUpdate(string name, Action<bool, string> needUpdateCallback);
 
         /// <summary>
         /// 更新资源
@@ -21,7 +21,7 @@ namespace Wanderer
         /// <param name="callback"></param>
         /// <param name="downloadComplete"></param>
         /// <param name="errorCallback"></param>
-        void UpdateAssets(string name, HashSet<AssetHashInfo> assets, Action<float, double, double, float> callback, Action downloadComplete, Action<string, string> errorCallback);
+        void UpdateAssets(string name,Action<float, double, double, float> callback, Action downloadComplete, Action<string, string> errorCallback);
 
         /// <summary>
         /// 加载热更脚本

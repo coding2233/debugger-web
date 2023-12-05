@@ -78,11 +78,7 @@ namespace Wanderer
         private void LoadAssetBundle(string abPath)
         {
             m_isLoading = true;
-            if (abPath.StartsWith("http"))
-            {
-                //这里是网络下载的处理
-            }
-            else if (Application.platform == RuntimePlatform.Android && abPath.StartsWith("jar:"))
+            if (Application.platform == RuntimePlatform.Android && abPath.StartsWith("jar:"))
             {
                 var unityRequest = UnityWebRequest.Get(abPath);
                 unityRequest.downloadHandler = new DownloadHandlerBuffer();
@@ -91,7 +87,7 @@ namespace Wanderer
             else
             {
                 Debug.Log($"BundleProvider.EncryptFileStream: {abPath}");
-                m_fileStream = new EncryptFileStream(abPath, FileMode.Open,FileAccess.Read,FileShare.Read,1024*10,false);
+                m_fileStream = new EncryptFileStream(abPath, FileMode.Open,FileAccess.Read,FileShare.Read,1024 * 10,false);
                 SetBundleComplete(AssetBundle.LoadFromStream(m_fileStream));
             }
 
@@ -115,11 +111,6 @@ namespace Wanderer
                 {
                     m_fileStream = new EncryptMemoryStream(unityWebRequest.webRequest.downloadHandler.data, m_abPath);
                     SetBundleComplete(AssetBundle.LoadFromStream(m_fileStream));
-                }
-                //从http下载的文件
-                else
-                {
-                    //这里还未实现
                 }
             }
         }
