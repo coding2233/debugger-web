@@ -61,6 +61,12 @@ namespace Wanderer
 			return null;
 		}
 
+        public void LoadAllAsset<T>(string assetPath, Action<T[]> callback) where T : UnityEngine.Object
+        { 
+            var assets = LoadAllAsset<T>(assetPath);
+            callback?.Invoke(assets);
+		}
+
 		public void UnloadAsset(string assetName)
         {
 

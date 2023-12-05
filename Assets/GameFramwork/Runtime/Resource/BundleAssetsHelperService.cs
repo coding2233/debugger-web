@@ -15,7 +15,7 @@ using UnityEngine.SceneManagement;
 
 namespace Wanderer
 {
-    public sealed class BundleAssetsHelperService : MonoService, IAssetsHelper
+	public sealed class BundleAssetsHelperService : MonoService, IAssetsHelper
     {
         //资源下载
         [Inject]
@@ -112,13 +112,13 @@ namespace Wanderer
             return null;
         }
 
-		public UnityEngine.Object[] LoadAllAsset(string assetPath)
+		public T[] LoadAllAsset<T>(string assetPath) where T : UnityEngine.Object
 		{
 			assetPath = assetPath.ToLower();
 			var ab = LoadAssetBundle(assetPath);
 			if (ab != null)
 			{
-				var loadAsset = ab.LoadAllAssets();
+				var loadAsset = ab.LoadAllAssets<T>();
 				return loadAsset;
 			}
 			else
@@ -129,26 +129,40 @@ namespace Wanderer
 			return null;
 		}
 
-		public T[] LoadAllAsset<T>(string assetPath) where T : UnityEngine.Object
+		public void LoadAllAsset<T>(string assetPath, Action<T[]> callback) where T : UnityEngine.Object
 		{
-			var objects = LoadAllAsset(assetPath);
-			if (objects != null)
-			{
-				List<T> list = new List<T>();
-				foreach (var item in objects)
+			assetPath = assetPath.ToLower();
+            LoadAssetBundle(assetPath, (ab) => {
+				if (ab != null)
 				{
-					if (item is T)
-					{
-						list.Add((T)item);
-					}
-				}
-				if (list.Count > 0)
-				{
-					return list.ToArray();
-				}
-			}
+                    var abr = ab.LoadAllAssetsAsync<T>();
+					abr.completed += (assetAsync)=> 
+                    {
+                        List<T> allAsset = new List<T>();
+                        if (abr.allAssets != null)
+                        {
+                            foreach (var item in abr.allAssets)
+                            {
+                                if (item == null)
+                                {
+                                    continue;
+                                }
+                                if (item is T)
+                                {
+                                    allAsset.Add(item as T);
+								}
+                            }
+                        }
 
-			return null;
+						callback?.Invoke(allAsset.ToArray());
+					};
+					
+				}
+				else
+				{
+					Log.Error("Cannot find assetbundle from: {0}", assetPath);
+				}
+			});
 		}
 
 		public Assembly LoadExtendAssembly(string dllPath, string pdbPath)
@@ -332,10 +346,11 @@ namespace Wanderer
 		}
 
 
-		
 
-        #endregion
 
-    }
+
+		#endregion
+
+	}
 
 }

@@ -50,14 +50,14 @@ namespace Wanderer
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
 		/// <param name="assetPath"></param>
-		UnityEngine.Object[] LoadAllAsset(string assetPath);
+		T[] LoadAllAsset<T>(string assetPath) where T : UnityEngine.Object;
 
 		/// <summary>
 		/// 加载资源
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
 		/// <param name="assetPath"></param>
-		T[] LoadAllAsset<T>(string assetPath) where T : UnityEngine.Object;
+		void LoadAllAsset<T>(string assetPath,Action<T[]> callback) where T : UnityEngine.Object;
 
 		/// <summary>
 		/// 卸载资源 -- 取消掉资源计数
