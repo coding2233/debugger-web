@@ -1,8 +1,8 @@
 {
     "name": "xyz.laiting.debugger",
     "version": "0.2.1",
-    "displayName": "Awesome Runtime Debugger Package",
-    "description": "A brief description of what my package does.",
+    "displayName": "Runtime Debuger",
+    "description": "Runtime Debugger enables you to view,debug,and contorl your game in real-time from the browser.",
     "unity": "2019.4",
     "author": {
       "name": "wanderer",
@@ -11,5 +11,5 @@
     },
     "dependencies": {
     },
-    "keywords": ["unity", "package", "debugger","runtime"]
+    "keywords": ["runtime","debugger"]
   }

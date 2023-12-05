@@ -1,0 +1,15 @@
+{
+    "name": "xyz.laiting.framework",
+    "version": "0.2.1",
+    "displayName": "Game Framework",
+    "description": "Simple game framework.",
+    "unity": "2019.4",
+    "author": {
+      "name": "wanderer",
+      "email": "dutifulwanderer@gmail.com",
+      "url": "https://yourwebsite.com"
+    },
+    "dependencies": {
+    },
+    "keywords": ["Game","Framework"]
+  }
