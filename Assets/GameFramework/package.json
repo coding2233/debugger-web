@@ -1,6 +1,6 @@
 {
     "name": "xyz.laiting.framework",
-    "version": "0.2.1",
+    "version": "1.0.0",
     "displayName": "Game Framework",
     "description": "Simple game framework.",
     "unity": "2019.4",
