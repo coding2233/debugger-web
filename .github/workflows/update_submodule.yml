@@ -16,7 +16,7 @@ jobs:
       run: |
         ls -alh
         ls -alh Assets/
-        ping gitee.com
+        ping -n 6 gitee.com
 
     - name: push submodule
       run: |
