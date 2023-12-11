@@ -172,10 +172,14 @@ namespace RuntimeDebugger
 			List<GameObject> findGameObjects = new List<GameObject>();
 			if (parent == null)
 			{
-				var gos = SceneManager.GetActiveScene().GetRootGameObjects();
-				if (gos != null)
+				for (int i = 0; i < SceneManager.sceneCount; i++)
 				{
-					findGameObjects.AddRange(gos);
+					var scene = SceneManager.GetSceneAt(i);
+					var gos = scene.GetRootGameObjects();
+					if (gos != null)
+					{
+						findGameObjects.AddRange(gos);
+					}
 				}
 			}
 			else
