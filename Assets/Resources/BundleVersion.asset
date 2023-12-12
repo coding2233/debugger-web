@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e847e161833ee694499de97c379a5b8a, type: 3}
+  m_Name: BundleVersion
+  m_EditorClassIdentifier: 
+  m_assetVersionName: version.json
+  m_mainVersion: 1.0
+  m_remoteUpdatePath: []
+  m_remoteUpdatePathActive: 0
+  UseAssetBundleInEditor: 0

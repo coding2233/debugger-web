@@ -1,0 +1,17 @@
+{
+    "name": "Framework.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "Framework.Plugins",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

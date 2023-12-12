@@ -27,12 +27,13 @@ public:
     int InstanceID;
     int ParentInstanceID;
     std::string Name;
+    std::string Scene;
     std::string Tag;
     std::string Layer;
     bool Active;
     std::vector<const HierarchyNode*> ChildrenNodes;
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(HierarchyNode,InstanceID,ParentInstanceID,Name,Tag,Layer,Active);
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(HierarchyNode,InstanceID,ParentInstanceID,Name,Scene,Tag,Layer,Active);
 
     void AddChild(const HierarchyNode* node)
     {
