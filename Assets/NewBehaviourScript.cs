@@ -12,6 +12,7 @@ public class NewBehaviourScript : MonoBehaviour
 
         //    Debug.Log("asdasdasdfasfsdf");
         //});
+        DontDestroyOnLoad(gameObject);
     }
 
     // Update is called once per frame

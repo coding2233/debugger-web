@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Net.NetworkInformation;
 using System.Text;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
 namespace RuntimeDebugger

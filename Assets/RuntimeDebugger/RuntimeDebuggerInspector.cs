@@ -181,6 +181,24 @@ namespace RuntimeDebugger
 						findGameObjects.AddRange(gos);
 					}
 				}
+
+				var dontgos = Resources.FindObjectsOfTypeAll<GameObject>();
+				if (dontgos != null)
+				{
+					List<GameObject> dontRootGos = new List<GameObject>();
+					foreach (GameObject go in dontgos)
+					{
+						if ("DontDestroyOnLoad".Equals(go.scene.name))
+						{
+							if (go.transform.parent == null)
+							{
+								dontRootGos.Add(go);
+							}
+						}
+					}
+					dontRootGos.Sort((x, y) => x.transform.GetSiblingIndex() - y.transform.GetSiblingIndex());
+					findGameObjects.AddRange(dontRootGos);
+				}
 			}
 			else
 			{
@@ -696,6 +714,7 @@ namespace RuntimeDebugger
 		public int InstanceID { get; set; }
 		public int ParentInstanceID { get; set; }
 		public string Name { get; set; }
+		public string Scene { get; set; }
 		public string Tag { get; set; }
 		public string Layer { get; set; }
 		public bool Active { get; set; }
@@ -708,6 +727,7 @@ namespace RuntimeDebugger
 		{
 			InstanceID = gameObject.GetInstanceID();
 			Name = gameObject.name;
+			Scene = gameObject.scene.name;
 			Tag = gameObject.tag;
 			Layer = LayerMask.LayerToName(gameObject.layer);
 			Active = gameObject.activeSelf;

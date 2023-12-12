@@ -31,29 +31,46 @@ void InspectorWindow::OnMessage(const std::string &message)
             Reset();
 //            auto rsp = json_rsp.template get<RspInspector>();
             auto find_nodes = json_rsp["FindNodes"].template get<std::vector<HierarchyNode>>();
+            //添加到map
             for (int i = 0; i < find_nodes.size(); ++i)
             {
                 const HierarchyNode find_node = find_nodes[i];
                 if (map_hierarchy_nodes_.find(find_node.InstanceID) == map_hierarchy_nodes_.end())
                 {
                     map_hierarchy_nodes_.insert({find_node.InstanceID, find_node});
-                    //ntf("map_hierarchy_nodes_ size: %d\n",(int)map_hierarchy_nodes_.size());
                 }
+            }
 
+            //整理层级
+            for (int i = 0; i < find_nodes.size(); ++i)
+            {
+                const HierarchyNode &find_node = find_nodes[i];
                 const HierarchyNode& map_node_iter = map_hierarchy_nodes_.find(find_node.InstanceID)->second;
 
                 if (map_node_iter.ParentInstanceID == 0)
                 {
+
+                    auto root_iter = hierarchy_root_nodes_.find(map_node_iter.Scene);
+                    if (root_iter == hierarchy_root_nodes_.end())
+                    {
+                        std::vector<const HierarchyNode*> new_hier_nodes;
+                        hierarchy_root_nodes_.insert({map_node_iter.Scene,new_hier_nodes});
+                        root_iter = hierarchy_root_nodes_.find(map_node_iter.Scene);
+                    }
+
+                    std::vector<const HierarchyNode*> &hierarchy_nodes = root_iter->second;
                     bool has_node = false;
-                    for (int i = 0; i < hierarchy_root_nodes_.size(); i++) {
-                        if (hierarchy_root_nodes_[i]->InstanceID == map_node_iter.InstanceID) {
+                    for (int i = 0; i < hierarchy_nodes.size(); i++)
+                    {
+                        if (hierarchy_nodes[i]->InstanceID == map_node_iter.InstanceID)
+                        {
                             has_node = true;
                             break;
                         }
                     }
-                    if (!has_node) {
-                        hierarchy_root_nodes_.push_back(&map_node_iter);
-                       // printf("hierarchy_root_nodes_ size: %d\n",(int)hierarchy_root_nodes_.size());
+                    if (!has_node)
+                    {
+                        hierarchy_nodes.push_back(&map_node_iter);
                     }
                 }
                 else
@@ -62,11 +79,13 @@ void InspectorWindow::OnMessage(const std::string &message)
                     if (find_parent_iter != map_hierarchy_nodes_.end())
                     {
                         find_parent_iter->second.AddChild(&map_node_iter);
-                       // printf("find_parent_iter %d name:%s find_id: %d size: %d\n",find_parent_iter->first,find_parent_iter->second.Name.c_str(), find_node.InstanceID,(int)find_parent_iter->second.ChildrenNodes.size());
                     }
                 }
 
             }
+
+
+
         }
     }
     else if (req_cmd==Req_Cmd_FindComponent)
@@ -194,8 +213,18 @@ void InspectorWindow::OnDraw()
         }
         ImGui::Separator();
         //绘制节点树
-        for (int i = 0; i < hierarchy_root_nodes_.size(); i++) {
-            DrawInspectorNode(hierarchy_root_nodes_[i], true);
+        for(auto hierarchy_root_iter = hierarchy_root_nodes_.begin();hierarchy_root_iter!=hierarchy_root_nodes_.end();hierarchy_root_iter++)
+        {
+            if(ImGui::TreeNode(hierarchy_root_iter->first.c_str()))
+            {
+                std::vector<const HierarchyNode*> &hierarchy_root_nodes = hierarchy_root_iter->second;
+                for (int i = 0; i < hierarchy_root_nodes.size(); i++)
+                {
+                    DrawInspectorNode(hierarchy_root_nodes[i], true);
+                }
+
+                ImGui::TreePop();
+            }
         }
     }
     ImGui::EndChild();

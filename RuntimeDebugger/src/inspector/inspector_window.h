@@ -20,7 +20,7 @@ public:
     InspectorWindow();
     ~InspectorWindow();
 private:
-    std::vector<const HierarchyNode*> hierarchy_root_nodes_;
+    std::map<std::string,std::vector<const HierarchyNode*>> hierarchy_root_nodes_;
     std::vector<const HierarchyNode*> search_hierarchy_root_nodes_;
     std::string search_hierarchy_text_;
     std::map<int,HierarchyNode> map_hierarchy_nodes_;
