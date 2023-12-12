@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Wanderer
 {
-	[CustomEditor(typeof(FrameworkContextView))]
+	[CustomEditor(typeof(FrameworkContextView),true)]
 	public class FrameworkContextViewEditor : Editor
 	{
 		private List<string> m_defines;
