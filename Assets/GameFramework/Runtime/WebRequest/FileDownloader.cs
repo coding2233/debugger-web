@@ -185,8 +185,6 @@ namespace Wanderer
 				RemoveDownloadFile(localPath);
 				//下载完成回调
 				m_downloadCompleteCallback?.Invoke(localPath);
-
-				State = FileDownloadState.Done;
 			}
 		}
 
