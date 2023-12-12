@@ -303,6 +303,21 @@ namespace Wanderer
             }
             else
             {
+                if (bundlePath.StartsWith("http") || bundlePath.StartsWith("jar"))
+                {
+                    Func<Task<BundleProvider>> bundleProviderTask = () => {
+                        TaskCompletionSource<BundleProvider> bundleProviderSource = new TaskCompletionSource<BundleProvider>();
+						LoadBundleProviderFromPath(bundlePath, (bp) => {
+							bundleProviderSource.SetResult(bp);
+						});
+                        return bundleProviderSource.Task;
+					};
+
+                    //强行改成同步， 但不建议
+                    Log.Warn("Asset bunlde path:{0}. [Forced to synchronized loading]", assetPath);
+                    return bundleProviderTask().GetAwaiter().GetResult();
+				}
+
                 return LoadBundleProviderFromPath(bundlePath);
             }
 
@@ -442,7 +457,7 @@ namespace Wanderer
             Log.Info("LoadBundleProviderFromPath. {0}", abPath);
 
             //需要远程下载
-            if(abPath.StartsWith("http:"))
+            if(abPath.StartsWith("http"))
             {
                 DownloadAsset(abPath, (result, path) => {
                     if (result)
@@ -545,7 +560,6 @@ namespace Wanderer
 
             return bundleProvider;
         }
-
 
         #endregion
 

@@ -11,7 +11,7 @@ namespace Wanderer
     {
         protected virtual void Awake()
         {
-            DontDestroyOnLoad(this);
+            DontDestroyOnLoad(gameObject);
 
             //重定向日志输出
             Log.Logger = new DefaultLog(Path.Combine(Application.persistentDataPath, "logs"));
