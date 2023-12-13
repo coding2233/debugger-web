@@ -39,11 +39,11 @@ namespace Wanderer
         /// <summary>
         /// 打包AssetBundle
         /// </summary>
-        public static string BuildAssetBundles(BuildTarget target,string buildPath=null)
+        public static string BuildAssetBundles(BuildTarget target,string buildPath,List<string> buildKeys)
         {
             LoadConfig();
             //打包编辑器的激活平台
-            string buildTargetPath = BuildTarget(target, buildPath);
+            string buildTargetPath = BuildTarget(target, buildPath, buildKeys);
             return buildTargetPath;
         }
 
@@ -165,7 +165,7 @@ namespace Wanderer
                 SaveConfig();
                 //资源打包
                 buildTarget = (BuildTarget)m_config.BuildTarget;
-                BuildAssetBundles(buildTarget);
+                BuildAssetBundles(buildTarget,null,null);
                 EditorGUIUtility.ExitGUI();
                 //BuildTarget();
             }
@@ -216,7 +216,7 @@ namespace Wanderer
         }
 
         //资源打包
-        private static string BuildTarget(BuildTarget target,string buildPath = null)
+        private static string BuildTarget(BuildTarget target,string buildPath,List<string> buildKeys)
         {
             try
             {
@@ -241,7 +241,7 @@ namespace Wanderer
                 //打包  Build
                 //BuildPipeline.BuildAssetBundles(buildPath, AssetBundleEditor.GetAssetBundleBuild(), options, target);
                 //BuildPipeline.BuildAssetBundles(buildPath, options, target);
-                var assetBundleBuildMaps = AssetBundleEditor.GetAssetBundleBuildFromKey();
+                var assetBundleBuildMaps = AssetBundleEditor.GetAssetBundleBuildFromKey(buildKeys);
                 if (assetBundleBuildMaps != null)
                 {
                     foreach (var item in assetBundleBuildMaps)
