@@ -23,7 +23,7 @@ jobs:
         git config --global user.name "coding2233"
         git config --global user.email "coding2233@163.com"
         git clone https://gitee.com/coding2233/GameFramework.git gf
-        cp -r -f Assets/GameFramework gf/
+        # cp -r -f Assets/GameFramework gf/
         cp -r -f Assets/RuntimeDebugger gf/
         cd gf
         git add -A
