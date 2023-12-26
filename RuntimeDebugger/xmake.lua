@@ -1,4 +1,4 @@
-add_requires("libsdl",{alias="sdl"})
+add_requires("libsdl 2.28.4",{alias="sdl"})
 
 -- add_requires("libcurl",{alias="curl"})
 -- add_requires("libgit2", {configs = {shared = true}})
@@ -19,6 +19,8 @@ if is_plat("wasm") then
         add_includedirs("imgui","implot","imgui/backends","src")
         add_files("easywsclient/emscripten_easywsclient.cpp")
         add_includedirs("easywsclient")
+        add_files("protocol/*.cc","protocol/lib/libprotobuf.so.o")
+        add_includedirs("protocol","protocol/include")
         add_packages("sdl")
 else
     -- xmake f -p windows -a x64

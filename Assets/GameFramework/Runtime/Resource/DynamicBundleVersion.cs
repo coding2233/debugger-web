@@ -14,6 +14,7 @@ namespace Wanderer
         private string m_name;
         private string m_remoteURL;
         private string m_localPath;
+        private string m_streamingAssetPath;
         private string m_assetVersionName;
 
         /// <summary>
@@ -53,15 +54,17 @@ namespace Wanderer
             m_name = name;
             m_remoteURL = remoteURL;
             m_localPath = localPath;
+            m_streamingAssetPath = Application.streamingAssetsPath;
 
-            if (!string.IsNullOrEmpty(name))
+			if (!string.IsNullOrEmpty(name))
             {
                 if (!string.IsNullOrEmpty(m_remoteURL))
                 {
                     m_remoteURL = Path.Combine(m_remoteURL, name).Replace("\\","/");
                 }
                 m_localPath = Path.Combine(m_localPath, name).Replace("\\", "/");
-            }
+				m_streamingAssetPath = Path.Combine(m_streamingAssetPath, name).Replace("\\", "/");
+			}
             m_assetVersionName = assetVersionName;
         }
 
@@ -86,7 +89,7 @@ namespace Wanderer
             }
 
             //StreamingAsset版本
-            string streamingAssetPath = AbNameToFullPath(Application.streamingAssetsPath, m_assetVersionName);
+			string streamingAssetPath = AbNameToFullPath(m_streamingAssetPath, m_assetVersionName);
             var streamingAseetsWebRequest = UnityWebRequest.Get(streamingAssetPath);
             streamingAseetsWebRequest.downloadHandler = new DownloadHandlerBuffer();
             var localRequestHandler = streamingAseetsWebRequest.SendWebRequest();
@@ -235,7 +238,7 @@ namespace Wanderer
         //单文件下载
         private void DownloadAsset(string url,Action<bool, string> callback)
         {
-			string localPathRoot = ToBundleFullPath(m_localPath);
+			string localPathRoot = m_localPath;
 			if (Directory.Exists(localPathRoot))
 			{
 				Directory.CreateDirectory(localPathRoot);
@@ -303,6 +306,21 @@ namespace Wanderer
             }
             else
             {
+                if (bundlePath.StartsWith("http") || bundlePath.StartsWith("jar"))
+                {
+                    Func<Task<BundleProvider>> bundleProviderTask = () => {
+                        TaskCompletionSource<BundleProvider> bundleProviderSource = new TaskCompletionSource<BundleProvider>();
+						LoadBundleProviderFromPath(bundlePath, (bp) => {
+							bundleProviderSource.SetResult(bp);
+						});
+                        return bundleProviderSource.Task;
+					};
+
+                    //强行改成同步， 但不建议
+                    Log.Warn("Asset bunlde path:{0}. [Forced to synchronized loading]", assetPath);
+                    return bundleProviderTask().GetAwaiter().GetResult();
+				}
+
                 return LoadBundleProviderFromPath(bundlePath);
             }
 
@@ -373,7 +391,7 @@ namespace Wanderer
 						localAssetHash = StreamingAssetsVersion.AssetHashInfos.Find(x => x.Equals(remoteAssetHash));
 						if (localAssetHash != null)
 						{
-							assetBundlePath = AbNameToFullPath(Application.streamingAssetsPath, localAssetHash.Name);
+							assetBundlePath = AbNameToFullPath(m_streamingAssetPath, localAssetHash.Name);
 						}
 					}
 				}
@@ -400,7 +418,7 @@ namespace Wanderer
                     localAssetHash = StreamingAssetsVersion.AssetHashInfos.Find(x => x.Addressables.Contains(assetPath));
                     if (localAssetHash != null)
                     {
-						assetBundlePath = AbNameToFullPath(Application.streamingAssetsPath, localAssetHash.Name);
+						assetBundlePath = AbNameToFullPath(m_streamingAssetPath, localAssetHash.Name);
 					}
                 }
             }
@@ -410,23 +428,8 @@ namespace Wanderer
 
         private string AbNameToFullPath(string prefixPath,string abName)
 		{
-            string fullPath = Path.Combine(ToBundleFullPath(prefixPath),abName);
+            string fullPath = Path.Combine(prefixPath,abName);
 			fullPath = fullPath.Replace("\\", "/");
-			return fullPath;
-		}
-
-        private string ToBundleFullPath(string prefixPath)
-        {
-			string fullPath = prefixPath;
-			if (!string.IsNullOrEmpty(m_name))
-			{
-				fullPath = Path.Combine(prefixPath, m_name);
-			}
-			fullPath = fullPath.Replace("\\", "/");
-            if (!Directory.Exists(fullPath))
-            {
-                Directory.CreateDirectory(fullPath);
-            }
 			return fullPath;
 		}
 
@@ -442,7 +445,7 @@ namespace Wanderer
             Log.Info("LoadBundleProviderFromPath. {0}", abPath);
 
             //需要远程下载
-            if(abPath.StartsWith("http:"))
+            if(abPath.StartsWith("http"))
             {
                 DownloadAsset(abPath, (result, path) => {
                     if (result)
@@ -545,7 +548,6 @@ namespace Wanderer
 
             return bundleProvider;
         }
-
 
         #endregion
 

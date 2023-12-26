@@ -51,7 +51,7 @@ namespace Wanderer
 			return null;
 		}
 
-        public static Dictionary<string, List<AssetBundleBuild>> GetAssetBundleBuildFromKey()
+        public static Dictionary<string, List<AssetBundleBuild>> GetAssetBundleBuildFromKey(List<string> buildKeys)
         {
             var config = ProjectSettingsConfig.LoadJson<EditorAssetBundleConfigInfo>(configName);
             if (config == null || config.BundleConfigs == null || config.BundleConfigs.Count == 0)
@@ -67,6 +67,25 @@ namespace Wanderer
                 for (int i = 0; i < config.BundleConfigs.Count; i++)
                 {
                     var item = config.BundleConfigs[i];
+                    if (null != buildKeys && buildKeys.Count >0 )
+                    {
+                        bool findKey = false;
+                        foreach (var buildKey in buildKeys)
+                        {
+							//只查找对应的ab资源
+							if (item.AssetBundleName.StartsWith(buildKey, StringComparison.OrdinalIgnoreCase))
+							{
+                                findKey = true;
+                                break;
+							}
+						}
+
+                        if (!findKey)
+                        {
+                            continue;
+                        }
+					}
+                  
                     string key = item.AssetBundleName.Contains("/")?Path.GetDirectoryName(item.AssetBundleName):"";
                     List<AssetBundleBuild> abbs = null;
                     if (!abbsMap.TryGetValue(key, out abbs))

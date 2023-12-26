@@ -23,10 +23,14 @@ jobs:
         git config --global user.name "coding2233"
         git config --global user.email "coding2233@163.com"
         git clone https://gitee.com/coding2233/GameFramework.git gf
-        cp -r -f Assets/GameFramework gf/
+        # cp -r -f Assets/GameFramework gf/
         cp -r -f Assets/RuntimeDebugger gf/
         cd gf
-        git add -A
-        git commit -m "update submodule at $(date "+%Y-%m-%d %T") - by github actions"
-        git remote set-url origin https://coding2233:${{ secrets.GITEE_PUSH_TOKEN }}@gitee.com/coding2233/GameFramework.git
-        git push
+        if git status --porcelain | grep .; then
+          git add -A
+          git commit -m "update submodule at $(date "+%Y-%m-%d %T") - by github actions"
+          git remote set-url origin https://coding2233:${{ secrets.GITEE_PUSH_TOKEN }}@gitee.com/coding2233/GameFramework.git
+          git push
+        else
+          echo "No changes to push."
+        fi
