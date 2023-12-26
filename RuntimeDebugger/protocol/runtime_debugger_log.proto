@@ -1,4 +1,4 @@
-syntax = "proto2";
+syntax = "proto3";
 
 package RuntimeDebugger;
 
@@ -13,11 +13,11 @@ enum LogType
 
 message LogNode
 {
-    optional string log_time = 1;     
-    optional int32 log_frame_count = 2;    
-    optional LogType log_type = 3;
-	optional string log_message = 4;    
-	optional string log_stack_track = 5;    
+    string log_time = 1;     
+    int32 log_frame_count = 2;    
+    LogType log_type = 3;
+	string log_message = 4;    
+	string log_stack_track = 5;    
 }
 
 

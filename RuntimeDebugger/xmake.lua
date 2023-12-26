@@ -19,6 +19,8 @@ if is_plat("wasm") then
         add_includedirs("imgui","implot","imgui/backends","src")
         add_files("easywsclient/emscripten_easywsclient.cpp")
         add_includedirs("easywsclient")
+        add_files("protocol/*.cc","protocol/lib/libprotobuf.so.o")
+        add_includedirs("protocol","protocol/include")
         add_packages("sdl")
 else
     -- xmake f -p windows -a x64
