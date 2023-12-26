@@ -1,4 +1,4 @@
-add_requires("libsdl",{alias="sdl"})
+add_requires("libsdl 2.26.4",{alias="sdl"})
 
 -- add_requires("libcurl",{alias="curl"})
 -- add_requires("libgit2", {configs = {shared = true}})
