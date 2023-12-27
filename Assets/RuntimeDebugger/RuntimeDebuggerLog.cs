@@ -9,6 +9,7 @@ namespace RuntimeDebugger
 	public class RuntimeDebuggerLog : RuntimeDebuggerBase
 	{
 		LogNode m_logNode;
+		private DebuggerPriority m_logPriority;
 
 		public RuntimeDebuggerLog()
 		{
@@ -24,12 +25,39 @@ namespace RuntimeDebugger
 
 		private void OnLogMessageReceived(string condition, string stackTrace, LogType type)
 		{
+			if (type != LogType.Log)
+			{
+				if (m_logPriority < DebuggerPriority.Error)
+				{
+					switch (type)
+					{
+						case LogType.Error:
+						case LogType.Assert:
+						case LogType.Exception:
+							m_logPriority = DebuggerPriority.Error;
+							break;
+						case LogType.Warning:
+							m_logPriority = DebuggerPriority.Warn;
+							break;
+					}
+				}
+			}
+
 			if (m_logNode == null)
 			{
 				m_logNode = new LogNode();
 			}
 			m_logNode.Set(condition, stackTrace, type);
 			Send(m_logNode);
+		}
+
+		public override string GetSmallGUITitle(ref DebuggerPriority priority)
+		{
+			if (m_logPriority > DebuggerPriority.Log)
+			{
+				return m_logPriority.ToString();
+			}
+			return null;
 		}
 
 		private class LogNode

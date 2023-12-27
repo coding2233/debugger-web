@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package DebuggerProtocol;
+
+enum LogType
+{
+    Error = 0;
+    Assert = 1;
+    Warning = 2;
+    Log = 3;
+    Exception = 4;
+}
+
+message LogNode
+{
+    string log_time = 1;     
+    int32 log_frame_count = 2;    
+    LogType log_type = 3;
+	string log_message = 4;    
+	string log_stack_track = 5;    
+}
+
+
+message LogList
+{
+    repeated LogNode log_node_list = 1;
+}

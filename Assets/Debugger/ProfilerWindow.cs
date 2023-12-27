@@ -48,7 +48,7 @@ namespace Wanderer
         {
             if (_mpWindow != null)
             {
-                Log.Info($"[*] [MemoryProfiler] [AutoTakeSample] [****************************************]");
+              //  Log.Info($"[*] [MemoryProfiler] [AutoTakeSample] [****************************************]");
                 int second = 0;
                 while (second < totalSeconds)
                 {
@@ -56,7 +56,7 @@ namespace Wanderer
                     await Task.Delay(intervalSeconds * 1000);
                     second += intervalSeconds;
                 }
-                Log.Info($"[*] [MemoryProfiler] [AutoTakeSample] [****************************************]");
+               // Log.Info($"[*] [MemoryProfiler] [AutoTakeSample] [****************************************]");
             }
         }
 
@@ -135,7 +135,7 @@ namespace Wanderer
             s_StrBuilder.AppendLine();
             s_StrBuilder.AppendLine("}");
             string info = s_StrBuilder.ToString();
-            Log.Info(info);
+            //Log.Info(info);
             return info;
         }
 
@@ -312,7 +312,7 @@ namespace Wanderer
                     s_StrBuilder.AppendLine(item.ToString());
                 }
                 s_StrBuilder.AppendLine("}");
-                Log.Info(s_StrBuilder.ToString());
+                //Log.Info(s_StrBuilder.ToString());
             }
         }
 

@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -12,17 +13,28 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
+
 namespace RuntimeDebugger
 {
+	public enum DebuggerPriority
+	{
+		None,
+		Log,
+		Warn,
+		Error
+	}
+
 	public unsafe class RuntimeDebugger : IDisposable
 	{
 		private static Dictionary<byte, RuntimeDebuggerBase> m_runtimeDebugger;
+		private static Dictionary<string, RuntimeDebuggerBase> m_runtimeDebuggerNames;
 		private static SynchronizationContext m_mainSynchronizationContext;
 		private static IntPtr m_channel;
 
+
 		public static int State { get; private set; } = 0;
 
-		public void Start(int port)
+		public RuntimeDebugger()
 		{
 			State = 0;
 			m_mainSynchronizationContext = SynchronizationContext.Current;
@@ -39,11 +51,18 @@ namespace RuntimeDebugger
 			m_runtimeDebugger.Add(4, new RuntimeDebuggerFile());
 			m_runtimeDebugger.Add(6, new RuntimeDebuggerProfiler());
 
+			m_runtimeDebuggerNames = new Dictionary<string, RuntimeDebuggerBase>();
 			foreach (var item in m_runtimeDebugger)
 			{
 				item.Value.BindSend(WebSocketSend, item.Key);
+				m_runtimeDebuggerNames.Add(item.Value.DebuggerName, item.Value);
 			}
+		}
 
+		
+
+		public void Start(int port)
+		{
 			string documentPath = Application.persistentDataPath;
 			RunHttpd(port, documentPath);
 		}
@@ -80,6 +99,35 @@ namespace RuntimeDebugger
 			Debug.Log("RuntimeDebugger Dispose.");
 		}
 
+		public string[] GetDebuggerNames()
+		{
+			return m_runtimeDebuggerNames.Keys.ToArray();
+		}
+		public string GetSamllGUITitile()
+		{
+			DebuggerPriority priority = DebuggerPriority.None;
+			string title = null;
+			foreach (var item in m_runtimeDebuggerNames.Values)
+			{
+				DebuggerPriority debuggerPriority = DebuggerPriority.Log;
+				string debuggerTitle = item.GetSmallGUITitle(ref debuggerPriority);
+				if(!string.IsNullOrEmpty(debuggerTitle))
+				{
+					if (debuggerPriority > priority)
+					{
+						title = debuggerTitle;
+					}
+				}
+			}
+			return title;
+		}
+		public void OnGUI(string name)
+		{
+			if (m_runtimeDebuggerNames!=null && m_runtimeDebuggerNames.TryGetValue(name, out RuntimeDebuggerBase debuggerBase))
+			{
+				debuggerBase.OnGUI();
+			}
+		}
 
 		private void RunHttpd(int port, string documentPath)
 		{
@@ -136,6 +184,7 @@ namespace RuntimeDebugger
 			}
 		}
 
+
 		#region  websocket回调
 		[MonoPInvokeCallback(typeof(OnWebSocketOpenCallback))]
 		private static void OnOpen(IntPtr channel, string req_path)
@@ -187,7 +236,7 @@ namespace RuntimeDebugger
 
 		#endregion
 
-
+		#region xlibhv
 #if UNITY_IOS && !UNITY_EDITOR
 	const string DLLXHV = "__Internal";
 #else
@@ -226,6 +275,7 @@ namespace RuntimeDebugger
 		{
 			return GenerateSignedCertificate(2048, 65537, cert_filename, key_filename);
 		}
+		#endregion
 	}
 
 
@@ -234,7 +284,7 @@ namespace RuntimeDebugger
 	{
 		public int Major { get; set; } = 0;
 		public int Minor { get; set; } = 2;
-		public int Patch { get; set; } = 1;
+		public int Patch { get; set; } = 2;
 	}
 
 }
