@@ -10,7 +10,8 @@
 #include <vector>
 
 #include "app_window.h"
-#include "log_node.h"
+// #include "log_node.h"
+#include "debugger_protocol_log.pb.h"
 
 #define MAX_RUNTIME_DEBUGGER_LOG_NUMBER 10240
 
@@ -21,9 +22,13 @@ public:
     ~LogWindow();
 
 private:
-    std::vector<LogNode> log_nodes_;
+    // std::vector<LogNode> log_nodes_;
     int log_node_index_;
     int log_node_selected_index_;
+    
+    std::map<int,std::string> map_logs_;
+    std::vector<DebuggerProtocol::LogNode> log_nodes_;
+
 public:
     void OnMessage(const std::string &message) override;
     void OnDraw() override;
