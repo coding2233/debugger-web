@@ -88,7 +88,7 @@ void LogWindow::OnDraw()
             {
                 DebuggerProtocol::LogNode & log_node = log_nodes_[i];
                 auto color = log_type_color_[log_node.log_type()];
-                ImGui::PushStyleColor(ImGuiCol_Text, log_nodes_[i].GetColor());
+                ImGui::PushStyleColor(ImGuiCol_Text, color);
                 if (ImGui::RadioButton(log_node.log_message().c_str(), log_node_selected_index_ == i))
                 {
                     if (log_node_selected_index_ == i)
