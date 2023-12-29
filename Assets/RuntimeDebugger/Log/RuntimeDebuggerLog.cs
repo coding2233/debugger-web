@@ -120,7 +120,7 @@ namespace RuntimeDebugger
 			foreach (var logNode in m_logNodeList.LogNodeList)
 			{
 				Color32 color = GetStringColor(logNode.LogType);
-				string logMessage= string.Format("<color=#{0}{1}{2}{3}>{6}</color>",
+				string logMessage= string.Format("<color=#{0}{1}{2}{3}>{4}</color>",
 					color.r.ToString("x2"), color.g.ToString("x2"), color.b.ToString("x2"), color.a.ToString("x2"), logNode.LogMessage);
 				bool select = m_logNodeSelected == logNode;
 				select = GUILayout.Toggle(select, logMessage);
