@@ -33,36 +33,32 @@ namespace RuntimeDebugger
 		private void OnLogMessageReceived(string condition, string stackTrace, LogType type)
 		{
 			DebuggerProtocol.LogNode logNode = new DebuggerProtocol.LogNode();
-			logNode.LogTime = DateTime.Now.ToString();
+			logNode.LogTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffffff");
 			logNode.LogFrameCount = Time.frameCount;
+			logNode.LogType = (DebuggerProtocol.LogType)(int)type;
 			switch (type)
 			{
 				case LogType.Error:
-					logNode.LogType = DebuggerProtocol.LogType.Error;
 					if (m_logPriority < DebuggerPriority.Error)
 					{
 						m_logPriority = DebuggerPriority.Error;
 					}
 					break;
 				case LogType.Warning:
-					logNode.LogType = DebuggerProtocol.LogType.Warning;
 					if (m_logPriority < DebuggerPriority.Warn)
 					{ 
 						m_logPriority = DebuggerPriority.Warn;
 					}
 					break;
 				case LogType.Log:
-					logNode.LogType = DebuggerProtocol.LogType.Log;
 					break;
 				case LogType.Assert:
-					logNode.LogType = DebuggerProtocol.LogType.Assert;
 					if (m_logPriority < DebuggerPriority.Error)
 					{
 						m_logPriority = DebuggerPriority.Error;
 					}
 					break;
 				case LogType.Exception:
-					logNode.LogType = DebuggerProtocol.LogType.Exception;
 					if (m_logPriority < DebuggerPriority.Error)
 					{
 						m_logPriority = DebuggerPriority.Error;
@@ -71,8 +67,8 @@ namespace RuntimeDebugger
 				default:
 					break;
 			}
-			
-			logNode.LogMessage = condition;
+
+			logNode.LogMessage = $"[{logNode.LogTime}] [{logNode.LogFrameCount}] [{type}] {condition}";
 			logNode.LogStackTrack = stackTrace;
 
 			m_logNodeList.LogNodeList.Add(logNode);
@@ -124,9 +120,8 @@ namespace RuntimeDebugger
 			foreach (var logNode in m_logNodeList.LogNodeList)
 			{
 				Color32 color = GetStringColor(logNode.LogType);
-				string logMessage= string.Format("<color=#{0}{1}{2}{3}>[{4}][{5}] {6}</color>",
-					color.r.ToString("x2"), color.g.ToString("x2"), color.b.ToString("x2"), color.a.ToString("x2"),
-					logNode.LogTime, logNode.LogFrameCount.ToString(), logNode.LogMessage);
+				string logMessage= string.Format("<color=#{0}{1}{2}{3}>{6}</color>",
+					color.r.ToString("x2"), color.g.ToString("x2"), color.b.ToString("x2"), color.a.ToString("x2"), logNode.LogMessage);
 				bool select = m_logNodeSelected == logNode;
 				select = GUILayout.Toggle(select, logMessage);
 				if (select)

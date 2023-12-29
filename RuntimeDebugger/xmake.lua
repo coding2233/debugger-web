@@ -26,7 +26,8 @@ else
     -- xmake f -p windows -a x64
     add_requires("glew")
     add_requires("opengl")
-    add_requires("protobuf-cpp 3.8.0")
+    add_repositories("my-repo my-repositories")
+    add_requires("protobuf-cpp 3.9.0")
     -- add_requires("libcurl")
     -- vs开发使用
     add_rules("mode.release","mode.debug")
