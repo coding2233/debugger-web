@@ -1,4 +1,4 @@
-add_requires("libsdl 2.28.4",{alias="sdl"})
+add_requires("libsdl",{alias="sdl"})
 
 -- add_requires("libcurl",{alias="curl"})
 -- add_requires("libgit2", {configs = {shared = true}})
@@ -26,6 +26,8 @@ else
     -- xmake f -p windows -a x64
     add_requires("glew")
     add_requires("opengl")
+    add_repositories("my-repo my-repositories")
+    add_requires("protobuf-cpp 3.9.0")
     -- add_requires("libcurl")
     -- vs开发使用
     add_rules("mode.release","mode.debug")
@@ -38,7 +40,9 @@ else
         add_includedirs("imgui","implot","imgui/backends","src")
         add_files("easywsclient/easywsclient.cpp")
         add_includedirs("easywsclient")
-        add_packages("sdl","glew","opengl")
+        add_files("protocol/*.cc")
+        add_includedirs("protocol","protocol/include")
+        add_packages("sdl","glew","opengl","protobuf-cpp")
 
         after_build(function (target)
             --print("--------------".."$(buildir)/")

@@ -1,10 +1,12 @@
 using AOT;
+using Google.Protobuf;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -12,18 +14,31 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
+
 namespace RuntimeDebugger
 {
+	public enum DebuggerPriority
+	{
+		None,
+		Log,
+		Warn,
+		Error
+	}
+
 	public unsafe class RuntimeDebugger : IDisposable
 	{
 		private static Dictionary<byte, RuntimeDebuggerBase> m_runtimeDebugger;
+		private static Dictionary<string, RuntimeDebuggerBase> m_runtimeDebuggerNames;
 		private static SynchronizationContext m_mainSynchronizationContext;
 		private static IntPtr m_channel;
 
+		private StringBuilder m_titleStringBuilder;
+
 		public static int State { get; private set; } = 0;
 
-		public void Start(int port)
+		public RuntimeDebugger()
 		{
+			m_titleStringBuilder = new StringBuilder();
 			State = 0;
 			m_mainSynchronizationContext = SynchronizationContext.Current;
 			if (m_mainSynchronizationContext == null)
@@ -34,16 +49,23 @@ namespace RuntimeDebugger
 			m_runtimeDebugger = new Dictionary<byte, RuntimeDebuggerBase>();
 			m_runtimeDebugger.Add(5, new RuntimeDebuggerTerminal());
 			m_runtimeDebugger.Add(1, new RuntimeDebuggerInformation());
-			m_runtimeDebugger.Add(2, new RuntimeDebuggerLog());
+			m_runtimeDebugger.Add(7, new RuntimeDebuggerLog());
 			m_runtimeDebugger.Add(3, new RuntimeDebuggerInspector());
 			m_runtimeDebugger.Add(4, new RuntimeDebuggerFile());
 			m_runtimeDebugger.Add(6, new RuntimeDebuggerProfiler());
 
+			m_runtimeDebuggerNames = new Dictionary<string, RuntimeDebuggerBase>();
 			foreach (var item in m_runtimeDebugger)
 			{
 				item.Value.BindSend(WebSocketSend, item.Key);
+				m_runtimeDebuggerNames.Add(item.Value.DebuggerName, item.Value);
 			}
+		}
 
+		
+
+		public void Start(int port)
+		{
 			string documentPath = Application.persistentDataPath;
 			RunHttpd(port, documentPath);
 		}
@@ -80,6 +102,46 @@ namespace RuntimeDebugger
 			Debug.Log("RuntimeDebugger Dispose.");
 		}
 
+		public string[] GetDebuggerNames()
+		{
+			return m_runtimeDebuggerNames.Keys.ToArray();
+		}
+		public string GetSamllGUITitile()
+		{
+			DebuggerPriority priority = DebuggerPriority.None;
+			string title = "debugger";
+			string colorStr = "white";
+			foreach (var item in m_runtimeDebuggerNames.Values)
+			{
+				DebuggerPriority debuggerPriority = DebuggerPriority.None;
+				string debuggerTitle = item.GetSmallGUITitle(ref debuggerPriority);
+				if(!string.IsNullOrEmpty(debuggerTitle))
+				{
+					title = debuggerTitle;
+				}
+				if (debuggerPriority > priority)
+				{
+					switch (debuggerPriority)
+					{
+						case DebuggerPriority.Warn:
+							colorStr = "yellow";
+							break;
+						case DebuggerPriority.Error:
+							colorStr = "red";
+							break;
+
+					}
+				}
+			}
+			return $"<color={colorStr}>{title}</color>";
+		}
+		public void OnGUI(string name)
+		{
+			if (m_runtimeDebuggerNames!=null && m_runtimeDebuggerNames.TryGetValue(name, out RuntimeDebuggerBase debuggerBase))
+			{
+				debuggerBase.OnGUI();
+			}
+		}
 
 		private void RunHttpd(int port, string documentPath)
 		{
@@ -115,9 +177,26 @@ namespace RuntimeDebugger
 			{
 				return;
 			}
-			var message = JsonConvert.SerializeObject(messageObject, new VectorConverter());
-			var bytes = System.Text.Encoding.UTF8.GetBytes(message);
 
+			if (m_channel == IntPtr.Zero)
+			{
+				return;
+			}
+
+			byte[] bytes = null;
+			if (messageObject is IMessage)
+			{
+				bytes = (messageObject as IMessage).ToByteArray();
+			}
+			else
+			{
+				var message = JsonConvert.SerializeObject(messageObject, new VectorConverter());
+				bytes = System.Text.Encoding.UTF8.GetBytes(message);
+			}
+			if (bytes == null || bytes.Length == 0)
+			{
+				return;
+			}
 			int size = bytes.Length + 4 + 1;
 			List<byte> datas = new List<byte>();
 			datas.AddRange(BitConverter.GetBytes(size));
@@ -135,6 +214,7 @@ namespace RuntimeDebugger
 				WebSocketSendBinary(m_channel, aaa, dataArrary.Length);
 			}
 		}
+
 
 		#region  websocket回调
 		[MonoPInvokeCallback(typeof(OnWebSocketOpenCallback))]
@@ -187,7 +267,7 @@ namespace RuntimeDebugger
 
 		#endregion
 
-
+		#region xlibhv
 #if UNITY_IOS && !UNITY_EDITOR
 	const string DLLXHV = "__Internal";
 #else
@@ -226,6 +306,7 @@ namespace RuntimeDebugger
 		{
 			return GenerateSignedCertificate(2048, 65537, cert_filename, key_filename);
 		}
+		#endregion
 	}
 
 
@@ -234,7 +315,7 @@ namespace RuntimeDebugger
 	{
 		public int Major { get; set; } = 0;
 		public int Minor { get; set; } = 2;
-		public int Patch { get; set; } = 1;
+		public int Patch { get; set; } = 2;
 	}
 
 }

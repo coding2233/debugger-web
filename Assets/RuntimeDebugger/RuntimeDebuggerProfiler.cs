@@ -115,13 +115,13 @@ namespace RuntimeDebugger
 
 		public override void OnUpdate()
 		{
+			if (m_fpsProfiler != null)
+			{
+				m_fpsProfiler.Update();
+			}
+
 			if (m_show)
 			{
-				if (m_fpsProfiler != null)
-				{
-					m_fpsProfiler.Update();
-				}
-
 				m_deltaTime += Time.deltaTime;
 				if (m_deltaTime > FixedDeltaTime)
 				{
@@ -142,6 +142,17 @@ namespace RuntimeDebugger
 		public override void OnReset()
 		{
 			m_show = false;
+		}
+
+		public override string GetSmallGUITitle(ref DebuggerPriority priority)
+		{
+			if (m_fpsProfiler != null)
+			{
+				priority = DebuggerPriority.Log;
+				return m_fpsProfiler.AvgFPS.ToString("f2");
+			}
+
+			return null;
 		}
 	}
 

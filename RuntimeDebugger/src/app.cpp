@@ -89,7 +89,7 @@ std::string server_url_;
         {
             server_url_ = "ws://";
             server_url_.append(std::string(host));
-            // server_url_ = "ws://100.80.191.48:2233";
+            // server_url_ = "ws://100.72.78.107:2233";
             puts(server_url_.c_str());
         }
     }
@@ -104,7 +104,7 @@ App::App():ImplApp("Debugger",1280,800,0)
     server_url_ = "ws://127.0.0.1:2233";
 
     windows_.insert({1,new InformationWindow()});
-    windows_.insert({2,new LogWindow()});
+    windows_.insert({7,new LogWindow()});
     windows_.insert({3,new InspectorWindow()});
     windows_.insert({4,new FileWindow()});
     windows_.insert({5,new TerminalWindow()});
@@ -377,7 +377,7 @@ void App::DispatchMessage(uint8_t key,const std::string & message)
             AppVersion &client_version = client_version_;
             client_version.Major = 0;
             client_version.Minor = 2;
-            client_version.Patch = 1;
+            client_version.Patch = 2;
             client_version.BuildVersion();
         }
     }
