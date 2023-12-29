@@ -148,6 +148,7 @@ namespace RuntimeDebugger
 		{
 			if (m_fpsProfiler != null)
 			{
+				priority = DebuggerPriority.Log;
 				return m_fpsProfiler.AvgFPS.ToString("f2");
 			}
 

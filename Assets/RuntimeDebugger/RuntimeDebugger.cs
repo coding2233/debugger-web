@@ -31,11 +31,13 @@ namespace RuntimeDebugger
 		private static SynchronizationContext m_mainSynchronizationContext;
 		private static IntPtr m_channel;
 
+		private StringBuilder m_titleStringBuilder;
 
 		public static int State { get; private set; } = 0;
 
 		public RuntimeDebugger()
 		{
+			m_titleStringBuilder = new StringBuilder();
 			State = 0;
 			m_mainSynchronizationContext = SynchronizationContext.Current;
 			if (m_mainSynchronizationContext == null)
@@ -46,7 +48,7 @@ namespace RuntimeDebugger
 			m_runtimeDebugger = new Dictionary<byte, RuntimeDebuggerBase>();
 			m_runtimeDebugger.Add(5, new RuntimeDebuggerTerminal());
 			m_runtimeDebugger.Add(1, new RuntimeDebuggerInformation());
-			m_runtimeDebugger.Add(2, new RuntimeDebuggerLog());
+			m_runtimeDebugger.Add(7, new RuntimeDebuggerLog());
 			m_runtimeDebugger.Add(3, new RuntimeDebuggerInspector());
 			m_runtimeDebugger.Add(4, new RuntimeDebuggerFile());
 			m_runtimeDebugger.Add(6, new RuntimeDebuggerProfiler());
@@ -106,20 +108,31 @@ namespace RuntimeDebugger
 		public string GetSamllGUITitile()
 		{
 			DebuggerPriority priority = DebuggerPriority.None;
-			string title = null;
+			string title = "debugger";
+			string colorStr = "white";
 			foreach (var item in m_runtimeDebuggerNames.Values)
 			{
-				DebuggerPriority debuggerPriority = DebuggerPriority.Log;
+				DebuggerPriority debuggerPriority = DebuggerPriority.None;
 				string debuggerTitle = item.GetSmallGUITitle(ref debuggerPriority);
 				if(!string.IsNullOrEmpty(debuggerTitle))
 				{
-					if (debuggerPriority > priority)
+					title = debuggerTitle;
+				}
+				if (debuggerPriority > priority)
+				{
+					switch (debuggerPriority)
 					{
-						title = debuggerTitle;
+						case DebuggerPriority.Warn:
+							colorStr = "yellow";
+							break;
+						case DebuggerPriority.Error:
+							colorStr = "red";
+							break;
+
 					}
 				}
 			}
-			return title;
+			return $"<color={colorStr}>{title}</color>";
 		}
 		public void OnGUI(string name)
 		{

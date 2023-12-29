@@ -34,12 +34,15 @@ namespace RuntimeDebugger
 
 		private void Awake()
 		{
-			float widthScale = Screen.width / 1344.0f;
+			float widthScale = Screen.width / 1334.0f;
 			float heightScale = Screen.height / 750f;
 			m_windowScale = Mathf.Max(widthScale, heightScale);
 
-			m_smallRect = new Rect(10, 10, 100, 60);
-			m_fullRect = new Rect(10, 10, 700, 500);
+			float screenWidth = Screen.width / m_windowScale;
+			float screenHeight = Screen.height / m_windowScale;
+
+			m_smallRect = new Rect(screenWidth- 100 -20 , screenHeight-60-10, 100, 60);
+			m_fullRect = new Rect(screenWidth -700, screenHeight-500, 700, 500);
 			m_dragRect = new Rect(0f, 0f, float.MaxValue, 25f);
 
 			Application.runInBackground = m_runInBackground;
