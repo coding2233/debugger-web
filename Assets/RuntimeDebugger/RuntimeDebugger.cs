@@ -1,4 +1,5 @@
 using AOT;
+using Google.Protobuf;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 using System;
@@ -176,9 +177,26 @@ namespace RuntimeDebugger
 			{
 				return;
 			}
-			var message = JsonConvert.SerializeObject(messageObject, new VectorConverter());
-			var bytes = System.Text.Encoding.UTF8.GetBytes(message);
 
+			if (m_channel == IntPtr.Zero)
+			{
+				return;
+			}
+
+			byte[] bytes = null;
+			if (messageObject is IMessage)
+			{
+				bytes = (messageObject as IMessage).ToByteArray();
+			}
+			else
+			{
+				var message = JsonConvert.SerializeObject(messageObject, new VectorConverter());
+				bytes = System.Text.Encoding.UTF8.GetBytes(message);
+			}
+			if (bytes == null || bytes.Length == 0)
+			{
+				return;
+			}
 			int size = bytes.Length + 4 + 1;
 			List<byte> datas = new List<byte>();
 			datas.AddRange(BitConverter.GetBytes(size));

@@ -10,6 +10,7 @@ namespace RuntimeDebugger
 	public class RuntimeDebuggerLog : RuntimeDebuggerBase
 	{
 		DebuggerProtocol.LogList m_logNodeList;
+		DebuggerProtocol.LogList m_logNodeSendList;
 		DebuggerProtocol.LogNode m_logNodeSelected;
 		private DebuggerPriority m_logPriority;
 		private Vector2 m_logScrollView;
@@ -18,6 +19,7 @@ namespace RuntimeDebugger
 		public RuntimeDebuggerLog()
 		{
 			m_logNodeList = new DebuggerProtocol.LogList();
+			m_logNodeSendList = new DebuggerProtocol.LogList();
 			Application.logMessageReceived += OnLogMessageReceived;
 		}
 
@@ -74,6 +76,21 @@ namespace RuntimeDebugger
 			logNode.LogStackTrack = stackTrace;
 
 			m_logNodeList.LogNodeList.Add(logNode);
+			m_logNodeSendList.LogNodeList.Add(logNode);
+
+			SendLogList();
+		}
+
+		private void SendLogList()
+		{
+			if (m_logNodeSendList != null)
+			{
+				if (m_logNodeSendList.LogNodeList.Count > 0)
+				{
+					Send(m_logNodeSendList);
+					m_logNodeSendList.LogNodeList.Clear();
+				}
+			}
 		}
 
 		public override string GetSmallGUITitle(ref DebuggerPriority priority)
@@ -89,15 +106,17 @@ namespace RuntimeDebugger
 		{
 			GUILayout.BeginHorizontal();
 			GUILayout.Label(m_logNodeList.LogNodeList.Count.ToString());
-			if (GUILayout.Button("Clear"))
+			if (GUILayout.Button("Clear",GUILayout.Width(100)))
 			{
 				m_logNodeSelected = null;
 				m_logNodeList.LogNodeList.Clear();
+				m_logNodeSendList.LogNodeList.Clear();
 				m_logPriority = DebuggerPriority.None;
 			}
-			if (GUILayout.Button("Send"))
+			if (GUILayout.Button("Send", GUILayout.Width(100)))
 			{
-			
+				m_logNodeSendList.LogNodeList.AddRange(m_logNodeList.LogNodeList);
+				SendLogList();
 			}
 			GUILayout.EndHorizontal();
 
