@@ -108,7 +108,7 @@ void LogWindow::OnDraw()
 
      if (log_node_selected_index_ >= 0 && log_node_selected_index_ < log_nodes_.size())
      {
-         const DebuggerProtocol::LogNode &select_log_node = log_nodes_[log_node_selected_index_];
+         DebuggerProtocol::LogNode &select_log_node = log_nodes_[log_node_selected_index_];
          if(ImGui::BeginChild("LogWindow_StackTrack",ImVec2(0, 0),true))
          {
              ImGui::Spacing();
