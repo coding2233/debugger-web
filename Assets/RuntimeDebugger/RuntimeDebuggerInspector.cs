@@ -47,7 +47,7 @@ namespace RuntimeDebugger
 					result = "GameObject not found";
 				}
 				return result;
-			});
+			}, "Adds a component class of type componentType to the GameObject.");
 
 			RuntimeDebuggerTerminal.BindCommand<int, int>("DestroyComponent", (gameObjectId, componentId) => {
 				string result = "error";
@@ -81,7 +81,7 @@ namespace RuntimeDebugger
 					result = "GameObject not found";
 				}
 				return result;
-			});
+			}, "Removes a component.");
 
 			RuntimeDebuggerTerminal.BindCommand<int>("DestroyGameObject", (id) => {
 				string result = "error";
@@ -104,7 +104,7 @@ namespace RuntimeDebugger
 					result = "GameObject not found";
 				}
 				return result;
-			});
+			}, "Removes a GameObjec.");
 		}
 
 

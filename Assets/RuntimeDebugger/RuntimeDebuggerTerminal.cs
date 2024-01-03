@@ -9,9 +9,21 @@ namespace RuntimeDebugger
 	public class RuntimeDebuggerTerminal : RuntimeDebuggerBase
 	{
 		private static Dictionary<string, TerminalCommand> s_terminalCommands = new Dictionary<string, TerminalCommand>();
+		private static Dictionary<string, string> s_aliasCommands = new Dictionary<string, string>();
+		private static Dictionary<string, string> s_onlyHelpCommands = new Dictionary<string, string>();
+
+		private string m_cmdInput;
+		private Vector2 m_commandView;
+		private List<string> m_commandLines;
+
+		private static int s_maxCommandLength;
+		private static int s_maxAargumentsLength;
 
 		public RuntimeDebuggerTerminal()
 		{
+			m_commandLines = new List<string>();
+			m_cmdInput = "help";
+
 			BindSystemCommands();
 			BindGameObjectCommands();
 			BindQualityCommands();
@@ -29,14 +41,51 @@ namespace RuntimeDebugger
 			Send(terminalCommand);
 		}
 
+		public override void OnGUI()
+		{
+			m_commandView = GUILayout.BeginScrollView(m_commandView, "box");
+			foreach (var item in m_commandLines)
+			{
+				GUILayout.Label(item);
+			}
+			GUILayout.EndScrollView();
+
+			GUILayout.BeginHorizontal(GUILayout.Height(30));
+			m_cmdInput = GUILayout.TextField(m_cmdInput);
+			if (GUILayout.Button("run", GUILayout.Width(100)))
+			{
+				if (!string.IsNullOrEmpty(m_cmdInput))
+				{
+					if ("clear".Equals(m_cmdInput))
+					{
+						m_commandLines.Clear();
+					}
+					else
+					{
+						var terminalCommand = RunCommand(m_cmdInput);
+						m_commandLines.Add(m_cmdInput);
+						m_commandLines.Add(terminalCommand.Result);
+					}
+					m_cmdInput = string.Empty;
+				}
+			}
+			GUILayout.EndHorizontal();
+		}
+
+
 		private TerminalMessage RunCommand(string commandMessage)
 		{
 			TerminalMessage terminalMessage = new TerminalMessage();
 			terminalMessage.Command = commandMessage;
 			int resultCode = 0;
 			var args = commandMessage.Split(' ');
+			string commandName = args[0];
+			if (s_aliasCommands.TryGetValue(commandName, out string originCommandName))
+			{
+				commandName = originCommandName;
+			}
 			string result = string.Empty;
-			if (s_terminalCommands.TryGetValue(args[0], out TerminalCommand command))
+			if (s_terminalCommands.TryGetValue(commandName, out TerminalCommand command))
 			{
 				string[] arguments = null;
 				if (args.Length > 1)
@@ -63,17 +112,51 @@ namespace RuntimeDebugger
 		private void BindSystemCommands()
 		{
 			Func<string> helpFunc = () => {
+				int maxCommandLength = s_maxCommandLength + 4;
+				int maxAargumentsLength = s_maxAargumentsLength + 2;
 				StringBuilder helpText = new StringBuilder();
+				Dictionary<string, List<string>> aliasCommands = new Dictionary<string, List<string>>();
+				foreach (var item in s_aliasCommands)
+				{
+					List<string> aliasNames = null;
+					if (!aliasCommands.TryGetValue(item.Value, out aliasNames))
+					{
+						aliasNames = new List<string>();
+						aliasCommands.Add(item.Value, aliasNames);
+					}
+					aliasNames.Add(item.Key);
+				}
 				foreach (var item in s_terminalCommands)
 				{
 					helpText.Append(item.Key);
-					helpText.AppendLine(item.Value.Help);
+					int keyLength = item.Key.Length;
+					if (aliasCommands.TryGetValue(item.Key, out List<string> alias))
+					{
+						foreach (var itemAlia in alias)
+						{
+							helpText.Append(",");
+							helpText.Append(itemAlia);
+							keyLength += itemAlia.Length + 1;
+						}
+					}
+					helpText.Append(' ', maxCommandLength - keyLength);
+					helpText.Append(item.Value.Aarguments);
+					helpText.Append(' ', maxAargumentsLength - item.Value.Aarguments.Length);
+					helpText.AppendLine(string.IsNullOrEmpty(item.Value.Help) ?  " " : item.Value.Help);
+				}
+				foreach (var item in s_onlyHelpCommands)
+				{
+					helpText.Append(item.Key);
+					helpText.Append(' ', maxCommandLength - item.Key.Length);
+					helpText.Append(' ', maxAargumentsLength);
+					helpText.AppendLine(item.Value);
 				}
 				return helpText.ToString();
 			};
 
-			BindCommand("?", helpFunc);
-			BindCommand("help", helpFunc);
+			BindCommand("help", helpFunc, "Show this text.");
+			BindCommandAlias("help", "?");
+			BindOnlyHelpCommand("clear", "Clears your terminal screen.");
 		}
 
 		private void BindGameObjectCommands()
@@ -86,7 +169,7 @@ namespace RuntimeDebugger
 					reult = $"id:{findGameObject.GetInstanceID()} name:{findGameObject.name}";
 				}
 				return reult;
-			});
+			}, "Find GameObject by Name.");
 		}
 
 		private void BindQualityCommands()
@@ -95,7 +178,7 @@ namespace RuntimeDebugger
 				QualitySettings.SetQualityLevel(level);
 				string result = $"QualitySettings.GetQualityLevel {QualitySettings.GetQualityLevel()}";
 				return result;
-			});
+			}, "Set the quality level.");
 		}
 
 		private void BindInputCommands()
@@ -111,74 +194,114 @@ namespace RuntimeDebugger
 				}
 				string result = $"Input.location.status {Input.location.status}";
 				return result;
-			});
+			}, "Property for accessing device location (handheld devices only).");
 
 			BindCommand<bool>("Input.gyro", (value) => {
 				Input.gyro.enabled = value;
 				string result = $"Input.gyro.enabled {Input.gyro.enabled}";
 				return result;
-			});
+			}, "Use this to return the gyroscope details of your device. Ensure first that your device has a gyroscope. Use Input.gyro.enabled to check this.");
 
 			BindCommand<bool>("Input.compass", (value) => {
 				Input.compass.enabled = value;
 				string result = $"Input.compass.enabled {Input.compass.enabled}";
 				return result;
-			});
+			}, "Property for accessing compass (handheld devices only).");
 		}
 		#endregion
 
 		#region binds
-		public static TerminalCommand BindCommand(string command, Func<string> callCommand)
+		public static TerminalCommand BindCommand(string command, Func<string> callCommand, string help = null)
 		{
 			TerminalCommand terminalCommand = null;
 			if (!s_terminalCommands.TryGetValue(command, out terminalCommand))
 			{
 				terminalCommand = new FuncTerminalCommand(callCommand);
-				s_terminalCommands.Add(command, terminalCommand);
+				AddTerminalCommand(command, terminalCommand, help);
 			}
 			return terminalCommand;
 		}
-		public static TerminalCommand BindCommand<TParam1>(string command,Func<TParam1, string> callCommand)
+		public static TerminalCommand BindCommand<TParam1>(string command,Func<TParam1, string> callCommand, string help = null)
 		{
 			TerminalCommand terminalCommand = null;
 			if (!s_terminalCommands.TryGetValue(command, out terminalCommand))
 			{
 				terminalCommand = new FuncTerminalCommand<TParam1>(callCommand);
-				s_terminalCommands.Add(command,terminalCommand);
+				AddTerminalCommand(command, terminalCommand, help);
 			}
 			return terminalCommand;
 		}
-		public static TerminalCommand BindCommand<TParam1, TParam2>(string command, Func<TParam1, TParam2, string> callCommand)
+		public static TerminalCommand BindCommand<TParam1, TParam2>(string command, Func<TParam1, TParam2, string> callCommand, string help = null)
 		{
 			TerminalCommand terminalCommand = null;
 			if (!s_terminalCommands.TryGetValue(command, out terminalCommand))
 			{
 				terminalCommand = new FuncTerminalCommand<TParam1, TParam2>(callCommand);
-				s_terminalCommands.Add(command, terminalCommand);
+				AddTerminalCommand(command, terminalCommand, help);
 			}
 			return terminalCommand;
 		}
-		public static TerminalCommand BindCommand<TParam1, TParam2, TParam3>(string command, Func<TParam1, TParam2, TParam3, string> callCommand)
+		public static TerminalCommand BindCommand<TParam1, TParam2, TParam3>(string command, Func<TParam1, TParam2, TParam3, string> callCommand, string help = null)
 		{
 			TerminalCommand terminalCommand = null;
 			if (!s_terminalCommands.TryGetValue(command, out terminalCommand))
 			{
 				terminalCommand = new FuncTerminalCommand<TParam1, TParam2, TParam3>(callCommand);
-				s_terminalCommands.Add(command, terminalCommand);
+				AddTerminalCommand(command, terminalCommand, help);
 			}
 			return terminalCommand;
 		}
 
 		public static void BindCommandAlias(string originName, string newName)
 		{
-			if (s_terminalCommands.TryGetValue(originName, out TerminalCommand terminalCommand))
+			if (s_terminalCommands.ContainsKey(originName) && !s_aliasCommands.ContainsKey(newName))
 			{
-				if (!s_terminalCommands.ContainsKey(newName))
+				s_aliasCommands.Add(newName, originName);
+				Dictionary<string, int> checkAliasLength = new Dictionary<string, int>();
+				foreach (var item in s_aliasCommands)
 				{
-					s_terminalCommands.Add(newName, terminalCommand);
+					if (!checkAliasLength.ContainsKey(item.Value))
+					{
+						int commandLength = item.Value.Length;
+						checkAliasLength.Add(item.Value, commandLength);
+					}
+					checkAliasLength[item.Value] += item.Key.Length + 1;
+				}
+
+				foreach (var item in checkAliasLength.Values)
+				{
+					s_maxCommandLength = Mathf.Max(s_maxCommandLength, item);
 				}
 			}
 		}
+
+		public static void BindOnlyHelpCommand(string commandName, string helpDesc)
+		{
+			if (string.IsNullOrEmpty(commandName) || string.IsNullOrEmpty(helpDesc))
+			{
+				return;
+			}
+
+			if (!s_onlyHelpCommands.ContainsKey(commandName))
+			{
+				s_onlyHelpCommands.Add(commandName, helpDesc);
+			}
+		}
+
+		private static void AddTerminalCommand(string command, TerminalCommand terminalCommand, string help)
+		{
+			if (string.IsNullOrEmpty(command))
+			{
+				return;
+			}
+
+			s_maxCommandLength = Mathf.Max(s_maxCommandLength, command.Length);
+			s_maxAargumentsLength = Mathf.Max(s_maxAargumentsLength, terminalCommand.Aarguments.Length);
+
+			terminalCommand.Help = help;
+			s_terminalCommands.Add(command, terminalCommand);
+		}
+
 		#endregion
 	}
 
@@ -192,7 +315,8 @@ namespace RuntimeDebugger
 	#region TerminalCommand
 	public class TerminalCommand
 	{
-		public string Help { get; protected set; }
+		public string Aarguments { get; protected set; }
+		public string Help { get; set; }
 		public virtual string Run(string[] arguments,out int resultCode)
 		{
 			resultCode = -1;
@@ -246,7 +370,7 @@ namespace RuntimeDebugger
 		public FuncTerminalCommand(Func<string> callCommand)
 		{
 			m_call = callCommand;
-			Help = $" ";
+			Aarguments = $" ";
 		}
 
 		public override string Run(string[] argument, out int resultCode)
@@ -268,7 +392,7 @@ namespace RuntimeDebugger
 		public FuncTerminalCommand(Func<TParam1, string> callCommand)
 		{
 			m_call = callCommand;
-			Help = $" {typeof(TParam1).Name}";
+			Aarguments = $" {typeof(TParam1).Name}";
 		}
 
 		public override string Run(string[] argument, out int resultCode)
@@ -297,7 +421,7 @@ namespace RuntimeDebugger
 		public FuncTerminalCommand(Func<TParam1, TParam2, string> callCommand)
 		{
 			m_call = callCommand;
-			Help = $" {typeof(TParam1).Name} {typeof(TParam2).Name}";
+			Aarguments = $" {typeof(TParam1).Name} {typeof(TParam2).Name}";
 		}
 
 		public override string Run(string[] argument, out int resultCode)
@@ -327,7 +451,7 @@ namespace RuntimeDebugger
 		public FuncTerminalCommand(Func<TParam1, TParam2, TParam3, string> callCommand)
 		{
 			m_call = callCommand;
-			Help = $" {typeof(TParam1).Name} {typeof(TParam2).Name} {typeof(TParam3).Name}";
+			Aarguments = $" {typeof(TParam1).Name} {typeof(TParam2).Name} {typeof(TParam3).Name}";
 		}
 
 		public override string Run(string[] argument,out int resultCode)
