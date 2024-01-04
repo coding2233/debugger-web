@@ -31,7 +31,6 @@ namespace RuntimeDebugger
 		private List<string> m_showIPAddressList;
 
 		private Vector2 m_ipAddressRect;
-		private Font m_debuggerFont;
 
 		private void Awake()
 		{
@@ -47,8 +46,6 @@ namespace RuntimeDebugger
 			m_dragRect = new Rect(0f, 0f, float.MaxValue, 25f);
 
 			Application.runInBackground = m_runInBackground;
-
-			m_debuggerFont = Resources.Load<Font>("SourceCodePro-Medium");
 
 			m_runtimeDebugger = new RuntimeDebugger();
 			var toolbarNames = new List<string>() { "Debugger" };
@@ -68,10 +65,8 @@ namespace RuntimeDebugger
 		private void OnGUI()
 		{
 			Matrix4x4 lastMatrix = GUI.matrix;
-			var lastFont = GUI.skin.font;
 
 			GUI.matrix = Matrix4x4.Scale(new Vector3(m_windowScale, m_windowScale, 1f));
-			GUI.skin.font = m_debuggerFont;
 			if (m_showFullWindow)
 			{
 				m_fullRect = GUILayout.Window(0, m_fullRect, DrawDebuggerFullWindow, "<b>RUNTIME DEBUGGER</b>");
@@ -80,7 +75,6 @@ namespace RuntimeDebugger
 			{
 				m_smallRect = GUILayout.Window(0, m_smallRect, DrawDebuggerSmallWindow, "<b>DEBUGGER</b>");
 			}
-			GUI.skin.font = lastFont;
 			GUI.matrix = lastMatrix;
 		}
 
