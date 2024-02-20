@@ -36,6 +36,7 @@ else
         set_kind("binary")
         set_languages("cxx17")
         set_arch("x64")
+        add_defines("SDL_MAIN_HANDLED")
         add_files("imgui/**.cpp","implot/**.cpp", "src/**.cpp")
         add_includedirs("imgui","implot","imgui/backends","src")
         add_files("easywsclient/easywsclient.cpp")
