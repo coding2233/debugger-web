@@ -185,7 +185,7 @@ jobs:
       run: |
         xmake --version
         cd xhv
-        xmake f -a arm64
+        xmake f -v -y -a arm64
         xmake -v -y xhv
         ls -lah build
     
