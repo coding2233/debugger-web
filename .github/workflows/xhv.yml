@@ -181,6 +181,14 @@ jobs:
         xmake -v -y xhv
         ls -lah build
     
+    - name: build xhv - arm64
+      run: |
+        xmake --version
+        cd xhv
+        xmake f -a arm64
+        xmake -v -y xhv
+        ls -lah build
+    
     - name: push xhvlib
       run: |
         git config --global user.name "coding2233"
